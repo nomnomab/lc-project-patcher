@@ -37,8 +37,8 @@ This tool fills in a unity project with functional assets so it can be used for 
    - Set Script Content Level to `Level 1`
 2. Open the tool from `Tools/Nomnom/LC - Project Patcher`
 3. Assign the Asset Ripper export directory path at the top
-   - Example being `...\Lethal Company\ExportedProject\`
-   - Do not include `Assets`
+   - Example being `...\Lethal Company\ExportedProject`
+   - Do not include `Assets` at the end
 4. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
 5. Click `Install All` to run the install stage
