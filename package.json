@@ -1,0 +1,17 @@
+{
+  "name": "com.nomnom.lc-project-patcher",
+  "version": "0.1.0",
+  "displayName": "Lethal Company Project Patcher",
+  "description": "A tool to generate a usable Unity project for Lethal Company modding.",
+  "unity": "2022.3",
+  "unityRelease": "9f1",
+ "keywords": [],
+  "author": {
+    "name": "Andrew Burke",
+    "email": "",
+    "url": ""
+  },
+  "dependencies": {
+    "com.cysharp.unitask": "https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask"
+  }
+}
