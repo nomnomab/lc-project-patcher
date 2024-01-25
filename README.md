@@ -4,7 +4,7 @@ This tool fills in a unity project with functional assets so it can be used for 
 
 ### What does it do?
 
-- Installs required packages, and enforced specific versions for them
+- Installs required packages, and enforces specific versions for them
 - Updates various project settings:
   - Tags
   - Layers
