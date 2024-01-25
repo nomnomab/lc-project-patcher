@@ -35,25 +35,17 @@ This tool fills in a unity project with functional assets so it can be used for 
 1. Use AssetRipper to export the game files
    - Set Script Export Format to `Decompiled`
    - Set Script Content Level to `Level 1`
-2. Build the LCProjectPatcherScriptCleaner project to get the needed DLLs
-   - This is needed to strip the game scripts
-   - Not sure if I can include nuget DLLs in the project without getting in trouble
-3. Open the tool from `Tools/Nomnom/LC - Project Patcher`
-4. Assign the Asset Ripper export directory path at the top
+2. Open the tool from `Tools/Nomnom/LC - Project Patcher`
+3. Assign the Asset Ripper export directory path at the top
    - Example being `...\Lethal Company\ExportedProject\`
    - Do not include `Assets`
-5. Assign the Game's data directory path at the top
+4. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
-6. Click `Install All` to run the install stage
+5. Click `Install All` to run the install stage
    - This will restart Unity when it finishes to apply packages and enforce the New Input System
    - When it asks about switching the new backend to the New Input System, press Yes
-7. Click `Fix All` to run the fix stage once you are back in the project
+6. Click `Fix All` to run the fix stage once you are back in the project
     - This will patch scripts, materials, etc
     - This will also copy the finished files into the project
     - This will probably take a while
-8. Now you should have a nice template to work from!
-
-<br/>
-
-#### todo
-Make instructions to build the stripping part of the tool
+7. Now you should have a nice template to work from!
