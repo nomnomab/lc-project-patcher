@@ -5,7 +5,7 @@ using UnityEditor.PackageManager;
 
 namespace Nomnom.LCProjectPatcher.Modules {
     public static class PackagesModule {
-        private readonly static (string, string?)[] Packages = new[] {
+        private readonly static (string, string)[] Packages = new[] {
             ("com.unity.ai.navigation", "1.1.5"),
             ("com.unity.animation.rigging", "1.2.1"),
             ("com.unity.collections", "1.2.4"),
