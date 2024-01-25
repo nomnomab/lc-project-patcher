@@ -27,8 +27,9 @@ This tool fills in a unity project with functional assets so it can be used for 
 1. Open the Package Manager from `Window/Package Manager`
 2. Click the '+' button in the top-left of the window
 3. Click 'Add package from git URL'
-4. Provide the URL of this git repository: https://github.com/nomnomab/lc-project-patcher.git
-5. Click the 'add' button
+4. Provide the URL of the UniTask git repository: https://github.com/Cysharp/UniTask.git?path=src/UniTask/Assets/Plugins/UniTask
+6. Click the 'add' button
+7. Repeat the same steps to install this git repo as a package: https://github.com/nomnomab/lc-project-patcher.git
 
 ## Usage
 
