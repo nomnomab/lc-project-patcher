@@ -58,6 +58,19 @@ namespace Nomnom.LCProjectPatcher.Modules {
             ScriptScrubber.Scrub(Directory.GetFiles(projectAssemblyCSharpPath, "*.cs", SearchOption.AllDirectories));
             EditorUtility.ClearProgressBar();
             
+            // check if we have DunGen in the project already
+            var dungenPath = Path.Combine(Application.dataPath, "DunGen");
+            if (Directory.Exists(dungenPath)) {
+                // remove DunGen from the stubs
+                var stubsPath = Path.Combine(projectAssemblyCSharpPath, "DunGen");
+                Directory.Delete(stubsPath, recursive: true);
+                
+                // import the navmesh package from it
+                EditorUtility.DisplayProgressBar("Installing packages", "Installing DunGen NavMesh package", 0.75f);
+                AssetDatabase.ImportPackage("Assets/DunGen/Integration/Unity NavMesh.unitypackage", false);
+                EditorUtility.ClearProgressBar();
+            }
+            
             return UniTask.CompletedTask;
         }
 

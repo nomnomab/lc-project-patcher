@@ -168,9 +168,9 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 Debug.Log($"Found {guid} at {Path.GetFileName(scriptMetaFile)}");
             }
             
-            foreach (var (key, value) in guids) {
-                Debug.Log($" - {key} at {Path.GetFileName(value)}");
-            }
+            // foreach (var (key, value) in guids) {
+            //     Debug.Log($" - {key} at {Path.GetFileName(value)}");
+            // }
 
             for (var i = 0; i < allMetas.Length; i++) {
                 var meta = allMetas[i];
