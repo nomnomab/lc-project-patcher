@@ -50,3 +50,8 @@ This tool fills in a unity project with functional assets so it can be used for 
     - This will also copy the finished files into the project
     - This will probably take a while
 7. Now you should have a nice template to work from!
+
+## Notes
+
+- If you have DunGen in the project (in the default location) then it will use that for any DunGen-related guids instead of the stubs
+  - Make sure DunGen is in the project *before* using the tool
