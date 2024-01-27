@@ -33,23 +33,32 @@ This tool fills in a unity project with functional assets so it can be used for 
 
 ## Usage
 
-1. Use AssetRipper to export the game files
+1. Create a new Unity project
+    - Use version 2022.3.9f1
+    - Use the 3D (HDRP) template
+2. Use AssetRipper to export the game files
    - Set Script Export Format to `Decompiled`
    - Set Script Content Level to `Level 1`
-2. Open the tool from `Tools/Nomnom/LC - Project Patcher`
-3. Assign the Asset Ripper export directory path at the top
-   - Example being `...\Lethal Company\ExportedProject`
+
+> At this point if you have the DunGen asset, you can import it into the project to use it for DunGen-related guids.
+> Make sure it is in its default location. 
+> 
+> Importing DunGen *after* the tool runs may cause serialization issues.
+
+3. Open the tool from `Tools/Nomnom/LC - Project Patcher`
+4. Assign the Asset Ripper export directory path at the top
+   - Example being `[some path]\Lethal Company\ExportedProject`
    - Do not include `Assets` at the end
-4. Assign the Game's data directory path at the top
+5. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
-5. Click `Install All` to run the install stage
+6. Click `Install All` to run the install stage
    - This will restart Unity when it finishes to apply packages and enforce the New Input System
    - When it asks about switching the new backend to the New Input System, press Yes
-6. Click `Fix All` to run the fix stage once you are back in the project
+7. Click `Fix All` to run the fix stage once you are back in the project
     - This will patch scripts, materials, etc
     - This will also copy the finished files into the project
     - This will probably take a while
-7. Now you should have a nice template to work from!
+8. Now you should have a nice template to work from!
 
 ## Notes
 
