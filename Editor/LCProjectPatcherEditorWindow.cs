@@ -33,8 +33,8 @@ namespace Nomnom.LCProjectPatcher {
 
             scroll.Add(CreateStep(string.Empty, () => InstallAll().Forget(), buttonText: "Install All"));
             scroll.Add(CreateStep("Update project settings", null, null));
-            // scroll.Add(CreateStep("Update project settings", () => ModifyProjectSettingsModule.Patch()));
             scroll.Add(CreateStep("Install required packages", null, null));
+            // scroll.Add(CreateStep("Install required packages", () => Fix(PackagesModule.Patch).Forget()));
             scroll.Add(CreateStep("Copy required Lethal Company files", null, null));
             scroll.Add(CreateStep("Strip all Assembly-CSharp scripts", null, null));
 

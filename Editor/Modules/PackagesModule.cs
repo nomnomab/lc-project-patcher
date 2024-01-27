@@ -13,11 +13,18 @@ namespace Nomnom.LCProjectPatcher.Modules {
             ("com.unity.probuilder", "5.1.1"),
             ("com.unity.inputsystem", "1.7.0"),
         };
+
+        private readonly static string[] GitPackages = new[] {
+            "https://github.com/Unity-Technologies/AssetBundles-Browser.git"
+        };
         
         public static async UniTask<bool> Patch() {
             ImportTMP();
             
-            var packageStrings = Packages.Select(x => x.Item2 == null ? x.Item1 : $"{x.Item1}@{x.Item2}").ToArray();
+            var packageStrings = Packages
+                .Select(x => x.Item2 == null ? x.Item1 : $"{x.Item1}@{x.Item2}")
+                .Concat(GitPackages)
+                .ToArray();
             // check if packages are already installed
             EditorUtility.DisplayProgressBar("Installing packages", "Checking if packages are already installed", 0.25f);
             var installedPackages = Client.List(true, false);
@@ -38,6 +45,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
             }
             
             Client.Resolve();
+            EditorUtility.ClearProgressBar();
             return true;
         }
 

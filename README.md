@@ -64,3 +64,7 @@ This tool fills in a unity project with functional assets so it can be used for 
 
 - If you have DunGen in the project (in the default location) then it will use that for any DunGen-related guids instead of the stubs
   - Make sure DunGen is in the project *before* using the tool
+
+## Credits
+
+- Asset Bundles Browser - https://github.com/Unity-Technologies/AssetBundles-Browser
