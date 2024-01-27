@@ -31,79 +31,72 @@ namespace Nomnom.LCProjectPatcher.Modules {
         
         public static UniTask Patch() {
             var assetRipperPath = EditorPrefs.GetString("nomnom.lc_project_patcher.asset_ripper_path");
-            // var projectPath = Path.Combine(Application.dataPath, "Scripts", "Assembly-CSharp");
             var animationClipPath = Path.Combine(assetRipperPath, "Assets", "AnimationClip");
-            
             var animationClipFiles = Directory.GetFiles(animationClipPath, "*.anim", SearchOption.AllDirectories);
             foreach (var animationClipFile in animationClipFiles) {
                 var fileName = Path.GetFileName(animationClipFile);
                 if (!fileName.Contains("FaceHalfLit")) continue;
-                Debug.Log($"Processing {fileName} as {animationClipFile}");
-                // todo: convert m_FloatCurves to m_PPtrCurves if isPPtrCurve is true for a given clip
+                
                 var fileContents = File.ReadAllText(animationClipFile);
                 var yaml = UYAMLParser.Parse(fileContents);
-                foreach (var node in yaml) {
-                    DebugYaml(node.Component);
-                    if (!TryGetProperty(node.Component, "m_ClipBindingConstant", out UObject clipBindingConstantObject)) {
-                        Debug.LogWarning($"- No clip binding constant found");
-                        continue;
-                    }
-                    
-                    var clipBindingConstants = GetClipBindingConstants(clipBindingConstantObject);
-                    for (var i = 0; i < clipBindingConstants.genericBindings.Length; i++) {
-                        var genericBinding = clipBindingConstants.genericBindings[i];
-                        Debug.Log($"- [{i}] isPPtrCurve: {genericBinding.isPPtrCurve}, isIntCurve: {genericBinding.isIntCurve}, isSerializeReferenceCurve: {genericBinding.isSerializeReferenceCurve}");
-                    }
+                
+                var isDirty = false;
+                
+                // todo: convert m_FloatCurves to m_PPtrCurves if isPPtrCurve is true for a given clip
+                isDirty |= PatchAssetFloatCurves(yaml[0]);
 
-                    for (var i = 0; i < clipBindingConstants.pptrCurveMappings.Length; i++) {
-                        var pptrCurveMapping = clipBindingConstants.pptrCurveMappings[i];
-                        Debug.Log($"- [{i}] fileId: {pptrCurveMapping.fileId}, guid: {pptrCurveMapping.guid}, type: {pptrCurveMapping.type}");
-                    }
-
-                    // DebugYAML(node.Component);
+                if (!isDirty) continue;
+                
+                // yippie
+                var writer = new UYAMLWriter();
+                writer.AddComponent(yaml[0]);
                     
-                    if (!TryGetProperty(node.Component, "m_FloatCurves", out UArray floatCurvesArray)) {
-                        Debug.LogWarning($"- No float curves found");
-                        continue;
-                    }
-                    
-                    var floatCurves = GetFloatCurves(floatCurvesArray);
-                    node.Component.properties["m_FloatCurves"] = new UProperty {
-                        name = "m_FloatCurves",
-                        value = new UArray()
-                    };
-                    
-                    if (!TryGetProperty(node.Component, "m_PPtrCurves", out UArray pptrCurvesArray)) {
-                        Debug.LogWarning($"- No pptr curves found");
-                        continue;
-                    }
-
-                    var pptrCurves = ConvertFloatCurvesToPPtrCurves(floatCurves, clipBindingConstants);
-                    node.Component.properties["m_PPtrCurves"] = new UProperty {
-                        name = "m_PPtrCurves",
-                        value = new UArray {
-                            items = new List<UNode>(pptrCurves)
-                        }
-                    };
-                    
-                    node.Component.properties["m_EditorCurves"] = new UProperty {
-                        name = "m_EditorCurves",
-                        value = new UArray()
-                    };
-                    
-                    // yippie
-                    var writer = new UYAMLWriter();
-                    writer.AddComponent(node);
-                    
-                    var newFileContents = writer.ToString();
-                    Debug.Log($"Writing new file contents to {animationClipFile}\n{newFileContents}");
-                    File.WriteAllText(animationClipFile, newFileContents);
-
-                    break;
-                }
+                var newFileContents = writer.ToString();
+                Debug.Log($"Writing new file contents to {animationClipFile}\n{newFileContents}");
+                File.WriteAllText(animationClipFile, newFileContents);
             }
             
             return UniTask.CompletedTask;
+        }
+
+        private static bool PatchAssetFloatCurves(UComponent node) {
+            // DebugYaml(node.Component);
+
+            if (!TryGetProperty(node.Component, "m_ClipBindingConstant", out UObject clipBindingConstantObject)) {
+                Debug.LogWarning($"- No clip binding constant found");
+                return false;
+            }
+
+            var clipBindingConstants = GetClipBindingConstants(clipBindingConstantObject);
+            if (!TryGetProperty(node.Component, "m_FloatCurves", out UArray floatCurvesArray)) {
+                Debug.LogWarning($"- No float curves found");
+                return false;
+            }
+            
+            if (!TryGetProperty(node.Component, "m_PPtrCurves", out UArray pptrCurvesArray)) {
+                return false;
+            }
+
+            var floatCurves = GetFloatCurves(floatCurvesArray);
+            node.Component.properties["m_FloatCurves"] = new UProperty {
+                name = "m_FloatCurves",
+                value = new UArray()
+            };
+
+            var pptrCurves = ConvertFloatCurvesToPPtrCurves(floatCurves, clipBindingConstants);
+            node.Component.properties["m_PPtrCurves"] = new UProperty {
+                name = "m_PPtrCurves",
+                value = new UArray {
+                    items = new List<UNode>(pptrCurves)
+                }
+            };
+
+            node.Component.properties["m_EditorCurves"] = new UProperty {
+                name = "m_EditorCurves",
+                value = new UArray()
+            };
+            
+            return true;
         }
 
         private static IEnumerable<UObject> ConvertFloatCurvesToPPtrCurves(IEnumerable<FloatCurve> floatCurves, ClipBindingConstants clipBindingConstants) {
@@ -184,11 +177,9 @@ namespace Nomnom.LCProjectPatcher.Modules {
         }
 
         private static GuidElement? GetScriptInfo(UObject obj) {
-            DebugYaml(obj, "scrip info?");
-            
-            string fileId = null;
-            string guid = null;
-            string type = null;
+            string fileId;
+            string guid;
+            string type;
             if (TryGetProperty(obj, "{fileID", out UValue data)) {
                 var str = $"{{fileID: {data.value}";
                 Debug.Log(str);
@@ -215,24 +206,20 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
         private static IEnumerable<GenericBinding> GetGenericBindings(UObject obj) {
             if (!TryGetProperty(obj, "genericBindings", out UArray genericBindings)) {
-                Debug.LogWarning($"- No generic bindings found");
                 yield break;
             }
                     
             foreach (var genericBinding in genericBindings.items.Select(x => x as UObject)) {
                 if (genericBinding == null) continue;
                 if (!TryGetProperty(genericBinding, "isPPtrCurve", out UNode isPPtrCurve) || !int.TryParse(isPPtrCurve.ToString(), out var isPPtrCurveValue)) {
-                    Debug.LogWarning($"- No isPPtrCurve found");
                     continue;
                 }
                 
                 if (!TryGetProperty(genericBinding, "isIntCurve", out UNode isIntCurve) || !int.TryParse(isIntCurve.ToString(), out var isIntCurveValue)) {
-                    Debug.LogWarning($"- No isIntCurve found");
                     continue;
                 }
                 
                 if (!TryGetProperty(genericBinding, "isSerializeReferenceCurve", out UNode isSerializeReferenceCurve) || !int.TryParse(isSerializeReferenceCurve.ToString(), out var isSerializeReferenceCurveValue)) {
-                    Debug.LogWarning($"- No isSerializeReferenceCurve found");
                     continue;
                 }
                 
@@ -244,28 +231,23 @@ namespace Nomnom.LCProjectPatcher.Modules {
             var items = array.items;
             var curveHolder = items[0] as UObject;
             if (!TryGetProperty(curveHolder, "serializedVersion", out UValue serializedVersion)) {
-                Debug.LogWarning($"- No serializedVersion found");
                 yield break;
             }
             
             if (!TryGetProperty(curveHolder, "curve", out UObject curve)) {
-                Debug.LogWarning($"- No curve found");
                 yield break;
             }
                 
             if (!TryGetProperty(curve, "m_Curve", out UArray innerCurve)) {
-                Debug.LogWarning($"- No m_Curve found");
                 yield break;
             }
 
             var keyframes = GetObjects(innerCurve.items).Select(x => {
                     if (!TryGetProperty(x, "time", out UNode time) || !float.TryParse(time.ToString(), out var timeValue)) {
-                        Debug.LogWarning($"- No time found");
                         return null as FloatCurveKeyframe?;
                     }
 
                     if (!TryGetProperty(x, "value", out UNode value) || !int.TryParse(value.ToString(), out var valueValue)) {
-                        Debug.LogWarning($"- No value found");
                         return null;
                     }
 
@@ -279,7 +261,6 @@ namespace Nomnom.LCProjectPatcher.Modules {
             var classId = items[3] as UValue;
             var scriptInfo = GetScriptInfo(items[4] as UObject);
             if (scriptInfo == null) {
-                Debug.LogWarning($"- No script info found");
                 yield break;
             }
 
@@ -305,23 +286,19 @@ namespace Nomnom.LCProjectPatcher.Modules {
             
             var curveHolder = items[0] as UObject;
             if (!TryGetProperty(curveHolder, "serializedVersion", out UValue serializedVersion)) {
-                Debug.LogWarning($"- No serializedVersion found");
                 yield break;
             }
             
             if (!TryGetProperty(curveHolder, "curve", out UArray curveArray)) {
-                Debug.LogWarning($"- No curve found");
                 yield break;
             }
 
             var curve = GetObjects(curveArray.items).Select(x => {
                     if (!TryGetProperty(x, "time", out UNode time) || !float.TryParse(time.ToString(), out var timeValue)) {
-                        Debug.LogWarning($"- No time found");
                         return null as PPtrCurveKeyframe?;
                     }
 
                     if (!TryGetProperty(x, "value", out UNode value)) {
-                        Debug.LogWarning($"- No value found");
                         return null;
                     }
 
@@ -335,7 +312,6 @@ namespace Nomnom.LCProjectPatcher.Modules {
             var classId = items[3] as UValue;
             var scriptInfo = GetScriptInfo(items[4] as UObject);
             if (scriptInfo == null) {
-                Debug.LogWarning($"- No script info found");
                 yield break;
             }
             
