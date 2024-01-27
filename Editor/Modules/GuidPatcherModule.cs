@@ -27,6 +27,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
         
         private readonly static Regex GuidPattern = new(@"guid:\s(?<guid>[0-9A-Za-z]+)", RegexOptions.Compiled);
         private readonly static Regex ScriptPattern = new(@"  m_Script: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
+        private readonly static Regex AnimationClipPattern = new(@"{fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
         private readonly static Regex ShaderPropPattern = new(@"  m_Shader: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
         private readonly static Regex ShaderNamePattern = new(@"Shader\s+""(?<name>.*)""[\s\S\r]*?{", RegexOptions.Compiled);
         private readonly static Regex NamespacePattern = new(@"namespace\s+(?<namespace>[\w\.]+)", RegexOptions.Compiled);
@@ -34,6 +35,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
         private static GuidList _monoList = new();
         private static GuidList _scriptableObjectList = new();
         private static GuidList _shaderList = new();
+        private static GuidList _animationClipList = new();
 
         private readonly static string[] IgnoreScriptFolders = new[]{
             "Unity.Services",
@@ -58,11 +60,13 @@ namespace Nomnom.LCProjectPatcher.Modules {
             _monoList.Clear();
             _scriptableObjectList.Clear();
             _shaderList.Clear();
+            _animationClipList.Clear();
             
             var assetRipperPath = EditorPrefs.GetString("nomnom.lc_project_patcher.asset_ripper_path");
             CheckMonoScripts(assetRipperPath);
             CheckScriptableObjectsScripts(assetRipperPath);
             CheckShaders(assetRipperPath);
+            CheckAnimationClips(assetRipperPath);
             if (!debugMode) {
                 FixGuids(assetRipperPath);
             }
@@ -283,6 +287,50 @@ namespace Nomnom.LCProjectPatcher.Modules {
             EditorUtility.ClearProgressBar();
         }
 
+        private static void CheckAnimationClips(string assetRipperPath) {
+            var animationClipFilePath = Path.Combine(assetRipperPath, "Assets", "AnimationClip");
+            var animationClipFiles = Directory.GetFiles(animationClipFilePath, "*.anim");
+
+            for (int i = 0; i < animationClipFiles.Length; i++) {
+                var file = animationClipFiles[i];
+                if (!Path.GetFileName(file).Contains("FaceHalfLit")) continue;
+                EditorUtility.DisplayProgressBar("Checking AnimationClip GUIDs", $"Checking {Path.GetFileName(file)}", (float)i / animationClipFiles.Length);
+                
+                var content = File.ReadAllText(file);
+                var matches = AnimationClipPattern.Matches(content);
+                if (matches.Count == 0) {
+                    Debug.LogWarning($"Could not find guid for {Path.GetFileName(file)}");
+                    continue;
+                }
+                
+                foreach (Match match in matches) {
+                    var guid = match.Groups["guid"].Value;
+                    var fileId = match.Groups["file"].Value;
+                    // var type = match.Groups["type"].Value;
+                    
+                    if (string.IsNullOrEmpty(guid)) {
+                        Debug.LogWarning($"Could not find guid for {Path.GetFileName(file)} | {guid}");
+                        continue;
+                    }
+                    
+                    if (_animationClipList.ContainsKey(guid)) {
+                        Debug.LogWarning($"Already found {Path.GetFileName(file)} | {guid}");
+                        continue;
+                    }
+
+                    if (!_monoList.TryGetValue(guid, out var mono)) {
+                        Debug.LogWarning($"Could not find mono for {Path.GetFileName(file)} | {guid}");
+                        continue;
+                    }
+                    
+                    Debug.Log($"Found {mono.name} for {Path.GetFileName(file)} | {guid} to {mono.guid}");
+                    _animationClipList.Add(guid, mono);
+                }
+            }
+            
+            EditorUtility.ClearProgressBar();
+        }
+
         private static void FixGuids(string assetRipperPath) {
             var files = Directory.GetFiles(assetRipperPath, "*", SearchOption.AllDirectories);
             for (var i = 0; i < files.Length; i++) {
@@ -356,6 +404,31 @@ namespace Nomnom.LCProjectPatcher.Modules {
                                     count++;
                                     Debug.Log($"Found {fileId} in {file} | {guid} to {swap.guid}");
                                     return $"  m_Shader: {{fileID: {swap.file}, guid: {swap.guid}, type: {type}}}";
+                                });
+
+                            if (count > 0) {
+                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
+                                File.WriteAllText(file, content);
+                            }
+                        }
+                        break;
+                    case ".anim":
+                        if (_animationClipList.Count != 0) {
+                            var content = File.ReadAllText(file);
+                            var count = 0;
+                            content = AnimationClipPattern.Replace(content,
+                                x => {
+                                    var guid = x.Groups["guid"].Value;
+                                    var fileId = x.Groups["file"].Value;
+                                    var type = x.Groups["type"].Value;
+
+                                    if (!_animationClipList.TryGetValue(guid, out var swap)) {
+                                        return x.Value;
+                                    }
+
+                                    count++;
+                                    Debug.Log($"Found {fileId} in {file} | {guid} to {swap.guid}");
+                                    return $"{{fileID: {swap.file}, guid: {swap.guid}, type: {type}}}";
                                 });
 
                             if (count > 0) {
