@@ -26,8 +26,8 @@ namespace Nomnom.LCProjectPatcher.Modules {
         }
         
         private readonly static Regex GuidPattern = new(@"guid:\s(?<guid>[0-9A-Za-z]+)", RegexOptions.Compiled);
+        private readonly static Regex FullGuidPattern = new(@"{fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
         private readonly static Regex ScriptPattern = new(@"  m_Script: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
-        private readonly static Regex AnimationClipPattern = new(@"{fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
         private readonly static Regex ShaderPropPattern = new(@"  m_Shader: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
         private readonly static Regex ShaderNamePattern = new(@"Shader\s+""(?<name>.*)""[\s\S\r]*?{", RegexOptions.Compiled);
         private readonly static Regex NamespacePattern = new(@"namespace\s+(?<namespace>[\w\.]+)", RegexOptions.Compiled);
@@ -67,9 +67,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
             CheckScriptableObjectsScripts(assetRipperPath);
             CheckShaders(assetRipperPath);
             CheckAnimationClips(assetRipperPath);
-            if (!debugMode) {
-                FixGuids(assetRipperPath);
-            }
+            FixGuids(assetRipperPath, debugMode: debugMode);
             
             return UniTask.CompletedTask;
         }
@@ -94,7 +92,14 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 var assemblyName = classType.Assembly.GetName().Name;
                 var fullName = classType.FullName.Replace('.', Path.DirectorySeparatorChar);
                 var sourceFile = Path.Combine(assetRipperPath, "Assets", "Scripts", assemblyName, $"{fullName}.cs");
+                // Debug.Log($"Found {fullName} | {scriptGuid} at {sourceFile}");
                 var metaFile = $"{sourceFile}.meta";
+
+                long? finalFileID = null;
+                if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(mono, out var guid2, out long fileID)) {
+                    Debug.Log($"Found {fullName} | {scriptGuid} to {guid2} | {fileID}");
+                    finalFileID = fileID;
+                }
 
                 if (!File.Exists(sourceFile)) {
                     Debug.LogWarning($"Could not find source file for {fullName} at {sourceFile}");
@@ -119,7 +124,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                 Debug.Log($"Found {fullName} | {guid} to {scriptGuid}");
 
-                _monoList.Add(guid, new GuidSwap(fullName, scriptGuid, sourceFile));
+                _monoList.Add(guid, new GuidSwap(sourceFile, scriptGuid, finalFileID?.ToString()));
             }
             
             EditorUtility.ClearProgressBar();
@@ -297,7 +302,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 EditorUtility.DisplayProgressBar("Checking AnimationClip GUIDs", $"Checking {Path.GetFileName(file)}", (float)i / animationClipFiles.Length);
                 
                 var content = File.ReadAllText(file);
-                var matches = AnimationClipPattern.Matches(content);
+                var matches = FullGuidPattern.Matches(content);
                 if (matches.Count == 0) {
                     Debug.LogWarning($"Could not find guid for {Path.GetFileName(file)}");
                     continue;
@@ -331,7 +336,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
             EditorUtility.ClearProgressBar();
         }
 
-        private static void FixGuids(string assetRipperPath) {
+        private static void FixGuids(string assetRipperPath, bool debugMode) {
             var files = Directory.GetFiles(assetRipperPath, "*", SearchOption.AllDirectories);
             for (var i = 0; i < files.Length; i++) {
                 var file = files[i];
@@ -344,21 +349,26 @@ namespace Nomnom.LCProjectPatcher.Modules {
                         if (_monoList.Count != 0) {
                             var content = File.ReadAllText(file);
                             var count = 0;
-                            content = GuidPattern.Replace(content,
+                            content = FullGuidPattern.Replace(content,
                                 x => {
+                                    var fileID = x.Groups["fileID"].Value;
                                     var guid = x.Groups["guid"].Value;
+                                    var type = x.Groups["type"].Value;
                                     if (!_monoList.TryGetValue(guid, out var swap)) {
                                         return x.Value;
                                     }
 
                                     count++;
-                                    Debug.Log($"Found {swap.name} in {file} | {guid} to {swap.guid}");
-                                    return $"guid: {swap.guid}";
+                                    fileID = string.IsNullOrEmpty(swap.file) ? fileID : swap.file;
+                                    Debug.Log($"Found {swap.name} in {fileID} | {guid} to {swap.guid}");
+                                    return $"{{fileID: {fileID}, guid: {swap.guid}, type: {type}}}";
                                 });
 
                             if (count > 0) {
                                 Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
-                                File.WriteAllText(file, content);
+                                if (!debugMode) {
+                                    File.WriteAllText(file, content);
+                                }
                             }
                         }
                         break;
@@ -382,7 +392,9 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                             if (count > 0) {
                                 Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
-                                File.WriteAllText(file, content);
+                                if (!debugMode) {
+                                    File.WriteAllText(file, content);
+                                }
                             }
                         }
                         break;
@@ -408,7 +420,9 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                             if (count > 0) {
                                 Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
-                                File.WriteAllText(file, content);
+                                if (!debugMode) {
+                                    File.WriteAllText(file, content);
+                                }
                             }
                         }
                         break;
@@ -416,7 +430,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
                         if (_animationClipList.Count != 0) {
                             var content = File.ReadAllText(file);
                             var count = 0;
-                            content = AnimationClipPattern.Replace(content,
+                            content = FullGuidPattern.Replace(content,
                                 x => {
                                     var guid = x.Groups["guid"].Value;
                                     var fileId = x.Groups["file"].Value;
@@ -433,7 +447,9 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                             if (count > 0) {
                                 Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
-                                File.WriteAllText(file, content);
+                                if (!debugMode) {
+                                    File.WriteAllText(file, content);
+                                }
                             }
                         }
                         break;
