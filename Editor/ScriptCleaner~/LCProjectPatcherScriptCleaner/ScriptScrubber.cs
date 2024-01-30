@@ -267,6 +267,11 @@ namespace Nomnom.LCProjectPatcherScriptCleaner {
                             @"allPlayerScripts[i].gameObject.GetComponentInChildren<NfgoPlayer>().VoiceChatTrackingStart();",
                             @"// allPlayerScripts[i].gameObject.GetComponentInChildren<NfgoPlayer>().VoiceChatTrackingStart();"
                         );
+
+                        newCode = newCode.Replace(
+                            @"playerControllerB.gameObject.GetComponentInChildren<NfgoPlayer>().VoiceChatTrackingStart();",
+                            @"// playerControllerB.gameObject.GetComponentInChildren<NfgoPlayer>().VoiceChatTrackingStart();"
+                        );
                     }
 
                     // write to copy file
