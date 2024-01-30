@@ -12,11 +12,12 @@ namespace Nomnom.LCProjectPatcher.Modules {
             "Facepunch Transport for Netcode for GameObjects.dll",
             "Facepunch.Steamworks.Win64.dll",
             "Newtonsoft.Json.dll",
+            // "Assembly-CSharp.dll", // experimental
             "Assembly-CSharp-firstpass.dll",
         };
         
         public static UniTask Patch() {
-            var lcDataFolder = EditorPrefs.GetString("nomnom.lc_project_patcher.lc_data_folder");
+            var lcDataFolder = ModuleUtility.GetLethalCompanyDataFolder();
             
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "Plugins"));
             for (var i = 0; i < DllsToCopy.Length; i++) {
@@ -35,6 +36,8 @@ namespace Nomnom.LCProjectPatcher.Modules {
             }
             
             EditorUtility.ClearProgressBar();
+            
+            Debug.Log("Game dlls copied");
 
             return UniTask.CompletedTask;
         }

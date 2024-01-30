@@ -30,7 +30,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
         private readonly static Regex PptrCurveMappingItemPattern = new(@"{fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
         
         public static UniTask Patch() {
-            var assetRipperPath = EditorPrefs.GetString("nomnom.lc_project_patcher.asset_ripper_path");
+            var assetRipperPath = ModuleUtility.GetAssetRipperCloneDirectory();
             var animationClipPath = Path.Combine(assetRipperPath, "Assets", "AnimationClip");
             var animationClipFiles = Directory.GetFiles(animationClipPath, "*.anim", SearchOption.AllDirectories);
             foreach (var animationClipFile in animationClipFiles) {

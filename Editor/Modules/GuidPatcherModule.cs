@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
@@ -25,30 +26,35 @@ namespace Nomnom.LCProjectPatcher.Modules {
             }
         }
         
-        private readonly static Regex GuidPattern = new(@"guid:\s(?<guid>[0-9A-Za-z]+)", RegexOptions.Compiled);
-        private readonly static Regex FullGuidPattern = new(@"{fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
-        private readonly static Regex ScriptPattern = new(@"  m_Script: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
-        private readonly static Regex ShaderPropPattern = new(@"  m_Shader: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
-        private readonly static Regex ShaderNamePattern = new(@"Shader\s+""(?<name>.*)""[\s\S\r]*?{", RegexOptions.Compiled);
-        private readonly static Regex NamespacePattern = new(@"namespace\s+(?<namespace>[\w\.]+)", RegexOptions.Compiled);
+        public readonly static Regex GuidPattern = new(@"guid:\s(?<guid>[0-9A-Za-z]+)", RegexOptions.Compiled);
+        public readonly static Regex FullGuidPattern = new(@"{fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
+        public readonly static Regex ScriptPattern = new(@"  m_Script: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
+        public readonly static Regex ShaderPropPattern = new(@"  m_Shader: {fileID: (?<file>\d+), guid: (?<guid>[0-9A-f-a-f]+), type: (?<type>\d+)}", RegexOptions.Compiled);
+        public readonly static Regex ShaderNamePattern = new(@"Shader\s+""(?<name>.*)""[\s\S\r]*?{", RegexOptions.Compiled);
+        public readonly static Regex NamespacePattern = new(@"namespace\s+(?<namespace>[\w\.]+)", RegexOptions.Compiled);
         
         private static GuidList _monoList = new();
         private static GuidList _scriptableObjectList = new();
         private static GuidList _shaderList = new();
         private static GuidList _animationClipList = new();
 
-        private readonly static string[] IgnoreScriptFolders = new[]{
+        private readonly static string[] IgnoreScriptFolders = {
             "Unity.Services",
             "Unity.Timeline",
             "Unity.Multiplayer",
-            "Unity.InputSystem",
+            // "Unity.InputSystem",
             "Unity.Burst",
-            "DissonanceVoip",
-            "Facepunch",
+            // "DissonanceVoip",
+            // "Facepunch",
             "Unity.Collections",
             "Unity.Jobs",
             "Unity.Networking",
             "Unity.ProBuilder"
+        };
+
+        private readonly static string[] ScriptableObjectFolders = {
+            "MonoBehaviour",
+            "Resources"
         };
         
         private readonly static Type[] AllTypes = AppDomain.CurrentDomain.GetAssemblies()
@@ -62,11 +68,13 @@ namespace Nomnom.LCProjectPatcher.Modules {
             _shaderList.Clear();
             _animationClipList.Clear();
             
-            var assetRipperPath = EditorPrefs.GetString("nomnom.lc_project_patcher.asset_ripper_path");
+            var assetRipperPath = ModuleUtility.GetAssetRipperCloneDirectory();
+            
             CheckMonoScripts(assetRipperPath);
             CheckScriptableObjectsScripts(assetRipperPath);
             CheckShaders(assetRipperPath);
             CheckAnimationClips(assetRipperPath);
+            
             FixGuids(assetRipperPath, debugMode: debugMode);
             
             return UniTask.CompletedTask;
@@ -80,6 +88,8 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 EditorUtility.DisplayProgressBar("Checking MonoScript GUIDs", $"Checking {scriptGuid}", (float)i / monoScripts.Length);
                 
                 var mono = AssetDatabase.LoadAssetAtPath<MonoScript>(AssetDatabase.GUIDToAssetPath(scriptGuid));
+                // Debug.Log($"Found {mono.name} | {scriptGuid}");
+                
                 var classType = mono.GetClass();
                 if (classType == null) {
                     continue;
@@ -90,8 +100,39 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 }
 
                 var assemblyName = classType.Assembly.GetName().Name;
+                var namespaceName = string.Empty;
+                if (assemblyName == "lethal-company") {
+                    assemblyName = "Assembly-CSharp";
+                    
+                    var baseType = classType.BaseType;
+                    if (baseType != null && baseType.Namespace != null) {
+                        namespaceName = baseType.Namespace.Replace('.', Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+                    }
+                }
+                
+                Debug.Log($"{classType.FullName} in {assemblyName} and {namespaceName}");
                 var fullName = classType.FullName.Replace('.', Path.DirectorySeparatorChar);
-                var sourceFile = Path.Combine(assetRipperPath, "Assets", "Scripts", assemblyName, $"{fullName}.cs");
+                if (fullName.StartsWith("LethalCompany")) {
+                    fullName = fullName[("LethalCompany".Length + 1)..];
+                }
+
+                // if (fullName == "PlayerControllerB") {
+                //     fullName = Path.Combine("GameNetcodeStuff", fullName);
+                // }
+                
+                var sourceFile = Path.Combine(assetRipperPath, "Assets", "Scripts", assemblyName, $"{namespaceName}{fullName}.cs");
+                
+                // make sure this doesn't exist in the project already under Assets/Scripts/Assembly-CSharp
+                var checkPath = sourceFile.Replace(Path.Combine(assetRipperPath, "Assets"), Application.dataPath);
+                Debug.Log($"Checking if {fullName} exists at {checkPath}");
+
+                var fileExistsInProject = File.Exists(checkPath);
+                // if (File.Exists(checkPath)) {
+                //     Debug.LogWarning($"Found {fullName} | {scriptGuid} already in project");
+                //     guid = scriptGuid;
+                //     fileId = "11500000";
+                // }
+                
                 // Debug.Log($"Found {fullName} | {scriptGuid} at {sourceFile}");
                 var metaFile = $"{sourceFile}.meta";
 
@@ -100,6 +141,8 @@ namespace Nomnom.LCProjectPatcher.Modules {
                     Debug.Log($"Found {fullName} | {scriptGuid} to {guid2} | {fileID}");
                     finalFileID = fileID;
                 }
+
+                var fileId = finalFileID.ToString();
 
                 if (!File.Exists(sourceFile)) {
                     Debug.LogWarning($"Could not find source file for {fullName} at {sourceFile}");
@@ -118,13 +161,31 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 }
 
                 var guid = match.Groups["guid"].Value;
-                if (string.IsNullOrEmpty(guid) || guid == scriptGuid) {
-                    continue;
+                if (!fileExistsInProject) {
+                    if (string.IsNullOrEmpty(guid) || guid == scriptGuid) {
+                        continue;
+                    }
+                } else {
+                    // load guid from project script meta file
+                    var projectMetaFile = $"{checkPath}.meta";
+                    if (!File.Exists(projectMetaFile)) {
+                        Debug.LogWarning($"Could not find project meta file for {fullName} at {projectMetaFile}");
+                        continue;
+                    }
+                    
+                    var projectMetaContents = File.ReadAllText(projectMetaFile);
+                    var projectMatch = GuidPattern.Match(projectMetaContents);
+                    if (!projectMatch.Success) {
+                        continue;
+                    }
+                    
+                    scriptGuid = projectMatch.Groups["guid"].Value;
+                    fileId = "11500000";
                 }
 
                 Debug.Log($"Found {fullName} | {guid} to {scriptGuid}");
 
-                _monoList.Add(guid, new GuidSwap(sourceFile, scriptGuid, finalFileID?.ToString()));
+                _monoList.Add(guid, new GuidSwap(sourceFile, scriptGuid, fileId));
             }
             
             EditorUtility.ClearProgressBar();
@@ -132,116 +193,131 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
         private static void CheckScriptableObjectsScripts(string assetRipperPath) {
             var allScripts = Directory.GetFiles(Path.Combine(assetRipperPath, "Assets", "Scripts"), "*.cs.meta", SearchOption.AllDirectories)
+                //.Concat(Directory.GetFiles(Path.Combine(assetRipperPath, "Assets", "Resources"), "*.cs.meta", SearchOption.AllDirectories))
                 .Where(x => !IgnoreScriptFolders.Any(x.Contains))
                 .ToArray();
-            var allProjectFiles = Directory.GetFiles(Path.Combine(assetRipperPath, "Assets", "MonoBehaviour"), "*.asset");
-            var allMetas = allProjectFiles.Select(x => {
-                var text = File.ReadAllText(x);
-                var match = ScriptPattern.Match(text);
-                if (!match.Success) {
-                    return null;
-                }
-                
-                var guid = match.Groups["guid"].Value;
-                if (string.IsNullOrEmpty(guid)) {
-                    return null;
-                }
-                
-                Debug.Log($"Found {guid} at {Path.GetFileName(x)} in:\n{text}");
-                
-                return new {
-                    guid,
-                    file = x
-                };
-            })
-                .Where(x => x != null)
-                .ToArray();
 
-            using var _ = DictionaryPool<string, string>.Get(out var guids);
-            for (var i = 0; i < allScripts.Length; i++) {
-                var scriptMetaFile = allScripts[i];
-                EditorUtility.DisplayProgressBar("Checking ScriptableObject GUIDs", $"Checking {scriptMetaFile}", (float)i / allScripts.Length);
+            foreach (var folder in ScriptableObjectFolders) {
+                var allProjectFiles = Directory.GetFiles(Path.Combine(assetRipperPath, "Assets", folder), "*.asset", SearchOption.AllDirectories);
+                var allMetas = allProjectFiles.Select(x => {
+                        var text = File.ReadAllText(x);
+                        var match = ScriptPattern.Match(text);
+                        if (!match.Success) {
+                            return null;
+                        }
+
+                        var guid = match.Groups["guid"].Value;
+                        if (string.IsNullOrEmpty(guid)) {
+                            return null;
+                        }
+
+                        Debug.Log($"Found {guid} at {Path.GetFileName(x)} in:\n{text}");
+
+                        return new {
+                            guid,
+                            file = x
+                        };
+                    })
+                    .Where(x => x != null)
+                    .ToArray();
+
+                using var _ = DictionaryPool<string, string>.Get(out var guids);
+                for (var i = 0; i < allScripts.Length; i++) {
+                    var scriptMetaFile = allScripts[i];
+                    EditorUtility.DisplayProgressBar("Checking ScriptableObject GUIDs", $"Checking {scriptMetaFile}", (float)i / allScripts.Length);
+
+                    if (!File.Exists(scriptMetaFile)) {
+                        Debug.LogWarning($"Could not find script meta file for {Path.GetFileName(scriptMetaFile)}, yet it was found with GetFiles?");
+                        continue;
+                    }
+
+                    string text;
+                    try {
+                        text = File.ReadAllText(scriptMetaFile);
+                    } catch (Exception e) {
+                        Debug.LogWarning($"Could not read script meta file for {Path.GetFileName(scriptMetaFile)}: {e}");
+                        continue;
+                    }
                     
-                var text = File.ReadAllText(scriptMetaFile);
-                var match = GuidPattern.Match(text);
-                if (!match.Success) {
-                    continue;
+                    var match = GuidPattern.Match(text);
+                    if (!match.Success) {
+                        continue;
+                    }
+
+                    var guid = match.Groups["guid"].Value;
+                    if (string.IsNullOrEmpty(guid)) {
+                        continue;
+                    }
+
+                    guids.Add(guid, scriptMetaFile);
+                    Debug.Log($"Found {guid} at {Path.GetFileName(scriptMetaFile)}");
                 }
 
-                var guid = match.Groups["guid"].Value;
-                if (string.IsNullOrEmpty(guid)) {
-                    continue;
-                }
-                
-                guids.Add(guid, scriptMetaFile);
-                Debug.Log($"Found {guid} at {Path.GetFileName(scriptMetaFile)}");
-            }
-            
-            // foreach (var (key, value) in guids) {
-            //     Debug.Log($" - {key} at {Path.GetFileName(value)}");
-            // }
+                // foreach (var (key, value) in guids) {
+                //     Debug.Log($" - {key} at {Path.GetFileName(value)}");
+                // }
 
-            for (var i = 0; i < allMetas.Length; i++) {
-                var meta = allMetas[i];
-                EditorUtility.DisplayProgressBar("Checking ScriptableObject GUIDs", $"Checking {meta.guid}", (float)i / allMetas.Length);
-                
-                if (!guids.TryGetValue(meta.guid, out var scriptMetaFile)) {
-                    Debug.LogWarning($"Could not find script meta file for {meta.guid} at {meta.file}");
-                    continue;
-                }
-                
-                if (_scriptableObjectList.ContainsKey(meta.guid)) {
-                    continue;
-                }
-                
-                // Debug.Log($"\t- script is {meta.guid} at {Path.GetFileName(scriptMetaFile)}");
+                for (var i = 0; i < allMetas.Length; i++) {
+                    var meta = allMetas[i];
+                    EditorUtility.DisplayProgressBar("Checking ScriptableObject GUIDs", $"Checking {meta.guid}", (float)i / allMetas.Length);
 
-                var sourceFile = scriptMetaFile[..^".meta".Length];
-                if (!File.Exists(sourceFile)) {
-                    Debug.LogWarning($"Could not find source file for {meta.guid} at {sourceFile}");
-                    continue;
-                }
-                
-                var match = NamespacePattern.Match(File.ReadAllText(sourceFile));
-                if (!match.Success) {
-                    Debug.LogWarning($"Could not find namespace for {meta.guid} at {sourceFile}");
-                    continue;
-                }
-                
-                var @namespace = match.Groups["namespace"].Value;
-                var fullName = $"{@namespace}.{Path.GetFileNameWithoutExtension(sourceFile)}";
-                var realType = AllTypes.FirstOrDefault(x => x.FullName == fullName);
-                if (realType == null) {
-                    Debug.LogWarning($"Could not find type for {fullName} at {sourceFile}");
-                    continue;
-                }
-                
-                var instance = ScriptableObject.CreateInstance(realType);
-                if (!instance) {
-                    Debug.LogWarning($"Could not create instance for {fullName} at {sourceFile}");
-                    continue;
-                }
+                    if (!guids.TryGetValue(meta.guid, out var scriptMetaFile)) {
+                        Debug.LogWarning($"Could not find script meta file for {meta.guid} at {meta.file}");
+                        continue;
+                    }
 
-                var monoScript = MonoScript.FromScriptableObject(instance);
-                if (!monoScript) {
-                    Debug.LogWarning($"Could not find mono script for {fullName} at {sourceFile}");
+                    if (_scriptableObjectList.ContainsKey(meta.guid)) {
+                        continue;
+                    }
+
+                    // Debug.Log($"\t- script is {meta.guid} at {Path.GetFileName(scriptMetaFile)}");
+
+                    var sourceFile = scriptMetaFile[..^".meta".Length];
+                    if (!File.Exists(sourceFile)) {
+                        Debug.LogWarning($"Could not find source file for {meta.guid} at {sourceFile}");
+                        continue;
+                    }
+
+                    var match = NamespacePattern.Match(File.ReadAllText(sourceFile));
+                    var fullName = Path.GetFileNameWithoutExtension(sourceFile);
+                    if (match.Success) {
+                        var @namespace = match.Groups["namespace"].Value;
+                        fullName = $"{@namespace}.{fullName}";
+                    }
+                    
+                    var realType = AllTypes.FirstOrDefault(x => x.FullName == fullName);
+                    if (realType == null) {
+                        Debug.LogWarning($"Could not find type for {fullName} at {sourceFile}");
+                        continue;
+                    }
+
+                    var instance = ScriptableObject.CreateInstance(realType);
+                    if (!instance) {
+                        Debug.LogWarning($"Could not create instance for {fullName} at {sourceFile}");
+                        continue;
+                    }
+
+                    var monoScript = MonoScript.FromScriptableObject(instance);
+                    if (!monoScript) {
+                        Debug.LogWarning($"Could not find mono script for {fullName} at {sourceFile}");
+                        GameObject.DestroyImmediate(instance);
+                        continue;
+                    }
+
+                    var globalId = GlobalObjectId.GetGlobalObjectIdSlow(monoScript);
                     GameObject.DestroyImmediate(instance);
-                    continue;
+
+                    if (globalId.ToString().Equals("GlobalObjectId_V1-0-00000000000000000000000000000000-0-0")) {
+                        Debug.LogWarning($"Could not find global id for {fullName} at {sourceFile}");
+                        continue;
+                    }
+
+                    var assetGuid = globalId.assetGUID.ToString();
+                    var objectId = globalId.targetObjectId;
+
+                    Debug.Log($"\t- Found {fullName} is {realType} | {meta.guid} to {assetGuid}");
+                    _scriptableObjectList.Add(meta.guid, new GuidSwap(fullName, assetGuid, objectId.ToString()));
                 }
-                
-                var globalId = GlobalObjectId.GetGlobalObjectIdSlow(monoScript);
-                GameObject.DestroyImmediate(instance);
-                
-                if (globalId.ToString().Equals("GlobalObjectId_V1-0-00000000000000000000000000000000-0-0")) {
-                    Debug.LogWarning($"Could not find global id for {fullName} at {sourceFile}");
-                    continue;
-                }
-                
-                var assetGuid = globalId.assetGUID.ToString();
-                var objectId = globalId.targetObjectId;
-                
-                Debug.Log($"\t- Found {fullName} is {realType} | {meta.guid} to {assetGuid}");
-                _scriptableObjectList.Add(meta.guid, new GuidSwap(fullName, assetGuid, objectId.ToString()));
             }
 
             EditorUtility.ClearProgressBar();

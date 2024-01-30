@@ -1,0 +1,3 @@
+﻿namespace LethalCompany {
+    public class $CLASS_NAME$: $BASE_CLASS$ { }
+}

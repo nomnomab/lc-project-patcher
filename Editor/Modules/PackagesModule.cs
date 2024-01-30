@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
 using UnityEditor.PackageManager;
+using UnityEngine;
 
 namespace Nomnom.LCProjectPatcher.Modules {
     public static class PackagesModule {
@@ -23,29 +25,42 @@ namespace Nomnom.LCProjectPatcher.Modules {
             
             var packageStrings = Packages
                 .Select(x => x.Item2 == null ? x.Item1 : $"{x.Item1}@{x.Item2}")
+                .ToArray();
+            var allPackageStrings = packageStrings
                 .Concat(GitPackages)
                 .ToArray();
             // check if packages are already installed
             EditorUtility.DisplayProgressBar("Installing packages", "Checking if packages are already installed", 0.25f);
-            var installedPackages = Client.List(true, false);
-            while (!installedPackages.IsCompleted) {
-                await UniTask.Delay(1, ignoreTimeScale: true);
-            }
+            try {
+                Debug.Log("Checking if packages are already installed");
+                var installedPackages = Client.List(false, false);
+                while (!installedPackages.IsCompleted) {
+                    await UniTask.Delay(1, ignoreTimeScale: true);
+                }
+                
+                var allAreInstalled = packageStrings.All(x => installedPackages.Result.Count(y => y.packageId == x) > 0);
+                if (allAreInstalled) {
+                    EditorUtility.ClearProgressBar();
+                    Debug.Log("Packages already installed");
+                    return false;
+                }
             
-            var allAreInstalled = packageStrings.All(x => installedPackages.Result.Count(y => y.packageId == x) > 0);
-            if (allAreInstalled) {
+                EditorUtility.DisplayProgressBar("Installing packages", $"Installing {allPackageStrings.Length} package{(allPackageStrings.Length == 1 ? string.Empty : "s")}", 0.5f);
+                var request = Client.AddAndRemove(allPackageStrings);
+                while (!request.IsCompleted) {
+                    await UniTask.Delay(1, ignoreTimeScale: true);
+                }
+            
+                Client.Resolve();
                 EditorUtility.ClearProgressBar();
+            } catch(Exception e) {
+                EditorUtility.ClearProgressBar();
+                Debug.LogError($"Failed to get installed packages: {e}");
                 return false;
             }
             
-            EditorUtility.DisplayProgressBar("Installing packages", $"Installing {packageStrings.Length} package{(packageStrings.Length == 1 ? string.Empty : "s")}", 0.5f);
-            var request = Client.AddAndRemove(packageStrings);
-            while (!request.IsCompleted) {
-                await UniTask.Delay(1, ignoreTimeScale: true);
-            }
+            Debug.Log("Packages installed");
             
-            Client.Resolve();
-            EditorUtility.ClearProgressBar();
             return true;
         }
 

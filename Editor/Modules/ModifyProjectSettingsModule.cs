@@ -14,7 +14,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
         };
         
         public static UniTask Patch() {
-            var assetRipperPath = EditorPrefs.GetString("nomnom.lc_project_patcher.asset_ripper_path");
+            var assetRipperPath = ModuleUtility.GetAssetRipperCloneDirectory();
             PlayerSettings.allowUnsafeCode = true;
             
             var assetRipperSettingsFolder = Path.Combine(assetRipperPath, "ProjectSettings");
@@ -28,6 +28,8 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 var projectFile = Path.Combine(projectSettingsFolder, fileName);
                 File.Copy(file, projectFile, true);
             }
+            
+            Debug.Log("Project settings copied");
             
             return UniTask.CompletedTask;
         }

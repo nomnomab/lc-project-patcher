@@ -33,6 +33,12 @@ This tool fills in a unity project with functional assets so it can be used for 
 
 ## Usage
 
+[//]: # (> Once you start the steps, do them all as different steps will modify the Asset Ripper exported project.)
+
+[//]: # (> )
+
+[//]: # (> So things could get weird if you don't start fresh each time.)
+
 1. Create a new Unity project
     - Use version 2022.3.9f1
     - Use the 3D (HDRP) template

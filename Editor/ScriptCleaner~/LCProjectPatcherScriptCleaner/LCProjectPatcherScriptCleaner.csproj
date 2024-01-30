@@ -14,6 +14,7 @@
     
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
         <Copy SourceFiles="$(TargetDir)$(AssemblyName).dll" DestinationFolder="$(SolutionDir)..\Plugins" />
+        <Copy SourceFiles="$(TargetDir)$(AssemblyName).pdb" DestinationFolder="$(SolutionDir)..\Plugins" />
         <Copy SourceFiles="$(TargetDir)Microsoft.CodeAnalysis.dll" DestinationFolder="$(SolutionDir)..\Plugins" />
         <Copy SourceFiles="$(TargetDir)Microsoft.CodeAnalysis.CSharp.dll" DestinationFolder="$(SolutionDir)..\Plugins" />
         <Copy SourceFiles="$(TargetDir)System.Buffers.dll" DestinationFolder="$(SolutionDir)..\Plugins" />
