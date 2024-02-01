@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
 
-namespace Nomnom.LCProjectPatcher.Modules {
+namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class PackagesModule {
         private readonly static (string, string)[] Packages = new[] {
             ("com.unity.ai.navigation", "1.1.5"),
@@ -17,10 +17,11 @@ namespace Nomnom.LCProjectPatcher.Modules {
         };
 
         private readonly static string[] GitPackages = new[] {
-            "https://github.com/Unity-Technologies/AssetBundles-Browser.git"
+            "https://github.com/Unity-Technologies/AssetBundles-Browser.git",
+            "https://github.com/v0lt13/EditorAttributes.git"
         };
         
-        public static async UniTask<bool> Patch() {
+        public static async UniTask<bool> InstallAll() {
             ImportTMP();
             
             var packageStrings = Packages
@@ -29,13 +30,14 @@ namespace Nomnom.LCProjectPatcher.Modules {
             var allPackageStrings = packageStrings
                 .Concat(GitPackages)
                 .ToArray();
+            
             // check if packages are already installed
             EditorUtility.DisplayProgressBar("Installing packages", "Checking if packages are already installed", 0.25f);
             try {
                 Debug.Log("Checking if packages are already installed");
                 var installedPackages = Client.List(false, false);
                 while (!installedPackages.IsCompleted) {
-                    await UniTask.Delay(1, ignoreTimeScale: true);
+                    // await UniTask.Delay(1, ignoreTimeScale: true);
                 }
                 
                 var allAreInstalled = packageStrings.All(x => installedPackages.Result.Count(y => y.packageId == x) > 0);
@@ -48,7 +50,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 EditorUtility.DisplayProgressBar("Installing packages", $"Installing {allPackageStrings.Length} package{(allPackageStrings.Length == 1 ? string.Empty : "s")}", 0.5f);
                 var request = Client.AddAndRemove(allPackageStrings);
                 while (!request.IsCompleted) {
-                    await UniTask.Delay(1, ignoreTimeScale: true);
+                    // await UniTask.Delay(1, ignoreTimeScale: true);
                 }
             
                 Client.Resolve();
@@ -60,7 +62,6 @@ namespace Nomnom.LCProjectPatcher.Modules {
             }
             
             Debug.Log("Packages installed");
-            
             return true;
         }
 

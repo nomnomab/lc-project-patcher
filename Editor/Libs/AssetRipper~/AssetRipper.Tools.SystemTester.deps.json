@@ -1,0 +1,1129 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "AssetRipper.Tools.SystemTester/1.0.5": {
+        "dependencies": {
+          "AssetRipper.Export": "1.0.5",
+          "Microsoft.NET.ILLink.Tasks": "8.0.1"
+        },
+        "runtime": {
+          "AssetRipper.Tools.SystemTester.dll": {}
+        }
+      },
+      "AsmResolver/5.5.0": {
+        "runtime": {
+          "lib/net6.0/AsmResolver.dll": {
+            "assemblyVersion": "5.5.0.0",
+            "fileVersion": "5.5.0.0"
+          }
+        }
+      },
+      "AsmResolver.DotNet/5.5.0": {
+        "dependencies": {
+          "AsmResolver.PE": "5.5.0",
+          "System.Text.Json": "8.0.1"
+        },
+        "runtime": {
+          "lib/net6.0/AsmResolver.DotNet.dll": {
+            "assemblyVersion": "5.5.0.0",
+            "fileVersion": "5.5.0.0"
+          }
+        }
+      },
+      "AsmResolver.PE/5.5.0": {
+        "dependencies": {
+          "AsmResolver.PE.File": "5.5.0"
+        },
+        "runtime": {
+          "lib/net6.0/AsmResolver.PE.dll": {
+            "assemblyVersion": "5.5.0.0",
+            "fileVersion": "5.5.0.0"
+          }
+        }
+      },
+      "AsmResolver.PE.File/5.5.0": {
+        "dependencies": {
+          "AsmResolver": "5.5.0"
+        },
+        "runtime": {
+          "lib/net6.0/AsmResolver.PE.File.dll": {
+            "assemblyVersion": "5.5.0.0",
+            "fileVersion": "5.5.0.0"
+          }
+        }
+      },
+      "AssetRipper.CIL/1.0.1": {
+        "dependencies": {
+          "AsmResolver.DotNet": "5.5.0"
+        },
+        "runtime": {
+          "lib/net8.0/AssetRipper.CIL.dll": {
+            "assemblyVersion": "1.0.1.0",
+            "fileVersion": "1.0.1.0"
+          }
+        }
+      },
+      "AssetRipper.Gee.External.Capstone/2.3.2": {
+        "runtime": {
+          "lib/net8.0/Gee.External.Capstone.dll": {
+            "assemblyVersion": "2.3.2.0",
+            "fileVersion": "2.3.2.0"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/linux-arm/native/libcapstone.so": {
+            "rid": "linux-arm",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-arm64/native/libcapstone.so": {
+            "rid": "linux-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x64/native/libcapstone.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x86/native/libcapstone.so": {
+            "rid": "linux-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-arm64/native/libcapstone.dylib": {
+            "rid": "osx-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-x64/native/libcapstone.dylib": {
+            "rid": "osx-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-arm64/native/capstone.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/capstone.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/capstone.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "AssetRipper.HashAlgorithms/1.0.0": {
+        "runtime": {
+          "lib/net7.0/AssetRipper.HashAlgorithms.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "AssetRipper.Mining.PredefinedAssets/1.2.1": {
+        "dependencies": {
+          "AssetRipper.Primitives": "2.1.1",
+          "System.Text.Json": "8.0.1"
+        },
+        "runtime": {
+          "lib/net8.0/AssetRipper.Mining.PredefinedAssets.dll": {
+            "assemblyVersion": "1.2.1.0",
+            "fileVersion": "1.2.1.0"
+          }
+        }
+      },
+      "AssetRipper.Primitives/2.1.1": {
+        "dependencies": {
+          "System.Text.Json": "8.0.1"
+        },
+        "runtime": {
+          "lib/net7.0/AssetRipper.Primitives.dll": {
+            "assemblyVersion": "2.1.1.0",
+            "fileVersion": "2.1.1.0"
+          }
+        }
+      },
+      "AssetRipper.SharpGLTF.Core/1.0.2": {
+        "runtime": {
+          "lib/net8.0/SharpGLTF.Core.dll": {
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.2.0"
+          }
+        }
+      },
+      "AssetRipper.SharpGLTF.Runtime/1.0.2": {
+        "dependencies": {
+          "AssetRipper.SharpGLTF.Core": "1.0.2"
+        },
+        "runtime": {
+          "lib/net8.0/SharpGLTF.Runtime.dll": {
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.2.0"
+          }
+        }
+      },
+      "AssetRipper.SharpGLTF.Toolkit/1.0.2": {
+        "dependencies": {
+          "AssetRipper.SharpGLTF.Runtime": "1.0.2"
+        },
+        "runtime": {
+          "lib/net8.0/SharpGLTF.Toolkit.dll": {
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.2.0"
+          }
+        }
+      },
+      "AssetRipper.SourceGenerated/1.0.5": {
+        "runtime": {
+          "lib/net8.0/AssetRipper.SourceGenerated.dll": {
+            "assemblyVersion": "1.0.5.0",
+            "fileVersion": "1.0.5.0"
+          }
+        }
+      },
+      "AssetRipper.TextureDecoder/2.1.1": {
+        "runtime": {
+          "lib/net8.0/AssetRipper.TextureDecoder.dll": {
+            "assemblyVersion": "2.1.1.0",
+            "fileVersion": "2.1.1.0"
+          }
+        }
+      },
+      "AssetRipper.Tpk/1.0.0": {
+        "dependencies": {
+          "AssetRipper.Primitives": "2.1.1",
+          "K4os.Compression.LZ4": "1.3.6",
+          "SharpCompress": "0.36.0"
+        },
+        "runtime": {
+          "lib/net6.0/AssetRipper.Tpk.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "Disarm/2022.1.0-master.26": {
+        "runtime": {
+          "lib/net6.0/Disarm.dll": {
+            "assemblyVersion": "2022.1.0.0",
+            "fileVersion": "2022.1.0.0"
+          }
+        }
+      },
+      "DXDecompiler-ly/0.0.1": {
+        "runtime": {
+          "lib/netstandard2.1/DXDecompiler.dll": {
+            "assemblyVersion": "0.0.1.0",
+            "fileVersion": "0.0.1.0"
+          }
+        }
+      },
+      "Fmod5Sharp/3.0.1": {
+        "dependencies": {
+          "IndexRange": "1.0.2",
+          "NAudio.Core": "2.2.1",
+          "OggVorbisEncoder": "1.2.0",
+          "System.Text.Json": "8.0.1"
+        },
+        "runtime": {
+          "lib/net6.0/Fmod5Sharp.dll": {
+            "assemblyVersion": "3.0.1.0",
+            "fileVersion": "3.0.1.0"
+          }
+        }
+      },
+      "Iced/1.20.0": {
+        "runtime": {
+          "lib/netstandard2.1/Iced.dll": {
+            "assemblyVersion": "1.20.0.0",
+            "fileVersion": "1.20.0.0"
+          }
+        }
+      },
+      "ICSharpCode.Decompiler/8.2.0.7535": {
+        "dependencies": {
+          "System.Collections.Immutable": "6.0.0",
+          "System.Reflection.Metadata": "6.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/ICSharpCode.Decompiler.dll": {
+            "assemblyVersion": "8.2.0.7535",
+            "fileVersion": "8.2.0.7535"
+          }
+        }
+      },
+      "IndexRange/1.0.2": {
+        "runtime": {
+          "lib/netstandard2.1/IndexRange.dll": {
+            "assemblyVersion": "1.0.2.0",
+            "fileVersion": "1.0.2.0"
+          }
+        }
+      },
+      "K4os.Compression.LZ4/1.3.6": {
+        "runtime": {
+          "lib/net6.0/K4os.Compression.LZ4.dll": {
+            "assemblyVersion": "1.3.6.0",
+            "fileVersion": "1.3.6.0"
+          }
+        }
+      },
+      "Kyaru.Texture2DDecoder/0.17.0": {
+        "runtime": {
+          "lib/net5.0/Texture2DDecoderWrapper.dll": {
+            "assemblyVersion": "0.17.0.0",
+            "fileVersion": "0.17.0.0"
+          }
+        }
+      },
+      "Kyaru.Texture2DDecoder.Linux/0.1.0": {
+        "runtimeTargets": {
+          "runtimes/linux-x64/native/libTexture2DDecoderNative.so": {
+            "rid": "linux-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/linux-x86/native/libTexture2DDecoderNative.so": {
+            "rid": "linux-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Kyaru.Texture2DDecoder.macOS/0.1.0": {
+        "runtimeTargets": {
+          "runtimes/osx-arm64/native/libTexture2DDecoderNative.dylib": {
+            "rid": "osx-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/osx-x64/native/libTexture2DDecoderNative.dylib": {
+            "rid": "osx-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Kyaru.Texture2DDecoder.Windows/0.1.0": {
+        "runtimeTargets": {
+          "runtimes/win-arm64/native/Texture2DDecoderNative.dll": {
+            "rid": "win-arm64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x64/native/Texture2DDecoderNative.dll": {
+            "rid": "win-x64",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          },
+          "runtimes/win-x86/native/Texture2DDecoderNative.dll": {
+            "rid": "win-x86",
+            "assetType": "native",
+            "fileVersion": "0.0.0.0"
+          }
+        }
+      },
+      "Microsoft.NET.ILLink.Tasks/8.0.1": {},
+      "Microsoft.Win32.SystemEvents/8.0.0": {
+        "runtime": {
+          "lib/net8.0/Microsoft.Win32.SystemEvents.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.23.53103"
+          }
+        },
+        "runtimeTargets": {
+          "runtimes/win/lib/net8.0/Microsoft.Win32.SystemEvents.dll": {
+            "rid": "win",
+            "assetType": "runtime",
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.23.53103"
+          }
+        }
+      },
+      "NAudio.Core/2.2.1": {
+        "runtime": {
+          "lib/netstandard2.0/NAudio.Core.dll": {
+            "assemblyVersion": "2.2.1.0",
+            "fileVersion": "2.2.1.0"
+          }
+        }
+      },
+      "NAudio.Vorbis/1.5.0": {
+        "dependencies": {
+          "NAudio.Core": "2.2.1",
+          "NVorbis": "0.10.4"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NAudio.Vorbis.dll": {
+            "assemblyVersion": "1.5.0.0",
+            "fileVersion": "1.5.0.0"
+          }
+        }
+      },
+      "NVorbis/0.10.4": {
+        "dependencies": {
+          "System.Memory": "4.5.4",
+          "System.ValueTuple": "4.5.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/NVorbis.dll": {
+            "assemblyVersion": "0.10.4.0",
+            "fileVersion": "0.10.4.0"
+          }
+        }
+      },
+      "OggVorbisEncoder/1.2.0": {
+        "dependencies": {
+          "System.Memory": "4.5.4"
+        },
+        "runtime": {
+          "lib/net5.0/OggVorbisEncoder.dll": {
+            "assemblyVersion": "1.2.0.0",
+            "fileVersion": "1.2.0.0"
+          }
+        }
+      },
+      "Samboy063.Cpp2IL.Core/2022.1.0-pre-release.14": {
+        "dependencies": {
+          "AsmResolver.DotNet": "5.5.0",
+          "AssetRipper.CIL": "1.0.1",
+          "AssetRipper.Gee.External.Capstone": "2.3.2",
+          "Disarm": "2022.1.0-master.26",
+          "Iced": "1.20.0",
+          "Samboy063.LibCpp2IL": "2022.1.0-pre-release.13",
+          "StableNameDotNet": "0.1.0-pre-release.13"
+        },
+        "runtime": {
+          "lib/net8.0/Cpp2IL.Core.dll": {
+            "assemblyVersion": "2022.1.0.0",
+            "fileVersion": "2022.1.0.0"
+          }
+        }
+      },
+      "Samboy063.LibCpp2IL/2022.1.0-pre-release.13": {
+        "dependencies": {
+          "AssetRipper.Primitives": "2.1.1",
+          "Samboy063.WasmDisassembler": "2022.1.0-pre-release.13"
+        },
+        "runtime": {
+          "lib/net8.0/LibCpp2IL.dll": {
+            "assemblyVersion": "2022.1.0.0",
+            "fileVersion": "2022.1.0.0"
+          }
+        }
+      },
+      "Samboy063.WasmDisassembler/2022.1.0-pre-release.13": {
+        "runtime": {
+          "lib/net8.0/WasmDisassembler.dll": {
+            "assemblyVersion": "2022.1.0.0",
+            "fileVersion": "2022.1.0.0"
+          }
+        }
+      },
+      "SharpCompress/0.36.0": {
+        "dependencies": {
+          "ZstdSharp.Port": "0.7.4"
+        },
+        "runtime": {
+          "lib/net8.0/SharpCompress.dll": {
+            "assemblyVersion": "0.36.0.0",
+            "fileVersion": "0.36.0.0"
+          }
+        }
+      },
+      "SharpZipLib/1.4.2": {
+        "runtime": {
+          "lib/net6.0/ICSharpCode.SharpZipLib.dll": {
+            "assemblyVersion": "1.4.2.13",
+            "fileVersion": "1.4.2.13"
+          }
+        }
+      },
+      "StableNameDotNet/0.1.0-pre-release.13": {
+        "runtime": {
+          "lib/netstandard2.0/StableNameDotNet.dll": {
+            "assemblyVersion": "0.1.0.0",
+            "fileVersion": "0.1.0.0"
+          }
+        }
+      },
+      "StbImageWriteSharp/1.16.7": {
+        "runtime": {
+          "lib/netstandard2.0/StbImageWriteSharp.dll": {
+            "assemblyVersion": "1.16.7.0",
+            "fileVersion": "1.16.7.0"
+          }
+        }
+      },
+      "System.Collections.Immutable/6.0.0": {
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
+      },
+      "System.Drawing.Common/8.0.1": {
+        "dependencies": {
+          "Microsoft.Win32.SystemEvents": "8.0.0"
+        },
+        "runtime": {
+          "lib/net8.0/System.Drawing.Common.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.123.58006"
+          }
+        }
+      },
+      "System.IO.Hashing/8.0.0": {
+        "runtime": {
+          "lib/net8.0/System.IO.Hashing.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.23.53103"
+          }
+        }
+      },
+      "System.Memory/4.5.4": {},
+      "System.Reflection.Metadata/6.0.0": {
+        "dependencies": {
+          "System.Collections.Immutable": "6.0.0"
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe/6.0.0": {},
+      "System.Text.Encodings.Web/8.0.0": {},
+      "System.Text.Json/8.0.1": {
+        "dependencies": {
+          "System.Text.Encodings.Web": "8.0.0"
+        }
+      },
+      "System.ValueTuple/4.5.0": {},
+      "ZstdSharp.Port/0.7.4": {
+        "runtime": {
+          "lib/net8.0/ZstdSharp.dll": {
+            "assemblyVersion": "0.7.4.0",
+            "fileVersion": "0.7.4.0"
+          }
+        }
+      },
+      "AssetRipper.Assets/1.0.5": {
+        "dependencies": {
+          "AssetRipper.IO.Files": "1.0.5",
+          "AssetRipper.Yaml": "1.0.5",
+          "SharpZipLib": "1.4.2"
+        },
+        "runtime": {
+          "AssetRipper.Assets.dll": {}
+        }
+      },
+      "AssetRipper.Checksum/1.0.5": {
+        "dependencies": {
+          "System.IO.Hashing": "8.0.0"
+        },
+        "runtime": {
+          "AssetRipper.Checksum.dll": {}
+        }
+      },
+      "AssetRipper.Export/1.0.5": {
+        "dependencies": {
+          "AssetRipper.Export.PrimaryContent": "1.0.5",
+          "AssetRipper.Export.UnityProjects": "1.0.5"
+        },
+        "runtime": {
+          "AssetRipper.Export.dll": {}
+        }
+      },
+      "AssetRipper.Export.Modules.Audio/1.0.5": {
+        "runtime": {
+          "AssetRipper.Export.Modules.Audio.dll": {}
+        }
+      },
+      "AssetRipper.Export.Modules.Shaders/1.0.5": {
+        "dependencies": {
+          "AssetRipper.Import": "1.0.5",
+          "DXDecompiler-ly": "0.0.1",
+          "Smolv": "1.0.5",
+          "SpirV": "1.0.5"
+        },
+        "runtime": {
+          "AssetRipper.Export.Modules.Shaders.dll": {}
+        }
+      },
+      "AssetRipper.Export.Modules.Textures/1.0.5": {
+        "runtime": {
+          "AssetRipper.Export.Modules.Textures.dll": {}
+        }
+      },
+      "AssetRipper.Export.PrimaryContent/1.0.5": {
+        "dependencies": {
+          "AssetRipper.SourceGenerated.Extensions": "1.0.5"
+        },
+        "runtime": {
+          "AssetRipper.Export.PrimaryContent.dll": {}
+        }
+      },
+      "AssetRipper.Export.UnityProjects/1.0.5": {
+        "dependencies": {
+          "AssetRipper.Export.Modules.Audio": "1.0.5",
+          "AssetRipper.Export.Modules.Shaders": "1.0.5",
+          "AssetRipper.Export.Modules.Textures": "1.0.5",
+          "AssetRipper.HashAlgorithms": "1.0.0",
+          "AssetRipper.Import": "1.0.5",
+          "AssetRipper.Mining.PredefinedAssets": "1.2.1",
+          "AssetRipper.Processing": "1.0.5",
+          "AssetRipper.SharpGLTF.Toolkit": "1.0.2",
+          "AssetRipper.TextureDecoder": "2.1.1",
+          "AssetRipper.Tpk": "1.0.0",
+          "Fmod5Sharp": "3.0.1",
+          "ICSharpCode.Decompiler": "8.2.0.7535",
+          "Kyaru.Texture2DDecoder": "0.17.0",
+          "Kyaru.Texture2DDecoder.Linux": "0.1.0",
+          "Kyaru.Texture2DDecoder.Windows": "0.1.0",
+          "Kyaru.Texture2DDecoder.macOS": "0.1.0",
+          "NAudio.Core": "2.2.1",
+          "NAudio.Vorbis": "1.5.0",
+          "StbImageWriteSharp": "1.16.7",
+          "System.Drawing.Common": "8.0.1"
+        },
+        "runtime": {
+          "AssetRipper.Export.UnityProjects.dll": {}
+        }
+      },
+      "AssetRipper.Import/1.0.5": {
+        "dependencies": {
+          "AsmResolver.DotNet": "5.5.0",
+          "AssetRipper.Assets": "1.0.5",
+          "AssetRipper.Gee.External.Capstone": "2.3.2",
+          "AssetRipper.IO.Endian": "1.0.5",
+          "AssetRipper.IO.Files": "1.0.5",
+          "AssetRipper.Numerics": "1.0.5",
+          "AssetRipper.Primitives": "2.1.1",
+          "AssetRipper.SerializationLogic": "1.0.5",
+          "AssetRipper.SourceGenerated.Extensions": "1.0.5",
+          "AssetRipper.Yaml": "1.0.5",
+          "Samboy063.Cpp2IL.Core": "2022.1.0-pre-release.14"
+        },
+        "runtime": {
+          "AssetRipper.Import.dll": {}
+        }
+      },
+      "AssetRipper.IO.Endian/1.0.5": {
+        "dependencies": {
+          "AssetRipper.Primitives": "2.1.1"
+        },
+        "runtime": {
+          "AssetRipper.IO.Endian.dll": {}
+        }
+      },
+      "AssetRipper.IO.Files/1.0.5": {
+        "dependencies": {
+          "AssetRipper.IO.Endian": "1.0.5",
+          "AssetRipper.Primitives": "2.1.1",
+          "K4os.Compression.LZ4": "1.3.6",
+          "SharpCompress": "0.36.0",
+          "ZstdSharp.Port": "0.7.4"
+        },
+        "runtime": {
+          "AssetRipper.IO.Files.dll": {}
+        }
+      },
+      "AssetRipper.Numerics/1.0.5": {
+        "runtime": {
+          "AssetRipper.Numerics.dll": {}
+        }
+      },
+      "AssetRipper.Processing/1.0.5": {
+        "dependencies": {
+          "AssetRipper.CIL": "1.0.1",
+          "AssetRipper.Import": "1.0.5"
+        },
+        "runtime": {
+          "AssetRipper.Processing.dll": {}
+        }
+      },
+      "AssetRipper.SerializationLogic/1.0.5": {
+        "dependencies": {
+          "AsmResolver.DotNet": "5.5.0"
+        },
+        "runtime": {
+          "AssetRipper.SerializationLogic.dll": {}
+        }
+      },
+      "AssetRipper.SourceGenerated.Extensions/1.0.5": {
+        "dependencies": {
+          "AssetRipper.Assets": "1.0.5",
+          "AssetRipper.Checksum": "1.0.5",
+          "AssetRipper.Numerics": "1.0.5",
+          "AssetRipper.SourceGenerated": "1.0.5"
+        },
+        "runtime": {
+          "AssetRipper.SourceGenerated.Extensions.dll": {}
+        }
+      },
+      "AssetRipper.Yaml/1.0.5": {
+        "dependencies": {
+          "AssetRipper.Primitives": "2.1.1"
+        },
+        "runtime": {
+          "AssetRipper.Yaml.dll": {}
+        }
+      },
+      "Smolv/1.0.5": {
+        "runtime": {
+          "Smolv.dll": {}
+        }
+      },
+      "SpirV/1.0.5": {
+        "runtime": {
+          "SpirV.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AssetRipper.Tools.SystemTester/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AsmResolver/5.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-IuOC+b/D/da4fohYVNwo/NL+8w+q89O9B32bLotegJ+hmFlBEpQEKgtyhxc9ZfEd+x0KzwzD52RISuyLgf/BAA==",
+      "path": "asmresolver/5.5.0",
+      "hashPath": "asmresolver.5.5.0.nupkg.sha512"
+    },
+    "AsmResolver.DotNet/5.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-T19DazP0h4qKXwPspTEB0ZzwlftPuvVAd68HhsS8eNYd9lRd/rtppcBmM2QLQdZeGGNJc+QEzLiAW+wrA3nKAw==",
+      "path": "asmresolver.dotnet/5.5.0",
+      "hashPath": "asmresolver.dotnet.5.5.0.nupkg.sha512"
+    },
+    "AsmResolver.PE/5.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bSPe0A+z4iEAabpD9h7ACQ5dkcTirx4fx05P194u/+OIUqlexHf7Zq/PEPdOkesbqHoZmgVmJ1H0GWqqouvZfA==",
+      "path": "asmresolver.pe/5.5.0",
+      "hashPath": "asmresolver.pe.5.5.0.nupkg.sha512"
+    },
+    "AsmResolver.PE.File/5.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XHWHnPQf0e0VEJPTaWMoiajuikF0n0fDXS2XWzEXM+/xcY+LABsp1p7ETlg+bFsDVITQRtNTa/xV8eSDlSZjNQ==",
+      "path": "asmresolver.pe.file/5.5.0",
+      "hashPath": "asmresolver.pe.file.5.5.0.nupkg.sha512"
+    },
+    "AssetRipper.CIL/1.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bGqw0U3aZCPBfvj8voGBtGgtjKRkqH7i026HXs0/VY7vjwK4J1UcJmkv076vuKPAdk5zaprRt69kR1DFlhuRmQ==",
+      "path": "assetripper.cil/1.0.1",
+      "hashPath": "assetripper.cil.1.0.1.nupkg.sha512"
+    },
+    "AssetRipper.Gee.External.Capstone/2.3.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wOr5PQPL/2ZfD7+ebt6cpRbUhSzSY5nlHGHjjzuQRiU5zkQlqQNwWDLX0M3smrm5IkaDvONkmDjFMKTlZJmyuQ==",
+      "path": "assetripper.gee.external.capstone/2.3.2",
+      "hashPath": "assetripper.gee.external.capstone.2.3.2.nupkg.sha512"
+    },
+    "AssetRipper.HashAlgorithms/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-O7EJrP4gJcqnR7HU9H0YEO7Y6RkJ/Y1Ah2IXGG5dnqLXRYr2wXuPShBVnxPL0ArjrSTZiBZoq8MI1An7zQu1eg==",
+      "path": "assetripper.hashalgorithms/1.0.0",
+      "hashPath": "assetripper.hashalgorithms.1.0.0.nupkg.sha512"
+    },
+    "AssetRipper.Mining.PredefinedAssets/1.2.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qh49GPM25rw4OmerzkQiyJ36PRROY1ttefHH/8AiYG1emswg9twDOYtrYkyzwgbxWzDIOt90zg5qfUSxoXGbqQ==",
+      "path": "assetripper.mining.predefinedassets/1.2.1",
+      "hashPath": "assetripper.mining.predefinedassets.1.2.1.nupkg.sha512"
+    },
+    "AssetRipper.Primitives/2.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wCBMZDwMQCUN9Sb+rexzj++SnZKOvCCFjXuQ9fF7Fa1eCPWUFli2Qqrx7jCIfiLxlsx7WE6GeQErUhCZF8qWfQ==",
+      "path": "assetripper.primitives/2.1.1",
+      "hashPath": "assetripper.primitives.2.1.1.nupkg.sha512"
+    },
+    "AssetRipper.SharpGLTF.Core/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-24gbdRLx8ePyPz5XSkNBNkGN3AItp7sFWOPRFrW5oXFa9EVOQqcDaSTniVlIumqdYlNnUGq31alIbmn74Sl/fw==",
+      "path": "assetripper.sharpgltf.core/1.0.2",
+      "hashPath": "assetripper.sharpgltf.core.1.0.2.nupkg.sha512"
+    },
+    "AssetRipper.SharpGLTF.Runtime/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-o6q1dgMB7C7mL+rlzPHuHlP6CZbpPI5mh2vu7nG6f4Zc/o/4NnYgo7pijcgS4tM2R7DydfiKAoZUDk46Ruc0yA==",
+      "path": "assetripper.sharpgltf.runtime/1.0.2",
+      "hashPath": "assetripper.sharpgltf.runtime.1.0.2.nupkg.sha512"
+    },
+    "AssetRipper.SharpGLTF.Toolkit/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-lyyJ/0nyEK3Xx3gZenP974OA4o3ulg7HA9Y6ZwGW3hQeA8UKjJRuMfv8hKk2TVtz8AqMYyNEkpXDczaSC4HRpw==",
+      "path": "assetripper.sharpgltf.toolkit/1.0.2",
+      "hashPath": "assetripper.sharpgltf.toolkit.1.0.2.nupkg.sha512"
+    },
+    "AssetRipper.SourceGenerated/1.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9boqV4QnZXr8NWGTn91f5oX6QeVubCCuJ1ovEojoR0NBQUqaUk1iaeiMOGwCuwy48xQmQ8u8IOGHN18btzs/eQ==",
+      "path": "assetripper.sourcegenerated/1.0.5",
+      "hashPath": "assetripper.sourcegenerated.1.0.5.nupkg.sha512"
+    },
+    "AssetRipper.TextureDecoder/2.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dB49qA4n9Wdeyninhoww5NhSldxsOCu2HQnr1abakRexQ7OtrxGZuD+ta0MtBgSYQkyvQm70gXuR+6kwo7E7ug==",
+      "path": "assetripper.texturedecoder/2.1.1",
+      "hashPath": "assetripper.texturedecoder.2.1.1.nupkg.sha512"
+    },
+    "AssetRipper.Tpk/1.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-XAn18kpT6lbCZymxyRHD8O94ugV57V1+ccXbDA/7dluLCrRwiQcg9x8P+Wi/UvpKpBsqBTDDgbiTeHbRjzOb4A==",
+      "path": "assetripper.tpk/1.0.0",
+      "hashPath": "assetripper.tpk.1.0.0.nupkg.sha512"
+    },
+    "Disarm/2022.1.0-master.26": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YnZEbRGr0nG+N3G8WbRQ4Lkg8dTD3oso9iJlCVBmyhEyhLyqs+drBs1kWQbQqFPnb9mi/RJ++R9bPb+L3HF03Q==",
+      "path": "disarm/2022.1.0-master.26",
+      "hashPath": "disarm.2022.1.0-master.26.nupkg.sha512"
+    },
+    "DXDecompiler-ly/0.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-b7ZFtxAULxyIaBE9agyuajTV73Ka+R8bpjPmn7j2adfxO9FV/FNZKwlsGFfpvcbVDuirWxXold/wGmtP4FjzKA==",
+      "path": "dxdecompiler-ly/0.0.1",
+      "hashPath": "dxdecompiler-ly.0.0.1.nupkg.sha512"
+    },
+    "Fmod5Sharp/3.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3jRJUmGuwGI1pRx8i9G0bkghDMHb0tzMgKklYjgCQqku40IkahlDwa4PCfhYBJPYyoqJXnvxvsk363amWbLNXA==",
+      "path": "fmod5sharp/3.0.1",
+      "hashPath": "fmod5sharp.3.0.1.nupkg.sha512"
+    },
+    "Iced/1.20.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-cjk+vNDIatLI5vQ22tOCAzsgowZ32Ob1Fy4ljQSfqfzMe5ATKXU+dMPRE6+cIUUFetoyyWkUJArJoxe3QwDXAA==",
+      "path": "iced/1.20.0",
+      "hashPath": "iced.1.20.0.nupkg.sha512"
+    },
+    "ICSharpCode.Decompiler/8.2.0.7535": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-y4vSHtXCoTNISvvlxcskz+Hiw1vqY0kQsu0loO6nOsWwwZ60IxaTygEFapN2SuSB3SiswGPv535y/bV70Fm8hw==",
+      "path": "icsharpcode.decompiler/8.2.0.7535",
+      "hashPath": "icsharpcode.decompiler.8.2.0.7535.nupkg.sha512"
+    },
+    "IndexRange/1.0.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BxTYJba0X+rMh7kyA2fYpOrFR3+bIVnBT/VzRinlAe7UZmHGcZk2SoWEIXzqnSFdkfCoi4K0QoHoE/nc71lmDg==",
+      "path": "indexrange/1.0.2",
+      "hashPath": "indexrange.1.0.2.nupkg.sha512"
+    },
+    "K4os.Compression.LZ4/1.3.6": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-RxGhoJBjZCgGeZgDqOP4Krs1cR9PHInbz6d2N19Dic0Y6ZACzVKbR3uSpqfEZf4RiUbHk9aiog2eS22nQPTc2A==",
+      "path": "k4os.compression.lz4/1.3.6",
+      "hashPath": "k4os.compression.lz4.1.3.6.nupkg.sha512"
+    },
+    "Kyaru.Texture2DDecoder/0.17.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-HbIwq7qqRJbfP3WT8EaJ9kIz8i1LW0Hr70UqPdPZ+Xb48gCwx/JYv3oBj3hm2KVU0+etnnZFOv19QfznsgRUUw==",
+      "path": "kyaru.texture2ddecoder/0.17.0",
+      "hashPath": "kyaru.texture2ddecoder.0.17.0.nupkg.sha512"
+    },
+    "Kyaru.Texture2DDecoder.Linux/0.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WduhkOdBQXWi30bXjh09lwt9NSvuFI9OrHED/agQGHmv+EP+gc6GgEFcPuSISCpJM5dDZ0WJRhJbfmUeQAPGXA==",
+      "path": "kyaru.texture2ddecoder.linux/0.1.0",
+      "hashPath": "kyaru.texture2ddecoder.linux.0.1.0.nupkg.sha512"
+    },
+    "Kyaru.Texture2DDecoder.macOS/0.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-3e918me27H+1yxvVA5A2LPxEZ4NEVsDp2hOAuBhk/2cAbpm2/iKGV4HqRenaxM7hl2js6Ts4b7JdrhLKzW59Lg==",
+      "path": "kyaru.texture2ddecoder.macos/0.1.0",
+      "hashPath": "kyaru.texture2ddecoder.macos.0.1.0.nupkg.sha512"
+    },
+    "Kyaru.Texture2DDecoder.Windows/0.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-zAX95ybCio7xrrXaa3LkFMWoDxrwiasccXSZ6A3KykOWlgMDaZzyJdPp52uyubtN9CIxWdnD+u+aWvKvHHmCsw==",
+      "path": "kyaru.texture2ddecoder.windows/0.1.0",
+      "hashPath": "kyaru.texture2ddecoder.windows.0.1.0.nupkg.sha512"
+    },
+    "Microsoft.NET.ILLink.Tasks/8.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ADdJXuKNjwZDfBmybMnpvwd5CK3gp92WkWqqeQhW4W+q4MO3Qaa9QyW2DcFLAvCDMcCWxT5hRXqGdv13oon7nA==",
+      "path": "microsoft.net.illink.tasks/8.0.1",
+      "hashPath": "microsoft.net.illink.tasks.8.0.1.nupkg.sha512"
+    },
+    "Microsoft.Win32.SystemEvents/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-9opKRyOKMCi2xJ7Bj7kxtZ1r9vbzosMvRrdEhVhDz8j8MoBGgB+WmC94yH839NPH+BclAjtQ/pyagvi/8gDLkw==",
+      "path": "microsoft.win32.systemevents/8.0.0",
+      "hashPath": "microsoft.win32.systemevents.8.0.0.nupkg.sha512"
+    },
+    "NAudio.Core/2.2.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GgkdP6K/7FqXFo7uHvoqGZTJvW4z8g2IffhOO4JHaLzKCdDOUEzVKtveoZkCuUX8eV2HAINqi7VFqlFndrnz/g==",
+      "path": "naudio.core/2.2.1",
+      "hashPath": "naudio.core.2.2.1.nupkg.sha512"
+    },
+    "NAudio.Vorbis/1.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-llJMmUnFf0FGf4G1FKNftxt+Vc1CvBCSul0Ugbv/RahGbpKF2p+ujSEJHybPjl9b4FjbK8O2vRFIcRGcVfAooA==",
+      "path": "naudio.vorbis/1.5.0",
+      "hashPath": "naudio.vorbis.1.5.0.nupkg.sha512"
+    },
+    "NVorbis/0.10.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-WYnil3DhQHzjCY0dM9I2B3r1vWip90AOuQd25KE4NrjPQBg0tBJFluRLm5YPnO5ZLDmwrfosY8jCQGQRmWI/Pg==",
+      "path": "nvorbis/0.10.4",
+      "hashPath": "nvorbis.0.10.4.nupkg.sha512"
+    },
+    "OggVorbisEncoder/1.2.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-qCCdA/8uXQ6zzMMrhJRHKH1xKw89fg1avwsaYIniSoNzTLQSCO8MPgEDQ1Gcg8PxsSXcjYnxqePA6ke9qSBArA==",
+      "path": "oggvorbisencoder/1.2.0",
+      "hashPath": "oggvorbisencoder.1.2.0.nupkg.sha512"
+    },
+    "Samboy063.Cpp2IL.Core/2022.1.0-pre-release.14": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-BMHLKePBeMejYRgC+gOFzssUvwKIwVjS+U2UxVAZXJfhG0Mbrsce1CoX0+pmuIR9KGijSKrXMVJ0ooapRC1iWg==",
+      "path": "samboy063.cpp2il.core/2022.1.0-pre-release.14",
+      "hashPath": "samboy063.cpp2il.core.2022.1.0-pre-release.14.nupkg.sha512"
+    },
+    "Samboy063.LibCpp2IL/2022.1.0-pre-release.13": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-fwkVLAXqD+7XfIXJEDh2OkJqe6YMkNmOP05oudEnuq3ITEuVUSb0K8ffa22vx+n/NDIyNP+s1lLRFcmHVP57oQ==",
+      "path": "samboy063.libcpp2il/2022.1.0-pre-release.13",
+      "hashPath": "samboy063.libcpp2il.2022.1.0-pre-release.13.nupkg.sha512"
+    },
+    "Samboy063.WasmDisassembler/2022.1.0-pre-release.13": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-dI4PDG+AFctYzaD0pqojK7SGiiPi6xgIRXp07hHnXumW+DYbS2nVQ8nTFSHiP6xE7UhW6I+PpbC5jh/2nksW+Q==",
+      "path": "samboy063.wasmdisassembler/2022.1.0-pre-release.13",
+      "hashPath": "samboy063.wasmdisassembler.2022.1.0-pre-release.13.nupkg.sha512"
+    },
+    "SharpCompress/0.36.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-48am//T6Ou+GmyPmBaxaFN1ym0VNidRcBeANr9+OYTzpKRz8QMGzAkHVkCV30lFQ/gnWqGr50AuebahpG1C6xA==",
+      "path": "sharpcompress/0.36.0",
+      "hashPath": "sharpcompress.0.36.0.nupkg.sha512"
+    },
+    "SharpZipLib/1.4.2": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yjj+3zgz8zgXpiiC3ZdF/iyTBbz2fFvMxZFEBPUcwZjIvXOf37Ylm+K58hqMfIBt5JgU/Z2uoUS67JmTLe973A==",
+      "path": "sharpziplib/1.4.2",
+      "hashPath": "sharpziplib.1.4.2.nupkg.sha512"
+    },
+    "StableNameDotNet/0.1.0-pre-release.13": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-8ovX1WcVUO6R1pHzaW1v1SC9coSWSYh5JjjZ/vvr7jsb7+hWzMVpsV+uyWLMie9olE2FW1k4RLaXf5GmvlVwMg==",
+      "path": "stablenamedotnet/0.1.0-pre-release.13",
+      "hashPath": "stablenamedotnet.0.1.0-pre-release.13.nupkg.sha512"
+    },
+    "StbImageWriteSharp/1.16.7": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-NF9kOxi0iS9VunklnRKgOpAWC2knCGKRjdy7RT6XAqYNyb7LQfyPHPdl4l1fJw7TFYKrGQzQOmK1XpBONC2MoA==",
+      "path": "stbimagewritesharp/1.16.7",
+      "hashPath": "stbimagewritesharp.1.16.7.nupkg.sha512"
+    },
+    "System.Collections.Immutable/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-l4zZJ1WU2hqpQQHXz1rvC3etVZN+2DLmQMO79FhOTZHMn8tDRr+WU287sbomD0BETlmKDn0ygUgVy9k5xkkJdA==",
+      "path": "system.collections.immutable/6.0.0",
+      "hashPath": "system.collections.immutable.6.0.0.nupkg.sha512"
+    },
+    "System.Drawing.Common/8.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-x0rAZECxIGx/YVjN28YRdpqka0+H7YMN9741FUDzipXPDzesd60gef/LI0ZCOcYSDsacTLTHvMAvxHG+TjbNNQ==",
+      "path": "system.drawing.common/8.0.1",
+      "hashPath": "system.drawing.common.8.0.1.nupkg.sha512"
+    },
+    "System.IO.Hashing/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ne1843evDugl0md7Fjzy6QjJrzsjh46ZKbhf8GwBXb5f/gw97J4bxMs0NQKifDuThh/f0bZ0e62NPl1jzTuRqA==",
+      "path": "system.io.hashing/8.0.0",
+      "hashPath": "system.io.hashing.8.0.0.nupkg.sha512"
+    },
+    "System.Memory/4.5.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw==",
+      "path": "system.memory/4.5.4",
+      "hashPath": "system.memory.4.5.4.nupkg.sha512"
+    },
+    "System.Reflection.Metadata/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-sffDOcex1C3HO5kDolOYcWXTwRpZY/LvJujM6SMjn63fWMJWchYAAmkoAJXlbpZ5yf4d+KMgxd+LeETa4gD9sQ==",
+      "path": "system.reflection.metadata/6.0.0",
+      "hashPath": "system.reflection.metadata.6.0.0.nupkg.sha512"
+    },
+    "System.Runtime.CompilerServices.Unsafe/6.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==",
+      "path": "system.runtime.compilerservices.unsafe/6.0.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
+    },
+    "System.Text.Encodings.Web/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yev/k9GHAEGx2Rg3/tU6MQh4HGBXJs70y7j1LaM1i/ER9po+6nnQ6RRqTJn1E7Xu0fbIFK80Nh5EoODxrbxwBQ==",
+      "path": "system.text.encodings.web/8.0.0",
+      "hashPath": "system.text.encodings.web.8.0.0.nupkg.sha512"
+    },
+    "System.Text.Json/8.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-7AWk2za1hSEJBppe/Lg+uDcam2TrDqwIKa9XcPssSwyjC2xa39EKEGul3CO5RWNF+hMuZG4zlBDrvhBdDTg4lg==",
+      "path": "system.text.json/8.0.1",
+      "hashPath": "system.text.json.8.0.1.nupkg.sha512"
+    },
+    "System.ValueTuple/4.5.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ==",
+      "path": "system.valuetuple/4.5.0",
+      "hashPath": "system.valuetuple.4.5.0.nupkg.sha512"
+    },
+    "ZstdSharp.Port/0.7.4": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-ziptnotpUJr51afwXJQ5Wc03dvDiZAdmxS08s1g7SHn/VzbyZUXdH6yORk/zaNjzUOEE6pVZ0Nqztab0rYROgQ==",
+      "path": "zstdsharp.port/0.7.4",
+      "hashPath": "zstdsharp.port.0.7.4.nupkg.sha512"
+    },
+    "AssetRipper.Assets/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Checksum/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Export/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Export.Modules.Audio/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Export.Modules.Shaders/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Export.Modules.Textures/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Export.PrimaryContent/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Export.UnityProjects/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Import/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.IO.Endian/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.IO.Files/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Numerics/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Processing/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.SerializationLogic/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.SourceGenerated.Extensions/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AssetRipper.Yaml/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "Smolv/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SpirV/1.0.5": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

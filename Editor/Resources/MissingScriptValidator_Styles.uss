@@ -19,20 +19,25 @@
     background-color: rgb(66, 66, 66);
 }
 
+Button {
+    height: 18px;
+}
+
 #Title {
     background-color: rgb(66, 66, 66);
-    font-size: 18px;
+    /*font-size: 18px;*/
     margin-bottom: 8px;
-    -unity-text-align: middle-center;
+    -unity-text-align: middle-left;
     margin-top: 16px;
+    -unity-font-style: bold;
 }
 
 .patch-step {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-top: 2px;
-    margin-bottom: 2px;
+    margin-top: 3px;
+    margin-bottom: 3px;
 }
 
 #PathHorizontal {

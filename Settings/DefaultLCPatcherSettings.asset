@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e87a7909ea484619b03a910a7e6abb2d, type: 3}
+  m_Name: DefaultLCPatcherSettings
+  m_EditorClassIdentifier: 
+  _baseUnityPath: Unity
+  _baseLethalCompanyPath: LethalCompany
+  _assetRipperSettings:
+    _baseOutputPath: Game
+    _folderMappings:
+    - folderPath: AnimationClip
+      outputPath: Animation\AnimationClips
+    - folderPath: AnimationController
+      outputPath: Animation\AnimationControllers
+    - folderPath: AudioClip
+      outputPath: Audio\AudioClips
+    - folderPath: AudioMixerController
+      outputPath: Audio\AudioMixerControllers
+    - folderPath: Cubemap
+      outputPath: Scenes\Cubemaps
+    - folderPath: Font
+      outputPath: Fonts\TextMeshPro
+    - folderPath: LightingSettings
+      outputPath: LightingSettings
+    - folderPath: Material
+      outputPath: Materials
+    - folderPath: Mesh
+      outputPath: Meshes
+    - folderPath: NavMeshData
+      outputPath: Scenes\NavMeshData
+    - folderPath: PhysicsMaterial
+      outputPath: PhysicsMaterials
+    - folderPath: PrefabInstance
+      outputPath: Prefabs
+    - folderPath: RenderTexture
+      outputPath: Textures\RenderTextures
+    - folderPath: Resources
+      outputPath: Resources
+    - folderPath: Scenes
+      outputPath: Scenes
+    - folderPath: Scripts
+      outputPath: Scripts
+    - folderPath: Settings
+      outputPath: Settings
+    - folderPath: Shader
+      outputPath: Shaders
+    - folderPath: Sprite
+      outputPath: Textures\Sprites
+    - folderPath: TerrainData
+      outputPath: Scenes\TerrainData
+    - folderPath: TerrainLayer
+      outputPath: Textures\TerrainLayers
+    - folderPath: Texture2D
+      outputPath: Textures\Texture2Ds
+    - folderPath: Texture3D
+      outputPath: Textures\Texture3Ds
+    - folderPath: VideoClip
+      outputPath: Videos
+  _generalSettings:
+    _nativePath: Native
+    _assetStorePath: AssetStore
+    _modsPath: Mods
+    _toolsPath: Tools

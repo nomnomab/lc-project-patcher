@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using UnityEditor;
 
-namespace Nomnom.LCProjectPatcher.Modules {
+namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class SpritePatcherModule {
         public static UniTask Patch() {
             var sprites = AssetDatabase.FindAssets("t:Sprite");

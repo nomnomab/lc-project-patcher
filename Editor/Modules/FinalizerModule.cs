@@ -4,7 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 
-namespace Nomnom.LCProjectPatcher.Modules {
+namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class FinalizerModule {
         public static UniTask PatchSceneList() {
             var scenes = AssetDatabase.FindAssets("t:SceneAsset", new[] {"Assets/Scenes"})
