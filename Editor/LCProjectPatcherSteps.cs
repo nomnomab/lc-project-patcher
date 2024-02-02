@@ -164,6 +164,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             ModifyProjectSettingsModule.CopyOverProjectSettings();
             FinalizerModule.PatchSceneList(settings);
             FinalizerModule.PatchHDRPVolumeProfile(settings);
+            FinalizerModule.PatchDiageticAudioMixer(settings);
             FinalizerModule.SortScriptableObjectFolder(settings);
             FinalizerModule.OpenInitScene();
 

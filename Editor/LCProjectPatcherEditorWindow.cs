@@ -51,6 +51,14 @@ namespace Nomnom.LCProjectPatcher.Editor {
             scopeBox.Add(scroll);
             scroll.Add(CreateLethalCompanyDataPathSelector());
             
+            var deleteTempAssetRipperFiles = new Toggle("Delete temp Asset Ripper files") {
+                value = EditorPrefs.GetBool("nomnom.lc_project_patcher.delete_temp_asset_ripper_files", true)
+            };
+            deleteTempAssetRipperFiles.RegisterValueChangedCallback(evt => {
+                EditorPrefs.SetBool("nomnom.lc_project_patcher.delete_temp_asset_ripper_files", evt.newValue);
+            });
+            scroll.Add(deleteTempAssetRipperFiles);
+            
             var runButton = new Button(() => {
                 // validate data path
                 var dataPath = ModuleUtility.LethalCompanyDataFolder;
@@ -157,10 +165,30 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 text = "Clear Prefs"
             };
             foldout.Add(clearPrefs);
+            
+            var diagetic = new Button(() => {
+                FinalizerModule.PatchDiageticAudioMixer(ModuleUtility.GetPatcherSettings());
+            }) {
+                text = "Diagetic"
+            };
+            foldout.Add(diagetic);
 
             LCProjectPatcherSteps.onCompleted += () => {
                 SetWindowState(true);
                 Debug.Log("Patcher has completed :)");
+                
+                if (EditorPrefs.GetBool("nomnom.lc_project_patcher.delete_temp_asset_ripper_files", true)) {
+                    var assetRipperPath = ModuleUtility.AssetRipperTempDirectory;
+                    try {
+                        if (Directory.Exists(assetRipperPath)) {
+                            Directory.Delete(assetRipperPath, recursive: true);
+                        }
+                    
+                        Debug.Log("Deleted temp Asset Ripper files");
+                    } catch (Exception e) {
+                        Debug.LogError($"Failed to delete temp Asset Ripper files: {e}");
+                    }
+                }
             };
             // if (LCProjectPatcherSteps.GetCurrentStep() is {} step && step > 0) {
             //     SetWindowState(false);

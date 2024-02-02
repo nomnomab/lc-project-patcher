@@ -1,10 +1,13 @@
 ﻿using System.IO;
 using System.Linq;
+using System.Text;
 using Cysharp.Threading.Tasks;
+using Lachee.Utilities.Serialization;
 using Nomnom.LCProjectPatcher.Modules;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Audio;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class FinalizerModule {
@@ -100,6 +103,43 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 }
             } else {
                 Debug.LogError("Could not find HDRenderPipelineGlobalSettings");
+            }
+        }
+
+        public static void PatchDiageticAudioMixer(LCPatcherSettings settings) {
+            var gamePath = settings.GetLethalCompanyGamePath(fullPath: true);
+            string audioMixerControllerPath;
+            if (settings.AssetRipperSettings.TryGetMapping("AudioMixerController", out var finalFolder)) {
+                audioMixerControllerPath = Path.Combine(gamePath, finalFolder);
+            } else {
+                audioMixerControllerPath = Path.Combine(gamePath, "AudioMixerController");
+            }
+
+            var diageticPath = Path.Combine(audioMixerControllerPath, "Diagetic.mixer");
+            try {
+                var text = File.ReadAllText(diageticPath);
+                var lines = text.Split('\n');
+                var finalText = new StringBuilder();
+                for (var i = 0; i < lines.Length; i++) {
+                    finalText.AppendLine(lines[i].TrimEnd());
+                
+                    if (!lines[i].Contains("m_EffectName: Echo")) {
+                        continue;
+                    }
+                
+                    for (var j = i + 1; j < lines.Length; j++) {
+                        if (lines[j].Contains("m_Bypass:")) {
+                            finalText.AppendLine("  m_Bypass: 1");
+                            i = j;
+                            break;
+                        }
+                    
+                        finalText.AppendLine(lines[j].TrimEnd());
+                    }
+                }
+                File.WriteAllText(diageticPath, finalText.ToString());
+            } catch (System.Exception e) {
+                Debug.LogError(e);
             }
         }
 
