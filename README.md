@@ -4,6 +4,8 @@
 
 This tool fills in a unity project with functional assets so it can be used for Lethal Company modding.
 
+This tool does **not** distribute game files. It uses what is already on your computer from the installed game.
+
 ## What does it do?
 
 - Installs required packages, and enforces specific versions for them
