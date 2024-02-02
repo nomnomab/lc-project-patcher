@@ -18,7 +18,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
 
         private readonly static string[] GitPackages = new[] {
             "https://github.com/Unity-Technologies/AssetBundles-Browser.git",
-            "https://github.com/v0lt13/EditorAttributes.git"
         };
         
         public static bool InstallAll() {

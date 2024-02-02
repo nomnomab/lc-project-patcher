@@ -121,6 +121,9 @@ I only check the main Assembly-CSharp dll for plugins at the moment.
 - Parrel Sync - https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync
   - This lets you run multiple instances of the project at once to test LAN without building the game.
 
+- Editor Attributes - https://github.com/v0lt13/EditorAttributes.git
+  - This is a nice package that adds some useful attributes for the inspector
+
 ## Credits
 
 - Asset Ripper - https://github.com/AssetRipper/AssetRipper
