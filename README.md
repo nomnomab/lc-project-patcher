@@ -2,7 +2,7 @@
 
 > This tool is still in development and is quite experimental, but should be usable.
 
-This tool fills in a unity project with functional assets so it can be used for Lethal Company modding.
+This tool fills in a unity project with functional assets so you can run the game in the editor to test custom plugins.
 
 This tool does **not** distribute game files. It uses what is already on your computer from the installed game.
 
