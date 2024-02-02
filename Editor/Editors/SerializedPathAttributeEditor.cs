@@ -24,7 +24,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
                 return;
             }
             
-            var value = (string)getterFunction.Invoke(targetObject, null); 
+            var value = (string)getterFunction.Invoke(targetObject, new object[] { false }); 
             // value will be a prefix to the input field
             EditorGUI.BeginProperty(position, label, property);
             using (var changes = new EditorGUI.ChangeCheckScope()) {

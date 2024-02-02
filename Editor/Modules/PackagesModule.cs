@@ -21,7 +21,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             "https://github.com/v0lt13/EditorAttributes.git"
         };
         
-        public static async UniTask<bool> InstallAll() {
+        public static bool InstallAll() {
             ImportTMP();
             
             var packageStrings = Packages

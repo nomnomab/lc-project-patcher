@@ -10,6 +10,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             ModuleUtility.CreateDirectory(settings.GetBaseLethalCompanyPath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetNativePath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
             
             AssetDatabase.StopAssetEditing();
             AssetDatabase.Refresh();

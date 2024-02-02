@@ -14,6 +14,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
         public static LCProjectPatcherEditorWindow Instance { get; private set; }
         
         private static LCProjectPatcherEditorWindow _instance;
+        private int _lastStep;
         
         [MenuItem("Tools/Nomnom/LC - Project Patcher")]
         public static void ShowWindow() {
@@ -32,6 +33,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
             ModuleUtility.CreateDirectory(settings.GetBaseLethalCompanyPath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetNativePath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
             
             AssetDatabase.Refresh();
             
@@ -49,9 +52,26 @@ namespace Nomnom.LCProjectPatcher.Editor {
             scroll.Add(CreateLethalCompanyDataPathSelector());
             
             var runButton = new Button(() => {
+                // validate data path
+                var dataPath = ModuleUtility.LethalCompanyDataFolder;
+                if (string.IsNullOrEmpty(dataPath) || !Directory.Exists(dataPath)) {
+                    Debug.LogError("Lethal Company data path is invalid!");
+                    return;
+                }
+                
+                if (!dataPath.EndsWith("_Data")) {
+                    Debug.LogError("The data path needs to end in \"_Data\"!");
+                    return;
+                }
+
+                if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {
+                    return;
+                }
+                
                 SetWindowState(false);
                 LCProjectPatcherSteps.SetCurrentStep(1);
-                LCProjectPatcherSteps.RunAll();
+                _lastStep = 1;
+                LCProjectPatcherSteps.RunAll().Forget();
             }) {
                 text = "Run Patcher",
                 style = {
@@ -138,16 +158,30 @@ namespace Nomnom.LCProjectPatcher.Editor {
             };
             foldout.Add(clearPrefs);
 
-            if (LCProjectPatcherSteps.GetCurrentStep() is {} step && step > 0) {
-                SetWindowState(false);
-                LCProjectPatcherSteps.RunAll().Forget();
-            }
+            LCProjectPatcherSteps.onCompleted += () => {
+                SetWindowState(true);
+                Debug.Log("Patcher has completed :)");
+            };
+            // if (LCProjectPatcherSteps.GetCurrentStep() is {} step && step > 0) {
+            //     SetWindowState(false);
+            //     LCProjectPatcherSteps.RunAll().Forget();
+            // }
         }
 
         public void SetWindowState(bool enabled) {
             rootVisualElement.SetEnabled(true);
         }
-        
+
+        private void Update() {
+            if (LCProjectPatcherSteps.GetCurrentStep() is {} step && step != _lastStep) {
+                if (LCProjectPatcherSteps.IsWorking) return;
+                _lastStep = step;
+                Debug.Log($"Step {step}");
+                SetWindowState(false);
+                LCProjectPatcherSteps.RunAll().Forget();
+            }
+        }
+
         // private static void PreInit() {
         //     // clone the asset ripper directory before working on it
         //     EditorUtility.DisplayProgressBar("Cloning Asset Ripper", "Creating Asset Ripper clone directory", 0.25f);

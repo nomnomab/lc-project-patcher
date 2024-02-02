@@ -47,7 +47,11 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     continue;
                 }
 
-                File.Copy(gamePath, projectPath, overwrite: true);
+                try {
+                    File.Copy(gamePath, projectPath, overwrite: true);
+                } catch {
+                    Debug.LogWarning($"Failed to copy {dll} to {projectPath}. The dll might be loaded, if so close unity to delete the file.");
+                }
             }
             
             EditorUtility.ClearProgressBar();
@@ -55,7 +59,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
 
         public static void CopyPluginDlls(LCPatcherSettings settings) {
             var lcDataFolder = ModuleUtility.LethalCompanyDataFolder;
-            var gameSpecialPluginsFolder = Path.Combine(lcDataFolder, "Managed", "Plugins", "x86_64");
+            var gameSpecialPluginsFolder = Path.Combine(lcDataFolder, "Plugins", "x86_64");
             
             var projectPluginsFolder = Path.Combine(settings.GetLethalCompanyGamePath(), "Plugins");
             var projectSpecialPluginsFolder = Path.Combine(projectPluginsFolder, "x86_64");
@@ -76,7 +80,11 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     continue;
                 }
 
-                File.Copy(gamePath, projectPath, overwrite: true);
+                try {
+                    File.Copy(gamePath, projectPath, overwrite: true);
+                } catch {
+                    Debug.LogWarning($"Failed to copy {dll} to {projectPath}. The dll might be loaded, if so close unity to delete the file.");
+                }
             }
             
             for (var i = 0; i < SpecialDllsToCopyIntoHidden.Length; i++) {
@@ -91,7 +99,11 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     continue;
                 }
 
-                File.Copy(gamePath, projectPath, overwrite: true);
+                try {
+                    File.Copy(gamePath, projectPath, overwrite: true);
+                } catch {
+                    Debug.LogWarning($"Failed to copy {dll} to {projectPath}. The dll might be loaded, if so close unity to delete the file.");
+                }
             }
             
             EditorUtility.ClearProgressBar();

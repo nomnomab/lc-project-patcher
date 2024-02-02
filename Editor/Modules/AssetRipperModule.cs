@@ -36,7 +36,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             "VideoClip"
         };
 
-        public static async UniTask RunAssetRipper(LCPatcherSettings settings) {
+        public static UniTask RunAssetRipper(LCPatcherSettings settings) {
             var assetRipperExePath = ModuleUtility.AssetRipperDirectory;
             var pathToData = ModuleUtility.LethalCompanyDataFolder;
             var outputPath = ModuleUtility.AssetRipperTempDirectory;
@@ -88,22 +88,9 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 Debug.LogError(e);
                 throw;
             }
+            
+            return UniTask.CompletedTask;
         }
-
-        // public static void CreateES3DefaultsScript(LCPatcherSettings settings) {
-        //     // ? this one is in Resources so it doesn't get picked up automatically for some reason
-        //     var es3DefaultsFormat = Resources.Load<TextAsset>("WrapperScriptTemplate").text;
-        //     
-        //     // var es3DefaultsPath = ModuleUtility.GetProjectDirectory("Scripts", "Resources", "es3");
-        //     var es3DefaultsPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "Scripts", "e3");
-        //     Directory.CreateDirectory(es3DefaultsPath);
-        //     
-        //     es3DefaultsFormat = es3DefaultsFormat
-        //         .Replace("$CLASS_NAME$", "ES3Defaults")
-        //         .Replace("$BASE_CLASS$", "global::ES3Defaults");
-        //     
-        //     File.WriteAllText(Path.Combine(es3DefaultsPath, "ES3Defaults.cs"), es3DefaultsFormat);
-        // }
 
         private static void RemoveDunGenFromOutputIfNeeded(LCPatcherSettings settings, string outputFolder) {
             // ? check if we have DunGen in the project already
@@ -122,6 +109,109 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             var packagepath = Path.Combine(settings.GetAssetStorePath(), "DunGen", "Integration", "Unity NavMesh.unitypackage");
             AssetDatabase.ImportPackage(packagepath, false);
             EditorUtility.ClearProgressBar();
+        }
+        
+        // public static void CopyAssetRipperScripts(LCPatcherSettings settings) {
+        //     var assetRipperSettings = settings.AssetRipperSettings;
+        //     var outputRootFolder = settings.GetLethalCompanyGamePath(fullPath: true);
+        //     
+        //     var assetRipperTempFolder = ModuleUtility.AssetRipperTempDirectoryExportedProject;
+        //     var assetsFolder = Path.Combine(assetRipperTempFolder, "Assets");
+        //     
+        //     string scriptsFolder;
+        //     if (assetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
+        //         scriptsFolder = Path.Combine(outputRootFolder, finalFolder);
+        //     } else {
+        //         scriptsFolder = Path.Combine(outputRootFolder, "Scripts");
+        //     }
+        //     
+        //     ModuleUtility.CopyFilesRecursively(Path.Combine(assetsFolder, "Scripts", "Assembly-CSharp"), scriptsFolder);
+        // }
+        
+        public static void CopyAssetRipperContents(LCPatcherSettings settings) {
+            var assetRipperSettings = settings.AssetRipperSettings;
+            var outputRootFolder = settings.GetLethalCompanyGamePath();
+            
+            var assetRipperTempFolder = ModuleUtility.AssetRipperTempDirectoryExportedProject;
+            var assetsFolder = Path.Combine(assetRipperTempFolder, "Assets");
+            
+            var folders = Directory.GetDirectories(assetsFolder);
+            foreach (var folder in folders) {
+                var folderName = Path.GetFileName(folder);
+                if (folderName == "Scripts") {
+                    continue;
+                }
+                
+                // if (folder == folderName) continue;
+                if (!assetRipperSettings.TryGetMapping(folderName, out var finalFolder)) {
+                    continue;
+                }
+                
+                var finalPath = Path.Combine(outputRootFolder, finalFolder);
+                // Debug.Log($"{folder} maps to {finalPath}");
+                
+                foreach (var file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories)) {
+                    var finalFile = file.Replace(folder, finalPath);
+                    var finalDirectory = Path.GetDirectoryName(finalFile);
+                    if (!Directory.Exists(finalDirectory)) {
+                        Directory.CreateDirectory(finalDirectory);
+                    }
+                    // Debug.Log($"Copying {file} to {finalFile}");
+
+                    try {
+                        File.Copy(file, finalFile, overwrite: true);
+                    } catch (Exception e) {
+                        Debug.LogError($"Failed to copy {file} to {finalFile}: {e}");
+                    }
+                }
+            }
+
+            // {
+            //     string scriptsFolder;
+            //     if (assetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
+            //         scriptsFolder = Path.Combine(outputRootFolder, finalFolder);
+            //     } else {
+            //         scriptsFolder = Path.Combine(outputRootFolder, "Scripts");
+            //     }
+            //     
+            //     // trim scripts folder to only Assembly-CSharp
+            //     var assemblyCSharpFolder = Path.Combine(scriptsFolder, "Assembly-CSharp");
+            //     var scriptFolders = Directory.GetDirectories(scriptsFolder);
+            //     foreach (var folder in scriptFolders) {
+            //         if (Path.GetFileName(folder) == "Assembly-CSharp") {
+            //             continue;
+            //         }
+            //         Directory.Delete(folder, recursive: true);
+            //     }
+            // }
+        }
+        
+        public static void DeleteScriptsFromProject(LCPatcherSettings settings) {
+            string scriptsFolder;
+            if (settings.AssetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
+                scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
+            } else {
+                scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "Scripts");
+            }
+            
+            if (Directory.Exists(scriptsFolder)) {
+                Debug.Log($"Deleting {scriptsFolder}");
+                Directory.Delete(scriptsFolder, recursive: true);
+            }
+        }
+
+        public static void DeleteScriptableObjectsFromProject(LCPatcherSettings settings) {
+            string soPath;
+            if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
+                soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
+            } else {
+                soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "MonoBehaviour");
+            }
+
+            if (Directory.Exists(soPath)) {
+                Debug.Log($"Deleting {soPath}");
+                Directory.Delete(soPath, recursive: true);
+            }
         }
 
         // public static UniTask PatchFix() {

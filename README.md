@@ -24,11 +24,14 @@ This tool fills in a unity project with functional assets so it can be used for 
 
 ## Installation
 #### Using Unity Package Manager
-1. Open the Package Manager from `Window/Package Manager`
-2. Click the '+' button in the top-left of the window
-3. Click 'Add package from git URL'
-4. Provide the URL of the this git repository: https://github.com/nomnomab/lc-project-patcher.git
-5. Click the 'add' button
+
+1. Make sure you have git installed: https://git-scm.com/download/win
+    - After installing, restart Unity
+2. Open the Package Manager from `Window/Package Manager`
+3. Click the '+' button in the top-left of the window
+4. Click 'Add package from git URL'
+5. Provide the URL of the this git repository: https://github.com/nomnomab/lc-project-patcher.git
+6. Click the 'add' button
 
 ## Usage
 

@@ -8,10 +8,11 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
         public static string LethalCompanyDataFolder => EditorPrefs.GetString("nomnom.lc_project_patcher.lc_data_folder");
         public static string AssetRipperDirectory => Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/AssetRipper~/AssetRipper.Tools.SystemTester.exe");
         public static string AssetRipperTempDirectory => GetProjectDirectory("AssetRipperOutput~");
+        public static string AssetRipperTempDirectoryExportedProject => Path.Combine(AssetRipperTempDirectory, "ExportedProject");
         
         public static string ProjectDirectory => Application.dataPath;
-        public static string ProjectScriptsDirectory => Path.Combine(ProjectDirectory, "Scripts");
-        public static string ProjectResourcesDirectory => Path.Combine(ProjectDirectory, "Resources");
+        // public static string ProjectScriptsDirectory => Path.Combine(ProjectDirectory, "Scripts");
+        // public static string ProjectResourcesDirectory => Path.Combine(ProjectDirectory, "Resources");
         
         public static void CopyFilesRecursively(string sourceFolder, string targetFolder) {
             Directory.CreateDirectory(targetFolder);

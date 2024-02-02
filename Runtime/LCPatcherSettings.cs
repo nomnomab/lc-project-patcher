@@ -41,6 +41,14 @@ namespace Nomnom.LCProjectPatcher {
             return GetFullPathOrNot(_generalSettings.GetAssetStorePath(GetBaseUnityPath()), fullPath);
         }
         
+        public string GetModsPath(bool fullPath = false) {
+            return GetFullPathOrNot(_generalSettings.GetModsPath(GetBaseLethalCompanyPath()), fullPath);
+        }
+        
+        public string GetToolsPath(bool fullPath = false) {
+            return GetFullPathOrNot(_generalSettings.GetToolsPath(GetBaseLethalCompanyPath()), fullPath);
+        }
+        
         private string GetFullPathOrNot(string path, bool fullPath) {
             return fullPath ? Path.GetFullPath(path) : path;
         }

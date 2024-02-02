@@ -19,8 +19,8 @@ MonoBehaviour:
     _folderMappings:
     - folderPath: AnimationClip
       outputPath: Animation\AnimationClips
-    - folderPath: AnimationController
-      outputPath: Animation\AnimationControllers
+    - folderPath: AnimatorController
+      outputPath: Animation\AnimatorControllers
     - folderPath: AudioClip
       outputPath: Audio\AudioClips
     - folderPath: AudioMixerController
@@ -35,6 +35,8 @@ MonoBehaviour:
       outputPath: Materials
     - folderPath: Mesh
       outputPath: Meshes
+    - folderPath: MonoBehaviour
+      outputPath: ScriptableObjects
     - folderPath: NavMeshData
       outputPath: Scenes\NavMeshData
     - folderPath: PhysicsMaterial
