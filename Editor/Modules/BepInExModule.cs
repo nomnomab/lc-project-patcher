@@ -112,7 +112,7 @@ PluginImporter:
                 if (Directory.Exists(tempBepInExPath)) {
                     Directory.Delete(tempBepInExPath, true);
                 }
-            } catch (System.Exception e) {
+            } catch (Exception e) {
                 Debug.LogError(e);
                 return UniTask.CompletedTask;
             }
@@ -132,11 +132,11 @@ PluginImporter:
                 }
 
                 ZipFile.ExtractToDirectory(bepInExZipPath, tempBepInExPath);
-            } catch (System.Exception e) {
+            } catch (Exception e) {
                 Debug.LogError(e);
                 try {
                     Directory.Delete(tempBepInExPath);
-                } catch (System.Exception e2) {
+                } catch (Exception e2) {
                     Debug.LogError(e2);
                 }
                 return UniTask.CompletedTask;
@@ -153,14 +153,14 @@ PluginImporter:
             var dlls = Directory.GetFiles(dllPath, "*.dll")
                 .Where(x => BepInExDlls.Contains(Path.GetFileName(x)))
                 .ToArray();
-
+            
             EditorUtility.DisplayProgressBar("Installing BepInEx", "Installing BepInEx", 0);
             for (var i = 0; i < dlls.Length; i++) {
                 var dll = dlls[i];
                 EditorUtility.DisplayProgressBar("Installing BepInEx", $"Installing {Path.GetFileName(dll)}", (float)i / dlls.Length);
                 try {
                     File.Copy(dll, Path.Combine(bepInExPath, Path.GetFileName(dll)), true);
-                } catch (System.Exception e) {
+                } catch (Exception e) {
                     Debug.LogError(e);
                 }
             }
@@ -170,13 +170,26 @@ PluginImporter:
             var harmonyDllPath = Path.Combine(bepInExPath, "BepInEx.Harmony.dll.meta");
             try {
                 File.WriteAllText(harmonyDllPath, BepInExHarmonyDllMeta);
-            } catch (System.Exception e) {
+            } catch (Exception e) {
                 Debug.LogError(e);
+            }
+            
+            var projectRoot = Path.Combine(Application.dataPath, "..");
+            var bepInExRootFolder = Path.Combine(projectRoot, "Lethal Company");
+            var bepInExInnerFolder = Path.Combine(bepInExRootFolder, "BepInEx");
+            var bepInExCoreFolder = Path.Combine(bepInExInnerFolder, "core");
+            
+            foreach (var dll in Directory.GetFiles(dllPath, "*.dll")) {
+                try {
+                    File.Copy(dll, Path.Combine(bepInExCoreFolder, Path.GetFileName(dll)), true);
+                } catch (Exception e) {
+                    Debug.LogError(e);
+                }
             }
 
             try {
                 Directory.Delete(tempBepInExPath, true);
-            } catch (System.Exception e) {
+            } catch (Exception e) {
                 Debug.LogError(e);
             }
             
@@ -197,10 +210,24 @@ PluginImporter:
                 EditorUtility.DisplayProgressBar("Installing MonoMod", $"Installing {Path.GetFileName(dll)}", (float)i / dlls.Length);
                 try {
                     File.Copy(dll, Path.Combine(bepInExPath, Path.GetFileName(dll)), true);
-                } catch (System.Exception e) {
+                } catch (Exception e) {
                     Debug.LogError(e);
                 }
             }
+            
+            var projectRoot = Path.Combine(Application.dataPath, "..");
+            var bepInExRootFolder = Path.Combine(projectRoot, "Lethal Company");
+            var bepInExInnerFolder = Path.Combine(bepInExRootFolder, "BepInEx");
+            var bepInExCoreFolder = Path.Combine(bepInExInnerFolder, "core");
+
+            foreach (var dll in Directory.GetFiles(monoModInPackagePath, "*.dll")) {
+                try {
+                    File.Copy(dll, Path.Combine(bepInExCoreFolder, Path.GetFileName(dll)), true);
+                } catch (Exception e) {
+                    Debug.LogError(e);
+                }
+            }
+            
             EditorUtility.ClearProgressBar();
         }
 
@@ -209,15 +236,47 @@ PluginImporter:
             var bepInExPath = Path.Combine(pluginsPath, "BepInEx");
             var utilityPath = Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/BepInExUtility~");
             var files = Directory.GetFiles(utilityPath);
+
+            var utilityFolder = Path.Combine(bepInExPath, "Utility");
+            ModuleUtility.CreateDirectory(utilityFolder);
             
             for (var i = 0; i < files.Length; i++) {
                 var file = files[i];
                 EditorUtility.DisplayProgressBar("Installing BepInEx Utility", $"Installing {Path.GetFileName(file)}", (float)i / files.Length);
                 try {
-                    File.Copy(file, Path.Combine(bepInExPath, $"{Path.GetFileNameWithoutExtension(file)}.cs"), true);
-                } catch (System.Exception e) {
+                    File.Copy(file, Path.Combine(utilityFolder, $"{Path.GetFileNameWithoutExtension(file)}.cs"), true);
+                } catch (Exception e) {
                     Debug.LogError(e);
                 }
+            }
+        }
+
+        public static void CopyTemplateFolder() {
+            var projectRoot = Path.Combine(Application.dataPath, "..");
+            var bepInExRootFolder = Path.Combine(projectRoot, "Lethal Company");
+            
+            var bepInExInnerFolder = Path.Combine(bepInExRootFolder, "BepInEx");
+            var bepInExConfigFolder = Path.Combine(bepInExInnerFolder, "config");
+            var bepInExCoreFolder = Path.Combine(bepInExInnerFolder, "core");
+            var bepInExPluginsFolder = Path.Combine(bepInExInnerFolder, "plugins");
+            var bepInExPatcherFolder = Path.Combine(bepInExInnerFolder, "patchers");
+            
+            var dataFolder = Path.Combine(bepInExRootFolder, "Lethal Company_Data");
+            var managedFolder = Path.Combine(dataFolder, "Managed");
+            var exeNotPath = Path.Combine(bepInExRootFolder, "Lethal Company.exenot");
+            
+            Directory.CreateDirectory(bepInExRootFolder);
+            Directory.CreateDirectory(bepInExInnerFolder);
+            Directory.CreateDirectory(bepInExConfigFolder);
+            Directory.CreateDirectory(bepInExCoreFolder);
+            Directory.CreateDirectory(bepInExPluginsFolder);
+            Directory.CreateDirectory(bepInExPatcherFolder);
+            
+            Directory.CreateDirectory(dataFolder);
+            Directory.CreateDirectory(managedFolder);
+
+            if (!File.Exists(exeNotPath)) {
+                File.Create(exeNotPath).Close();
             }
         }
     }

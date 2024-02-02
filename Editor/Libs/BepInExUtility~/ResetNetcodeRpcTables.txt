@@ -1,6 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
 using System.Collections;
-using System.Reflection;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -30,3 +29,4 @@ public static class ResetNetcodeRpcTables {
         // Debug.Log("Reset rpc_func_table and rpc_name_table.");
     }
 }
+#endif

@@ -166,7 +166,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
             FinalizerModule.PatchHDRPVolumeProfile(settings);
             FinalizerModule.SortScriptableObjectFolder(settings);
             FinalizerModule.OpenInitScene();
-            
+
+            BepInExModule.CopyTemplateFolder();
             await BepInExModule.Install(settings);
             BepInExModule.InstallMonoMod(settings);
             BepInExModule.CopyUtility(settings);
