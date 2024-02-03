@@ -6,6 +6,7 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
+using GameNetcodeStuff;
 using HarmonyLib;
 using UnityEngine;
 
@@ -18,6 +19,8 @@ public class BepInExPatcher: MonoBehaviour {
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void OnLoad() {
+        ResetNetcodeRpcTables.ResetRpcFuncTable();
+        
         var setExecutablePath = typeof(Paths).GetMethod("SetExecutablePath", BindingFlags.NonPublic | BindingFlags.Static);
         setExecutablePath.Invoke(null, new object[] {FakeExePath, null, null, null});
         
@@ -95,6 +98,7 @@ public class BepInExPatcher: MonoBehaviour {
 
     private void OnDestroy() {
         Harmony.UnpatchAll();
+        ResetNetcodeRpcTables.DidReset = false;
     }
 }
 #endif

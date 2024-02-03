@@ -105,6 +105,8 @@ If the auto-patcher didn't work, you can remove this effect by:
 
 This is straightforward, as long as your own plugin code supports it.
 
+Not all plugins support this by the way, so expect errors with ones that don't handle static values properly.
+
 1. Open the `Edit\Project Settings` menu
 2. Go to the `Editor` tab
 3. Check `Enter Play Mode Options`
@@ -114,7 +116,13 @@ Now it will take like a second to press play instead of a minute 😀
 
 ### Why doesn't my plugin get found from inside a folder with an assembly definition?
 
-I only check the main Assembly-CSharp dll for plugins at the moment.
+I only check Assembly-CSharp.dll for in-editor plugins at the moment.
+
+### How can I add MMHOOK_Assembly-CSharp.dll
+
+For now get it normally via the normal game and the patcher approach. Once you have the dll, put it into the tools directory.
+
+- The default location is `Assets\LethalCompany\Tools`
 
 ## Useful packages
 
