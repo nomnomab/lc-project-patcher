@@ -62,3 +62,16 @@ EditorToolbarButton {
     padding-right: 4px;
     padding-top: 2px;
 }
+
+.section-label {
+    font-size: 11px;
+    -unity-font-style: italic;
+}
+
+.section-label.gap-top {
+    margin-top: 8px;
+}
+
+#last-patched-at {
+    margin-top: 4px;
+}

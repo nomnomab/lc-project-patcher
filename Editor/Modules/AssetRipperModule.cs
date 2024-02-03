@@ -80,7 +80,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     throw new Exception("AssetRipper failed to run");
                 }
                 
-                RemoveDunGenFromOutputIfNeeded(settings, outputPath);
+                RemoveDunGenFromOutputIfNeeded(settings);
                 
                 // ? copy the files from the Temp folder into a temp folder in the project
                 // ModuleUtility.CopyFilesRecursively(outputPath, ModuleUtility.AssetRipperTempDirectory);
@@ -92,25 +92,28 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             return UniTask.CompletedTask;
         }
 
-        private static void RemoveDunGenFromOutputIfNeeded(LCPatcherSettings settings, string outputFolder) {
+        public static void RemoveDunGenFromOutputIfNeeded(LCPatcherSettings settings) {
             // ? check if we have DunGen in the project already
             var nativePath = settings.GetAssetStorePath(fullPath: true);
             var assetDunGenPath = Path.Combine(nativePath, "DunGen");
             if (!Directory.Exists(assetDunGenPath)) {
+                Debug.Log($"DunGen not found at {assetDunGenPath}");
                 return;
             }
-            
+
             // remove DunGen from the Asset Ripper output
-            var assetRipperDunGenPath = Path.Combine(outputFolder, "Scripts", "Assembly-CSharp", "DunGen");
+            var assetRipperDunGenPath = Path.Combine(ModuleUtility.AssetRipperTempDirectoryExportedProject, "Assets", "Scripts", "Assembly-CSharp", "DunGen");
+            Debug.Log($"Removing DunGen from AssetRipper output at {assetRipperDunGenPath}");
             Directory.Delete(assetRipperDunGenPath, recursive: true);
-                
+
             // import the navmesh package from the asset
             EditorUtility.DisplayProgressBar("Installing packages", "Installing DunGen NavMesh package", 0.75f);
             var packagepath = Path.Combine(settings.GetAssetStorePath(), "DunGen", "Integration", "Unity NavMesh.unitypackage");
+            Debug.Log($"Importing package from {packagepath}");
             AssetDatabase.ImportPackage(packagepath, false);
             EditorUtility.ClearProgressBar();
         }
-        
+
         // public static void CopyAssetRipperScripts(LCPatcherSettings settings) {
         //     var assetRipperSettings = settings.AssetRipperSettings;
         //     var outputRootFolder = settings.GetLethalCompanyGamePath(fullPath: true);

@@ -113,6 +113,7 @@ public class BepInExPatcher: MonoBehaviour {
         harmony.PatchAll(typeof(IgnoreILHelpers));
         Chainloader.Start();
         harmony.UnpatchSelf();
+        harmony.PatchAll(typeof(OnlineDisabler));
         
         Debug.Log("Loaded BepInEx!");
         
@@ -214,6 +215,20 @@ public class BepInExPatcher: MonoBehaviour {
 
         public static bool Prefix() {
             return false;
+        }
+    }
+
+    [HarmonyPatch(typeof(PreInitSceneScript))]
+    private static class OnlineDisabler {
+        [HarmonyPatch(nameof(PreInitSceneScript.ChooseLaunchOption))]
+        [HarmonyPrefix]
+        private static bool ChooseLaunchOption(bool online) {
+            if (online) {
+                EditorUtility.DisplayDialog("Error", "Online mode is not supported!", "OK");
+                return false;
+            }
+
+            return true;
         }
     }
 }
