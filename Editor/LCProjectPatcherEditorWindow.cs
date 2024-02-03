@@ -68,14 +68,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 }
                 
                 if (!dataPath.EndsWith("_Data")) {
-                    var folderName = Path.GetFileNameWithoutExtension(dataPath);
-                    var dataFolder = $"{folderName}_Data";
-                    dataPath = Path.Combine(dataPath, dataFolder);
-
-                    if (!Directory.Exists(dataPath)) {
-                        Debug.LogError("The data path needs to end in \"_Data\"!");
-                        return;
-                    }
+                    Debug.LogError("The data path needs to end in \"_Data\"!");
+                    return;
                 }
 
                 if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {
@@ -337,6 +331,9 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 multiline = false,
                 isDelayed = true
             };
+            projectPath.RegisterValueChangedCallback(x => {
+                EditorPrefs.SetString(key, x.newValue);
+            });
             var browseButton = new Button(() => {
                 var newPath = EditorUtility.OpenFolderPanel($"Select {name} Path", path, "");
                 if (string.IsNullOrEmpty(newPath)) {

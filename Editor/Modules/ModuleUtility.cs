@@ -5,7 +5,27 @@ using UnityEngine;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class ModuleUtility {
-        public static string LethalCompanyDataFolder => EditorPrefs.GetString("nomnom.lc_project_patcher.lc_data_folder");
+        public static string LethalCompanyDataFolder {
+            get {
+                var path = EditorPrefs.GetString("nomnom.lc_project_patcher.lc_data_folder");
+                if (string.IsNullOrEmpty(path)) {
+                    return null;
+                }
+                
+                if (!path.EndsWith("_Data")) {
+                    var folderName = Path.GetFileNameWithoutExtension(path);
+                    var dataFolder = $"{folderName}_Data";
+                    path = Path.Combine(path, dataFolder);
+
+                    if (!Directory.Exists(path)) {
+                        Debug.LogError("The data path needs to end in \"_Data\"!");
+                        return null;
+                    }
+                }
+
+                return path;
+            }
+        }
         public static string AssetRipperDirectory => Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/AssetRipper~/AssetRipper.Tools.SystemTester.exe");
         public static string AssetRipperTempDirectory => GetProjectDirectory("AssetRipperOutput~");
         public static string AssetRipperTempDirectoryExportedProject => Path.Combine(AssetRipperTempDirectory, "ExportedProject");
