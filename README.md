@@ -35,6 +35,8 @@ This tool does **not** distribute game files. It uses what is already on your co
 - About 900 MB for the copied files from that export into the project
 - [Git](https://git-scm.com/download/win)
 - [Unity 2022.3.9f1](https://unity.com/releases/editor/archive)
+- [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
+  - For running Asset Ripper
 
 ## Installation
 #### Using Unity Package Manager

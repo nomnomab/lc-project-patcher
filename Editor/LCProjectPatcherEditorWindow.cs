@@ -16,9 +16,27 @@ namespace Nomnom.LCProjectPatcher.Editor {
         private static LCProjectPatcherEditorWindow _instance;
         private int _lastStep;
         
-        [MenuItem("Tools/Nomnom/LC - Project Patcher")]
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Open")]
         public static void ShowWindow() {
             GetWindow<LCProjectPatcherEditorWindow>("LC - Project Patcher");
+        }
+        
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory")]
+        public static void UseGameBepInExDirectory() {
+            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false);
+            EditorPrefs.SetBool("nomnom.lc_project_patcher.use_game_bepinex", !v);
+            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory", v);
+            
+            EditorUtility.DisplayDialog("Restart Unity",
+                "You may have to restart Unity to properly unload any loaded plugins since last changing this value!",
+                "Ok");
+        }
+        
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory", true)]
+        public static bool UseGameBepInExDirectory_Bool() {
+            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false);
+            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory", v);
+            return true;
         }
 
         private void CreateGUI() {
@@ -58,6 +76,17 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 EditorPrefs.SetBool("nomnom.lc_project_patcher.delete_temp_asset_ripper_files", evt.newValue);
             });
             scroll.Add(deleteTempAssetRipperFiles);
+
+            var useGamesBepInExDirectory = new Toggle("Use the game's BepInEx folder") {
+                value = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false)
+            };
+            useGamesBepInExDirectory.RegisterValueChangedCallback(x => {
+                EditorPrefs.SetBool("nomnom.lc_project_patcher.use_game_bepinex", x.newValue);
+                EditorUtility.DisplayDialog("Restart Unity",
+                    "You may have to restart Unity to properly unload any loaded plugins since last changing this value!",
+                    "Ok");
+            });
+            scroll.Add(useGamesBepInExDirectory);
             
             var runButton = new Button(() => {
                 // validate data path
