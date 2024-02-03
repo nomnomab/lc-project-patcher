@@ -54,7 +54,9 @@ This tool does **not** distribute game files. It uses what is already on your co
     - Use the 3D (HDRP) template
 2. Open the tool from `Tools/Nomnom/LC - Project Patcher`
     - This will create some default folders for you when it opens
-> At this point if you have the DunGen asset, or any other asset, import it now and move it into `Unity\AssetStore`
+
+> At this point if you have the DunGen asset, or any other asset, import it now and move it into `Assets\Unity\AssetStore`. 
+> This is the location the patcher checks for existing assets.
 
 3. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
@@ -73,6 +75,17 @@ You can make plugins directly in the editor like normal.
 If you want to add some normal plugins, you'll have to navigate outside of `Assets` for this, and next to it is a folder called `Lethal Company`.
 
 This is a dummy folder that houses the normal BepInEx root and a fake game data structure so it can initialize before I route it to the actual game files.
+
+## Project Structure
+
+- `[ProjectName]\Assets\LethalCompany\Game` - The ripped game assets in an easier to navigate folder structure
+- `[ProjectName]\Assets\LethalCompany\Mods` - A common folder to place custom plugins or plugins you want to reference
+- `[ProjectName]\Assets\LethalCompany\Tools` - BepInEx, MonoMod, and any other "core" dll goes here
+- `[ProjectName]\Assets\Unity\AssetStore` - Where assets from the asset store should go to keep them nice and tidy
+  - Also where the tool picks up DunGen from to use for guids instead of the one provided by the game
+- `[ProjectName]\Assets\Unity\Native` - The default files/folders that were in the `Assets` root when running the tool
+- `[ProjectName]\Lethal Company\BepInEx` - The normal BepInEx directory people are used to
+- `[ProjectName]\*.cfg` - Where the editor version of BepInEx places config files
 
 ## FAQ
 
@@ -140,3 +153,4 @@ For now get it normally via the normal game and the patcher approach. Once you h
 - UniTask - https://github.com/Cysharp/UniTask
 - UYAML Parser - https://gist.github.com/Lachee/5f80fb5cb2be99dad9fc1ae5915d8263
 - MonoMod - https://github.com/MonoMod/MonoMod
+- GameViewSizeShortcut - https://gist.github.com/wappenull/668a492c80f7b7fda0f7c7f42b3ae0b0

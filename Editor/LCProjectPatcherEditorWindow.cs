@@ -68,8 +68,14 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 }
                 
                 if (!dataPath.EndsWith("_Data")) {
-                    Debug.LogError("The data path needs to end in \"_Data\"!");
-                    return;
+                    var folderName = Path.GetFileNameWithoutExtension(dataPath);
+                    var dataFolder = $"{folderName}_Data";
+                    dataPath = Path.Combine(dataPath, dataFolder);
+
+                    if (!Directory.Exists(dataPath)) {
+                        Debug.LogError("The data path needs to end in \"_Data\"!");
+                        return;
+                    }
                 }
 
                 if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {
@@ -315,11 +321,11 @@ namespace Nomnom.LCProjectPatcher.Editor {
         }
 
         private static VisualElement CreateLethalCompanyDataPathSelector() {
-            return CreatePathSelector("Lethal Company Data", "nomnom.lc_project_patcher.lc_data_folder");
+            return CreatePathSelector("Lethal Company Data", "nomnom.lc_project_patcher.lc_data_folder", "C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company_Data".Replace('/', Path.DirectorySeparatorChar));
         }
 
-        private static VisualElement CreatePathSelector(string name, string key) {
-            var path = EditorPrefs.GetString(key);
+        private static VisualElement CreatePathSelector(string name, string key, string defaultValue) {
+            var path = EditorPrefs.GetString(key, defaultValue);
             var pathHorizontal = new VisualElement {
                 style = {
                     flexDirection = FlexDirection.Row
