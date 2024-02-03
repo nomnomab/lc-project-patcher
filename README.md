@@ -54,7 +54,7 @@ This tool does **not** distribute game files. It uses what is already on your co
 1. Create a new Unity project
     - Use version [2022.3.9f1](https://unity.com/releases/editor/archive)
     - Use the 3D (HDRP) template
-2. Open the tool from `Tools/Nomnom/LC - Project Patcher`
+2. Open the tool from `Tools/Nomnom/LC - Project Patcher/Open`
     - This will create some default folders for you when it opens
 
 > At this point if you have the DunGen asset, or any other asset, import it now and move it into `Assets\Unity\AssetStore`. 
@@ -90,6 +90,12 @@ This is a dummy folder that houses the normal BepInEx root and a fake game data 
 - `[ProjectName]\*.cfg` - Where the editor version of BepInEx places config files
 
 ## FAQ
+
+### Can I use my normal BepInEx folder in the game directory?
+
+Yep! Just turn on the option located at `Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory`.
+
+Afterward, you should restart Unity if you already have some plugins loaded up to unload them.
 
 ### Why can I not delete a plugin from the plugins folder?
 
