@@ -57,8 +57,9 @@ This tool does **not** distribute game files. It uses what is already on your co
     - Use the 3D (HDRP) template
 2. Open the tool from `Tools/Nomnom/LC - Project Patcher/Open`
     - This will create some default folders for you when it opens
-3. Download `AssetRipper.SourceGenerated.dll` from the releases of https://github.com/nomnomab/AssetRipper/releases
-    - Place into `[ProjectName]\Library\PackageCache\com.nomnom.lc-project-patcher@[SomeNumbers]\Editor\Libs\AssetRipper~`
+3. Download `AssetRipper.SourceGenerated.dll.zip` from the releases of https://github.com/nomnomab/AssetRipper/releases
+   - Extract the dll from the zip
+   - Place into `[ProjectName]\Library\PackageCache\com.nomnom.lc-project-patcher@[SomeNumbers]\Editor\Libs\AssetRipper~`
 
 > At this point if you have the DunGen asset, or any other asset, import it now and move it into `Assets\Unity\AssetStore`. 
 > This is the location the patcher checks for existing assets.
