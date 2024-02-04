@@ -114,6 +114,12 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 } else {
                     ResetStep();
                 }
+                
+                // reimport AssetStore folder
+                var assetStorePath = settings.GetAssetStorePath();
+                if (AssetDatabase.IsValidFolder(assetStorePath)) {
+                    AssetDatabase.ImportAsset(assetStorePath, ImportAssetOptions.ForceSynchronousImport);
+                }
             } catch {
                 ResetStep();
                 Debug.LogError("Encountered an error when running the pre-process steps!");
@@ -153,6 +159,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
 
         public static UniTask RunGuidGroup(LCPatcherSettings settings) {
             GuidPatcherModule.PatchAll(settings);
+            AssetRipperModule.RemoveDunGenFromOutputIfNeeded(settings);
             AssetRipperModule.CopyAssetRipperContents(settings);
             FinalizerModule.PatchES3DefaultsScriptableObject(settings);
             
@@ -167,6 +174,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             FinalizerModule.PatchDiageticAudioMixer(settings);
             FinalizerModule.SortScriptableObjectFolder(settings);
             FinalizerModule.OpenInitScene();
+            FinalizerModule.ChangeGameViewResolution();
 
             BepInExModule.CopyTemplateFolder();
             await BepInExModule.Install(settings);

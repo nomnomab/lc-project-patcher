@@ -80,8 +80,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     throw new Exception("AssetRipper failed to run");
                 }
                 
-                RemoveDunGenFromOutputIfNeeded(settings);
-                
                 // ? copy the files from the Temp folder into a temp folder in the project
                 // ModuleUtility.CopyFilesRecursively(outputPath, ModuleUtility.AssetRipperTempDirectory);
             } catch (Exception e) {
@@ -92,11 +90,20 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             return UniTask.CompletedTask;
         }
 
+        public static bool HasDunGenAsset {
+            get {
+                var settings = ModuleUtility.GetPatcherSettings();
+                var nativePath = settings.GetAssetStorePath(fullPath: true);
+                var assetDunGenPath = Path.Combine(nativePath, "DunGen");
+                return Directory.Exists(assetDunGenPath);
+            }
+        }
+
         public static void RemoveDunGenFromOutputIfNeeded(LCPatcherSettings settings) {
             // ? check if we have DunGen in the project already
             var nativePath = settings.GetAssetStorePath(fullPath: true);
             var assetDunGenPath = Path.Combine(nativePath, "DunGen");
-            if (!Directory.Exists(assetDunGenPath)) {
+            if (!HasDunGenAsset) {
                 Debug.Log($"DunGen not found at {assetDunGenPath}");
                 return;
             }
@@ -104,7 +111,23 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             // remove DunGen from the Asset Ripper output
             var assetRipperDunGenPath = Path.Combine(ModuleUtility.AssetRipperTempDirectoryExportedProject, "Assets", "Scripts", "Assembly-CSharp", "DunGen");
             Debug.Log($"Removing DunGen from AssetRipper output at {assetRipperDunGenPath}");
-            Directory.Delete(assetRipperDunGenPath, recursive: true);
+            if (Directory.Exists(assetRipperDunGenPath)) {
+                Directory.Delete(assetRipperDunGenPath, recursive: true);
+            }
+            
+            // remove DunGen from the project folder
+            var projectGamePath = settings.GetLethalCompanyGamePath(fullPath: true);
+            string scriptsPath;
+            if (settings.AssetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
+                scriptsPath = Path.Combine(projectGamePath, finalFolder);
+            } else {
+                scriptsPath = Path.Combine(projectGamePath, "Scripts");
+            }
+            var projectDunGenPath = Path.Combine(scriptsPath, "Assembly-CSharp", "DunGen");
+            Debug.Log($"Removing DunGen from project at {projectDunGenPath}");
+            if (Directory.Exists(projectDunGenPath)) {
+                Directory.Delete(projectDunGenPath, recursive: true);
+            }
 
             // import the navmesh package from the asset
             EditorUtility.DisplayProgressBar("Installing packages", "Installing DunGen NavMesh package", 0.75f);

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using Nomnom.LCProjectPatcher.Editor.Modules;
+using Nomnom.LCProjectPatcher.Modules;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -149,7 +150,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             };
             scroll.Add(foldout);
             foldout.Add(new Button(() => {
-                // GuidPatcherModule.Patch(debugMode: true).Forget();
+                GuidPatcherModule.PatchAll(ModuleUtility.GetPatcherSettings(), debugMode: true);
             }) {
                 text = "Debug monoscripts"
             });
@@ -157,6 +158,11 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 AssetRipperModule.RemoveDunGenFromOutputIfNeeded(ModuleUtility.GetPatcherSettings());
             }) {
                 text = "Test DunGen path"
+            });
+            foldout.Add(new Button(() => {
+                AssetRipperModule.RunAssetRipper(ModuleUtility.GetPatcherSettings()).Forget();
+            }) {
+                text = "Run Asset Ripper"
             });
             
             var objField = new ObjectField("ObjectField") {

@@ -85,6 +85,7 @@ This is a dummy folder that houses the normal BepInEx root and a fake game data 
 - `[ProjectName]\Assets\LethalCompany\Tools` - BepInEx, MonoMod, and any other "core" dll goes here
 - `[ProjectName]\Assets\Unity\AssetStore` - Where assets from the asset store should go to keep them nice and tidy
   - Also where the tool picks up DunGen from to use for guids instead of the one provided by the game
+  - This folder gets re-imported when the tool runs to fix any weird asset issues 
 - `[ProjectName]\Assets\Unity\Native` - The default files/folders that were in the `Assets` root when running the tool
 - `[ProjectName]\Lethal Company\BepInEx` - The normal BepInEx directory people are used to
 - `[ProjectName]\*.cfg` - Where the editor version of BepInEx places config files

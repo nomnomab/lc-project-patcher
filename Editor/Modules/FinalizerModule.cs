@@ -178,6 +178,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 }
                 
                 var type = group.Key;
+                // var name = Path.GetFileName(type);
                 var folderPath = Path.Combine(soPath, type);
                 if (!AssetDatabase.IsValidFolder(folderPath)) {
                     AssetDatabase.CreateFolder(soPath, type);
@@ -194,6 +195,14 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                         Debug.LogError(e);
                     }
                 }
+            }
+        }
+
+        public static void ChangeGameViewResolution() {
+            if (GameViewUtils.TrySetSize("16:9")) {
+                Debug.Log("GameView resolution set to 16:9");
+            } else {
+                Debug.LogWarning("Could not set GameView resolution to 16:9");
             }
         }
     }
