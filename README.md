@@ -37,6 +37,7 @@ This tool does **not** distribute game files. It uses what is already on your co
 - [Unity 2022.3.9f1](https://unity.com/releases/editor/archive)
 - [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
   - For running Asset Ripper
+- [AssetRipper.SourceGenerated.dll](https://github.com/nomnomab/AssetRipper/releases)
 
 ## Installation
 #### Using Unity Package Manager
@@ -56,17 +57,19 @@ This tool does **not** distribute game files. It uses what is already on your co
     - Use the 3D (HDRP) template
 2. Open the tool from `Tools/Nomnom/LC - Project Patcher/Open`
     - This will create some default folders for you when it opens
+3. Download `AssetRipper.SourceGenerated.dll` from the releases of https://github.com/nomnomab/AssetRipper/releases
+    - Place into `[ProjectName]\Library\PackageCache\com.nomnom.lc-project-patcher@[SomeNumbers]\Editor\Libs\AssetRipper~`
 
 > At this point if you have the DunGen asset, or any other asset, import it now and move it into `Assets\Unity\AssetStore`. 
 > This is the location the patcher checks for existing assets.
 
-3. Assign the Game's data directory path at the top
+4. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
-4. Click the `Run Patcher` button
+5. Click the `Run Patcher` button
     - This process *will* take a while, so be patient
     - The editor may restart a few times, this is normal
     - When it asks about the New Input System and switching backends, click `Yes`
-7. Now you should have a nice template to work from!
+6. Now you should have a nice template to work from!
 
 ## BepInEx Usage
 
