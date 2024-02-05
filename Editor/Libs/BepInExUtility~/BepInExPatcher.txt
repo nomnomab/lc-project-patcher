@@ -1,20 +1,19 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
 using BepInEx.Bootstrap;
 using BepInEx.Logging;
-using GameNetcodeStuff;
 using HarmonyLib;
 using Mono.Cecil;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
 public class BepInExPatcher: MonoBehaviour {
@@ -40,6 +39,8 @@ public class BepInExPatcher: MonoBehaviour {
         }
     }
     
+    private static bool WantsInstantStart => EditorPrefs.GetBool("nomnom.lc_project_patcher.skip_main_menu", false);
+    
     private static string ActualExePath => Path.Combine(LethalCompanyDataFolder, "..", "Lethal Company.exe");
     private static string FakeExePath => Path.Combine(Application.dataPath, "..", "Lethal Company", "Lethal Company.exenot");
     private static string DirectoryPath => Path.GetDirectoryName(ActualExePath);
@@ -51,6 +52,14 @@ public class BepInExPatcher: MonoBehaviour {
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
         ResetNetcodeRpcTables.ResetRpcFuncTable();
+        
+        // reset event system m_EventSystems
+        // var eventSystems = typeof(EventSystem).GetField("m_EventSystems", BindingFlags.NonPublic | BindingFlags.Static);
+        // var eventSystemsValue = (List<EventSystem>)eventSystems.GetValue(null);
+        // foreach (var eventSystem in eventSystemsValue) {
+        //     Debug.Log($"There is {eventSystem}", eventSystem);
+        // }
+        // eventSystemsValue.Clear();
 
         var useGameBepInEx = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false);
         var filePath = useGameBepInEx ? ActualExePath : FakeExePath;
@@ -109,11 +118,18 @@ public class BepInExPatcher: MonoBehaviour {
             Debug.Log("Using the normal game's BepInEx folder");
         }
         // DebugPaths();
+
+        try {
+            harmony.PatchAll(typeof(IgnoreILHelpers));
+        } catch (Exception e) {
+            Debug.LogWarning($"Failed to patch IL helpers: {e}");
+        }
         
-        harmony.PatchAll(typeof(IgnoreILHelpers));
         Chainloader.Start();
         harmony.UnpatchSelf();
         harmony.PatchAll(typeof(OnlineDisabler));
+        harmony.PatchAll(typeof(SkipMenu));
+        harmony.PatchAll(typeof(EventSystemPatch));
         
         Debug.Log("Loaded BepInEx!");
         
@@ -158,6 +174,21 @@ public class BepInExPatcher: MonoBehaviour {
     private void OnDestroy() {
         Harmony.UnpatchAll();
         ResetNetcodeRpcTables.DidReset = false;
+
+        foreach (var obj in Resources.FindObjectsOfTypeAll<GameObject>()) {
+            if (EditorUtility.IsPersistent(obj.transform.root.gameObject)) {
+                continue;
+            }
+
+            if (obj.name.StartsWith("Scene") || obj.name == "Default Volume") {
+                continue;
+            }
+
+            if (obj.hideFlags == HideFlags.HideAndDontSave) {
+                Debug.Log($"Destroying {obj}");
+                Destroy(obj);
+            }
+        }
     }
 
     [HarmonyPatch(typeof(Chainloader))]
@@ -203,14 +234,37 @@ public class BepInExPatcher: MonoBehaviour {
     [HarmonyPatch]
     private static class IgnoreILHelpers {
         public static IEnumerable<MethodBase> TargetMethods() {
-           return AppDomain.CurrentDomain
-               .GetAssemblies()
-               .SelectMany(x => AccessTools.GetTypesFromAssembly(x)
-                   .Where(y => typeof(BaseUnityPlugin).IsAssignableFrom(y))
-               )
-               .SelectMany(x => x.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic))
-               .Where(x => x.Name == "IlHook")
-               .Cast<MethodBase>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            foreach (var assembly in assemblies) {
+                Type[] types;
+                try {
+                    types = assembly.GetTypes();
+                } catch {
+                    Debug.LogError($"Failed to get types from {assembly.FullName}");
+                    continue;
+                }
+                
+                foreach (var type in types) {
+                    if (type == null) continue;
+
+                    var isPlugin = false;
+                    try {
+                        isPlugin = typeof(BaseUnityPlugin).IsAssignableFrom(type);
+                    } catch {
+                        Debug.LogError($"Failed to check if {type.FullName} is a BaseUnityPlugin");
+                        continue;
+                    }
+                    
+                    if (isPlugin) {
+                        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
+                        foreach (var method in methods) {
+                            if (method.Name == "IlHook") {
+                                yield return (MethodBase)method;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         public static bool Prefix() {
@@ -229,6 +283,56 @@ public class BepInExPatcher: MonoBehaviour {
             }
 
             return true;
+        }
+        
+        [HarmonyPatch("Start")]
+        [HarmonyPostfix]
+        private static void InstantlyStartGame() {
+            if (!WantsInstantStart) return;
+            FindObjectOfType<BepInExPatcher>().StartCoroutine(Waiter());
+        }
+        
+        private static IEnumerator Waiter() {
+            yield return new WaitForSeconds(0.5f + 0.2f);
+            SceneManager.LoadScene("InitSceneLANMode");
+            yield return new WaitForSeconds(0.2f);
+            SceneManager.LoadScene("MainMenu");
+        }
+    }
+
+    [HarmonyPatch(typeof(MenuManager))]
+    private static class SkipMenu {
+        [HarmonyPatch("Start")]
+        [HarmonyPrefix]
+        private static void Start(MenuManager __instance) {
+            if (!WantsInstantStart) return;
+            __instance.StartCoroutine(Waiter());
+        }
+    
+        private static IEnumerator Waiter() {
+            yield return new WaitForSeconds(0.1f);
+            FindObjectOfType<MenuManager>().ClickHostButton();
+            yield return new WaitForSeconds(0.1f);
+            FindObjectOfType<MenuManager>().ConfirmHostButton();
+        }
+    }
+    
+    [HarmonyPatch(typeof(EventSystem))]
+    private static class EventSystemPatch {
+        [HarmonyPatch("Update")]
+        [HarmonyPostfix]
+        private static void RemoveDuplicateEventSystems(ref List<EventSystem> ___m_EventSystems) {
+            if (!Application.isPlaying) {
+                return;
+            }
+
+            if (___m_EventSystems.Count == 1) return;
+            for (var i = 1; i < ___m_EventSystems.Count; i++) {
+                var eventSystem = ___m_EventSystems[i];
+                eventSystem.enabled = false;
+                Debug.Log($"Removed duplicate EventSystem: at {i} where length is {___m_EventSystems.Count}");
+                ___m_EventSystems.Remove(eventSystem);
+            }
         }
     }
 }

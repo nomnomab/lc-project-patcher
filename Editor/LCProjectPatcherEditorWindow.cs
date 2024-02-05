@@ -8,7 +8,6 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
-using Random = UnityEngine.Random;
 
 namespace Nomnom.LCProjectPatcher.Editor {
     public class LCProjectPatcherEditorWindow : EditorWindow {
@@ -37,6 +36,20 @@ namespace Nomnom.LCProjectPatcher.Editor {
         public static bool UseGameBepInExDirectory_Bool() {
             var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false);
             Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory", v);
+            return true;
+        }
+        
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Skip Main Menu")]
+        public static void WantsInstantStart() {
+            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.skip_main_menu", false);
+            EditorPrefs.SetBool("nomnom.lc_project_patcher.skip_main_menu", !v);
+            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Skip Main Menu", v);
+        }
+        
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Skip Main Menu", true)]
+        public static bool WantsInstantStart_Bool() {
+            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.skip_main_menu", false);
+            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Skip Main Menu", v);
             return true;
         }
 

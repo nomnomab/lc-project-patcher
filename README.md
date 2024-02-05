@@ -47,7 +47,7 @@ This tool does **not** distribute game files. It uses what is already on your co
 2. Open the Package Manager from `Window/Package Manager`
 3. Click the '+' button in the top-left of the window
 4. Click 'Add package from git URL'
-5. Provide the URL of the this git repository: https://github.com/nomnomab/lc-project-patcher.git
+5. Provide the URL of the this git repository: https://github.com/nomnomab/lc-project-patcher.git#v0.3.0
 6. Click the 'add' button
 
 ## Usage
@@ -146,9 +146,9 @@ I only check Assembly-CSharp.dll for in-editor plugins at the moment.
 
 ### How can I add MMHOOK_Assembly-CSharp.dll
 
-For now get it normally via the normal game and the patcher approach. Once you have the dll, put it into the tools directory.
+For now get it normally via the normal game and the patcher approach. Once you have the dll, put it into the plugins directory.
 
-- The default location is `Assets\LethalCompany\Tools`
+- The default location is `[ProjectName]\Lethal Company\BepInEx\plugins`
 
 ## Useful packages
 

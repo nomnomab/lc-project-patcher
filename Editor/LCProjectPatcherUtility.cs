@@ -1,7 +1,5 @@
 ﻿using System;
-using System.IO;
 using Cysharp.Threading.Tasks;
-using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEditor;
 using UnityEngine;
 
