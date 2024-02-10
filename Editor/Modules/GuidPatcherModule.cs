@@ -543,6 +543,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
                     
                     // Debug.Log($"Found {originalResult.fullTypeName}::{originalResult.originalGuid} to {projectResult.fullTypeName}::{projectResult.originalGuid}");
                     _monoList.TryAdd(originalResult.originalGuid, new GuidSwap(projectResult.fullTypeName, projectResult.originalGuid, "11500000"));
+                    _scriptableObjectList.TryAdd(originalResult.originalGuid, new GuidSwap(projectResult.fullTypeName, projectResult.originalGuid, "11500000"));
                 }
             }
             
@@ -550,6 +551,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
             FixGuids(assetRipperPath, debugMode: false);
             
             _monoList.Clear();
+            _scriptableObjectList.Clear();
             
             AssetDatabase.Refresh();
         }

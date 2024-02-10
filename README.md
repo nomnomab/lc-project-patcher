@@ -65,8 +65,8 @@ This tool does **not** distribute game files. It uses what is already on your co
 
 [//]: # (   - Place into `[ProjectName]\Library\PackageCache\com.nomnom.lc-project-patcher@[SomeNumbers]\Editor\Libs\AssetRipper~`)
 
-> At this point if you have the DunGen asset, or any other asset, import it now and move it into `Assets\Unity\AssetStore`. 
-> This is the location the patcher checks for existing assets.
+> At this point if you have the DunGen asset, or any other asset store asset, import it now and move it into `Assets\Unity\AssetStore`. 
+> This is the location the patcher checks for existing assets if needed.
 
 3. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
