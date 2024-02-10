@@ -160,7 +160,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             
             // sort by type
             using var _ = DictionaryPool<Type, List<ScriptableObject>>.Get(out var mappings);
-            using var __ = ListPool<string>.Get(out var foldersUsed);
             foreach (var so in allScriptableObjects) {
                 var type = so.GetType();
                 if (!mappings.TryGetValue(type, out var list)) {
@@ -170,30 +169,45 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 list.Add(so);
             }
             
-            foreach (var group in mappings.Where(x => x.Value.Count > 1)) {
-                Debug.Log($"{group.Key} -> {group.Value.Count}");
+            AssetDatabase.StartAssetEditing();
+            using var __ = ListPool<string>.Get(out var foldersUsed);
+            try {
+                foreach (var group in mappings.Where(x => x.Value.Count > 1)) {
+                    Debug.Log($"{group.Key} -> {group.Value.Count}");
                 
-                var type = group.Key;
-                var rootName = string.IsNullOrEmpty(type.Namespace) ? string.Empty : type.Namespace.Split('.')[0];
-                var folderPath = string.IsNullOrEmpty(rootName) ? Path.Combine(soPath, type.Name) : Path.Combine(soPath, rootName, type.Name);
-                var allFolders = folderPath.Replace(soPath, string.Empty).Split(Path.DirectorySeparatorChar);
-                var totalPath = soPath;
-                foreach (var folder in allFolders) {
-                    var currentPath = Path.Combine(totalPath, folder);
-                    if (!AssetDatabase.IsValidFolder(currentPath)) {
-                        Debug.Log($"Creating folder: {folder} in {totalPath}");
-                        AssetDatabase.CreateFolder(totalPath, folder);
+                    var type = group.Key;
+                    var rootName = string.IsNullOrEmpty(type.Namespace) ? string.Empty : type.Namespace.Split('.')[0];
+                    var folderPath = string.IsNullOrEmpty(rootName) ? Path.Combine(soPath, type.Name) : Path.Combine(soPath, rootName, type.Name);
+                    var allFolders = folderPath.Replace(soPath, string.Empty).Split(Path.DirectorySeparatorChar);
+                    var totalPath = soPath;
+                    foreach (var folder in allFolders) {
+                        var currentPath = Path.Combine(totalPath, folder);
+
+                        if (!foldersUsed.Contains(currentPath)) {
+                            foldersUsed.Add(currentPath);
+                            if (!AssetDatabase.IsValidFolder(folder)) {
+                                Debug.Log($"Creating folder: {folder} in {totalPath}");
+                                AssetDatabase.CreateFolder(totalPath, folder);
+                                AssetDatabase.StopAssetEditing();
+                                AssetDatabase.StartAssetEditing();
+                            }
+                        }
+                        totalPath = currentPath;
                     }
-                    totalPath = currentPath;
-                }
                 
-                foreach (var so in group.Value) {
-                    var assetPath = AssetDatabase.GetAssetPath(so);
-                    var newPath = Path.Combine(folderPath, Path.GetFileName(assetPath));
-                    if (assetPath != newPath) {
-                        AssetDatabase.MoveAsset(assetPath, newPath);
+                    foreach (var so in group.Value) {
+                        var assetPath = AssetDatabase.GetAssetPath(so);
+                        var newPath = Path.Combine(folderPath, Path.GetFileName(assetPath));
+                        if (assetPath != newPath) {
+                            AssetDatabase.MoveAsset(assetPath, newPath);
+                        }
                     }
                 }
+            } catch {
+                // ignored
+            }
+            finally {
+                AssetDatabase.StopAssetEditing();
             }
         }
         
@@ -211,18 +225,26 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 .Where(x => x)
                 .ToArray();
             
-            // move all back into MonoBehaviour location and remove other folders
-            foreach (var so in allScriptableObjects) {
-                var assetPath = AssetDatabase.GetAssetPath(so);
-                var newPath = Path.Combine(soPath, Path.GetFileName(assetPath));
-                if (assetPath != newPath) {
-                    AssetDatabase.MoveAsset(assetPath, newPath);
+            AssetDatabase.StartAssetEditing();
+            try {
+                // move all back into MonoBehaviour location and remove other folders
+                foreach (var so in allScriptableObjects) {
+                    var assetPath = AssetDatabase.GetAssetPath(so);
+                    var newPath = Path.Combine(soPath, Path.GetFileName(assetPath));
+                    if (assetPath != newPath) {
+                        AssetDatabase.MoveAsset(assetPath, newPath);
+                    }
                 }
+
+                var folders = AssetDatabase.GetSubFolders(soPath);
+                foreach (var folder in folders) {
+                    AssetDatabase.DeleteAsset(folder);
+                }
+            } catch {
+                // ignored
             }
-            
-            var folders = AssetDatabase.GetSubFolders(soPath);
-            foreach (var folder in folders) {
-                AssetDatabase.DeleteAsset(folder);
+            finally {
+                AssetDatabase.StopAssetEditing();
             }
         }
         
@@ -251,7 +273,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             
             // sort by type
             using var _ = DictionaryPool<Type, List<GameObject>>.Get(out var mappings);
-            using var __ = ListPool<string>.Get(out var foldersUsed);
             foreach (var data in allPrefabs) {
                 var firstComponent = data.component;
                 if (firstComponent) {
@@ -263,39 +284,54 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 }
             }
 
-            foreach (var (key, prefabs) in mappings) {
-                var type = key;
-                if (type != null && prefabs.Count == 1) {
-                    // check base type instead
-                    var baseType = type.BaseType;
-                    if (baseType != null && allPrefabs.Count(x => x.component && baseType.IsAssignableFrom(x.component.GetType())) > 1) {
-                        type = baseType;
+            AssetDatabase.StartAssetEditing();
+            using var __ = ListPool<string>.Get(out var foldersUsed);
+            try {
+                foreach (var (key, prefabs) in mappings) {
+                    var type = key;
+                    if (type != null && prefabs.Count == 1) {
+                        // check base type instead
+                        var baseType = type.BaseType;
+                        if (baseType != null && allPrefabs.Count(x => x.component && baseType.IsAssignableFrom(x.component.GetType())) > 1) {
+                            type = baseType;
+                        }
+                    }
+                    
+                    if (type == typeof(Component)) continue;
+                    if (prefabs.Count == 0 || type == null) continue;
+
+                    var folder = Path.Combine(prefabsPath, type.Name);
+                    if (!foldersUsed.Contains(folder)) {
+                        foldersUsed.Add(folder);
+                        if (!AssetDatabase.IsValidFolder(folder)) {
+                            AssetDatabase.CreateFolder(prefabsPath, type.Name);
+                            AssetDatabase.StopAssetEditing();
+                            AssetDatabase.StartAssetEditing();
+                        }
+                    }
+
+                    foreach (var prefab in prefabs) {
+                        Debug.Log($"{prefab} -> {type} [{prefabs.Count}]");
+
+                        var assetPath = AssetDatabase.GetAssetPath(prefab);
+                        var newPath = Path.Combine(folder, Path.GetFileName(assetPath));
+                        Debug.Log($"AssetPath: {assetPath} -> {newPath}");
+                        if (assetPath != newPath) {
+                            AssetDatabase.MoveAsset(assetPath, newPath);
+                        }
                     }
                 }
-                
-                if (prefabs.Count == 0 || type == null) continue;
-
-                var folder = Path.Combine(prefabsPath, type.Name);
-                Debug.Log($"Folder: {folder}");
-                foldersUsed.Add(folder);
-                if (!AssetDatabase.IsValidFolder(folder)) {
-                    AssetDatabase.CreateFolder(prefabsPath, type.Name);
-                }
-
-                foreach (var prefab in prefabs) {
-                    Debug.Log($"{prefab} -> {type} [{prefabs.Count}]");
-
-                    var assetPath = AssetDatabase.GetAssetPath(prefab);
-                    var newPath = Path.Combine(folder, Path.GetFileName(assetPath));
-                    Debug.Log($"AssetPath: {assetPath} -> {newPath}");
-                    if (assetPath != newPath) {
-                        AssetDatabase.MoveAsset(assetPath, newPath);
-                    }
-                }
+            } catch {
+                // ignored
+            }
+            finally {
+                AssetDatabase.StopAssetEditing();
             }
 
             static Component getFirstComponent(GameObject obj) {
-                var components = obj.GetComponents<Component>();
+                var components = obj.GetComponentsInChildren<Component>();
+                Component firstNoneUnityComponent = null;
+                Component firstUnityComponent = null;
                 foreach (var component in components) {
                     if (!component) continue;
                     if (component is Transform) continue;
@@ -306,12 +342,24 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     }
                     
                     if (@namespace.StartsWith("Unity")) {
+                        if (!firstUnityComponent) {
+                            firstUnityComponent = component;
+                        }
                         continue;
                     }
                     
-                    return component;
+                    // return component;
+                    if (!firstNoneUnityComponent) {
+                        firstNoneUnityComponent = component;
+                        break;
+                    }
                 }
-                return null;
+                
+                if (firstNoneUnityComponent) {
+                    return firstNoneUnityComponent;
+                }
+                
+                return firstUnityComponent;
             }
         }
         
@@ -329,18 +377,26 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 .Where(x => x)
                 .ToArray();
             
-            // move all back into Prefabs location and remove other folders
-            foreach (var prefab in allPrefabs) {
-                var assetPath = AssetDatabase.GetAssetPath(prefab);
-                var newPath = Path.Combine(prefabsPath, Path.GetFileName(assetPath));
-                if (assetPath != newPath) {
-                    AssetDatabase.MoveAsset(assetPath, newPath);
+            AssetDatabase.StartAssetEditing();
+            try {
+                // move all back into Prefabs location and remove other folders
+                foreach (var prefab in allPrefabs) {
+                    var assetPath = AssetDatabase.GetAssetPath(prefab);
+                    var newPath = Path.Combine(prefabsPath, Path.GetFileName(assetPath));
+                    if (assetPath != newPath) {
+                        AssetDatabase.MoveAsset(assetPath, newPath);
+                    }
                 }
-            }
             
-            var folders = AssetDatabase.GetSubFolders(prefabsPath);
-            foreach (var folder in folders) {
-                AssetDatabase.DeleteAsset(folder);
+                var folders = AssetDatabase.GetSubFolders(prefabsPath);
+                foreach (var folder in folders) {
+                    AssetDatabase.DeleteAsset(folder);
+                }
+            } catch {
+                // ignored
+            }
+            finally {
+                AssetDatabase.StopAssetEditing();
             }
         }
 

@@ -36,95 +36,86 @@ namespace Nomnom.LCProjectPatcher.Editor {
             _instance = this;
             rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("MissingScriptValidator_Styles"));
 
-            var scopeBox = new VisualElement();
-            scopeBox.AddToClassList("scope-box");
-
-            var scroll = new ScrollView();
-
-            rootVisualElement.Add(scopeBox);
-
-            scopeBox.Add(scroll);
+            var mainDocument = Resources.Load<VisualTreeAsset>("LCPatcher_Main");
+            mainDocument.CloneTree(rootVisualElement);
             
-            var label = new Label("The location of the \"Lethal Company_Data\" folder");
-            label.AddToClassList("section-label");
-            scroll.Add(label);
-            scroll.Add(CreateLethalCompanyDataPathSelector());
+            const string lastPatchedAtKey = "nomnom.lc_project_patcher.last_patched_at";
+            var lastPatchedAt = EditorPrefs.GetString(lastPatchedAtKey, "never");
+            var lastPatchedAtLabel = rootVisualElement.Q<Label>("last-patched-at");
+            lastPatchedAtLabel.text = $"last patched at: {lastPatchedAt}";
+
+            const string dataFolderPathKey = "nomnom.lc_project_patcher.lc_data_folder";
+            var dataPath = EditorPrefs.GetString(dataFolderPathKey, "C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company_Data".Replace('/', Path.DirectorySeparatorChar));
+            var lethalCompanyDataPath = rootVisualElement.Q<TextField>("lc-data-path-input");
+            lethalCompanyDataPath.value = dataPath;
             
-            label = new Label("Should the tool remove temp Asset Ripper files after patching?");
-            label.AddToClassList("section-label");
-            label.AddToClassList("gap-top");
-            scroll.Add(label);
+            var lethalCompanyDataPathBrowseButton = rootVisualElement.Q<Button>();
             
-            var deleteTempAssetRipperFiles = new Toggle("Delete temp Asset Ripper files") {
-                value = EditorPrefs.GetBool("nomnom.lc_project_patcher.delete_temp_asset_ripper_files", true)
-            };
-            deleteTempAssetRipperFiles.RegisterValueChangedCallback(evt => {
-                EditorPrefs.SetBool("nomnom.lc_project_patcher.delete_temp_asset_ripper_files", evt.newValue);
+            lethalCompanyDataPath.RegisterValueChangedCallback(x => {
+                EditorPrefs.SetString(dataFolderPathKey, x.newValue);
             });
-            scroll.Add(deleteTempAssetRipperFiles);
-
-            label = new Label("Should the tool use the BepInEx folder from the game? (if not, it will use the one in the project)");
-            label.AddToClassList("section-label");
-            label.AddToClassList("gap-top");
-            scroll.Add(label);
             
-            var useGamesBepInExDirectory = new Toggle("Use the game's BepInEx folder") {
-                value = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false)
+            lethalCompanyDataPathBrowseButton.clicked += () => {
+                var newPath = EditorUtility.OpenFolderPanel("Select Lethal Company Data Path", dataPath, "");
+                if (string.IsNullOrEmpty(newPath)) {
+                    return;
+                }
+
+                lethalCompanyDataPath.value = newPath;
+                EditorPrefs.SetString(dataFolderPathKey, newPath);
             };
+            
+            const string deleteTempAssetRipperFilesKey = "nomnom.lc_project_patcher.delete_temp_asset_ripper_files";
+            var deleteTempAssetRipperFiles = rootVisualElement.Q<Toggle>("delete-temp-ripper-files-toggle");
+            deleteTempAssetRipperFiles.value = EditorPrefs.GetBool(deleteTempAssetRipperFilesKey, true);
+            deleteTempAssetRipperFiles.RegisterValueChangedCallback(evt => {
+                EditorPrefs.SetBool(deleteTempAssetRipperFilesKey, evt.newValue);
+            });
+            
+            const string useGameBepInExKey = "nomnom.lc_project_patcher.use_game_bepinex";
+            var useGamesBepInExDirectory = rootVisualElement.Q<Toggle>("use-game-bepinex-toggle");
+            useGamesBepInExDirectory.value = EditorPrefs.GetBool(useGameBepInExKey, false);
             useGamesBepInExDirectory.RegisterValueChangedCallback(x => {
-                EditorPrefs.SetBool("nomnom.lc_project_patcher.use_game_bepinex", x.newValue);
+                EditorPrefs.SetBool(useGameBepInExKey, x.newValue);
                 EditorUtility.DisplayDialog("Restart Unity",
                     "You may have to restart Unity to properly unload any loaded plugins since last changing this value!",
                     "Ok");
             });
-            scroll.Add(useGamesBepInExDirectory);
             
-            var lastPatchedAt = EditorPrefs.GetString("nomnom.lc_project_patcher.last_patched_at", "never");
-            var lastPatchedAtLabel = new Label($"Last patched at: {lastPatchedAt}") {
-                name = "last-patched-at"
+            var patcherButton = rootVisualElement.Q<Button>("patch-button");
+            patcherButton.clicked += RunPatcher;
+            patcherButton.clicked += () => {
+                var lastPatchedAt = EditorPrefs.GetString(lastPatchedAtKey, "never");
+                lastPatchedAtLabel.text = $"last patched at: {lastPatchedAt}";
             };
-            rootVisualElement.Add(lastPatchedAtLabel);
             
-            var runButton = new Button(() => {
-                // validate data path
-                var dataPath = ModuleUtility.LethalCompanyDataFolder;
-                if (string.IsNullOrEmpty(dataPath) || !Directory.Exists(dataPath)) {
-                    Debug.LogError("Lethal Company data path is invalid!");
-                    return;
-                }
+            CreateDebugFoldout(rootVisualElement.Q("scroll"));
+            
+            LCProjectPatcherSteps.onCompleted += () => {
+                SetWindowState(true);
+                Debug.Log("Patcher has completed :)");
                 
-                if (!dataPath.EndsWith("_Data")) {
-                    Debug.LogError("The data path needs to end in \"_Data\"!");
-                    return;
+                if (EditorPrefs.GetBool(deleteTempAssetRipperFilesKey, true)) {
+                    var assetRipperPath = ModuleUtility.AssetRipperTempDirectory;
+                    try {
+                        if (Directory.Exists(assetRipperPath)) {
+                            Directory.Delete(assetRipperPath, recursive: true);
+                        }
+                    
+                        Debug.Log("Deleted temp Asset Ripper files");
+                    } catch (Exception e) {
+                        Debug.LogError($"Failed to delete temp Asset Ripper files: {e}");
+                    }
                 }
+            };
+        }
 
-                if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {
-                    return;
-                }
-                
-                SetWindowState(false);
-                var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                EditorPrefs.SetString("nomnom.lc_project_patcher.last_patched_at", date);
-                lastPatchedAtLabel.text = $"Last patched at: {date}";
-                LCProjectPatcherSteps.SetCurrentStep(1);
-                _lastStep = 1;
-                LCProjectPatcherSteps.RunAll().Forget();
-            }) {
-                text = "Run Patcher",
-                style = {
-                    height = 24
-                }
-            };
-            scroll.Add(runButton);
-            
+        private void CreateDebugFoldout(VisualElement parent) {
             var foldout = new Foldout {
                 text = "Debug tools",
-                value = false,
-                style = {
-                    marginTop = new StyleLength(32)
-                }
+                value = false
             };
-            scroll.Add(foldout);
+            parent.Add(foldout);
             foldout.Add(new Button(() => {
                 GuidPatcherModule.PatchAll(ModuleUtility.GetPatcherSettings(), debugMode: true);
             }) {
@@ -189,27 +180,34 @@ namespace Nomnom.LCProjectPatcher.Editor {
             var diagetic = new Button(() => {
                 FinalizerModule.PatchDiageticAudioMixer(ModuleUtility.GetPatcherSettings());
             }) {
-                text = "Diagetic"
+                text = "Fix Diagetic Mixer"
             };
             foldout.Add(diagetic);
+        }
 
-            LCProjectPatcherSteps.onCompleted += () => {
-                SetWindowState(true);
-                Debug.Log("Patcher has completed :)");
-                
-                if (EditorPrefs.GetBool("nomnom.lc_project_patcher.delete_temp_asset_ripper_files", true)) {
-                    var assetRipperPath = ModuleUtility.AssetRipperTempDirectory;
-                    try {
-                        if (Directory.Exists(assetRipperPath)) {
-                            Directory.Delete(assetRipperPath, recursive: true);
-                        }
-                    
-                        Debug.Log("Deleted temp Asset Ripper files");
-                    } catch (Exception e) {
-                        Debug.LogError($"Failed to delete temp Asset Ripper files: {e}");
-                    }
-                }
-            };
+        private void RunPatcher() {
+            // validate data path
+            var dataPath = ModuleUtility.LethalCompanyDataFolder;
+            if (string.IsNullOrEmpty(dataPath) || !Directory.Exists(dataPath)) {
+                Debug.LogError("Lethal Company data path is invalid!");
+                return;
+            }
+            
+            if (!dataPath.EndsWith("_Data")) {
+                Debug.LogError("The data path needs to end in \"_Data\"!");
+                return;
+            }
+            
+            if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {
+                return;
+            }
+            
+            SetWindowState(false);
+            var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            EditorPrefs.SetString("nomnom.lc_project_patcher.last_patched_at", date);
+            LCProjectPatcherSteps.SetCurrentStep(1);
+            _lastStep = 1;
+            LCProjectPatcherSteps.RunAll().Forget();
         }
 
         public void SetWindowState(bool enabled) {
@@ -236,42 +234,6 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 });
             }
             return element;
-        }
-
-        private static VisualElement CreateLethalCompanyDataPathSelector() {
-            return CreatePathSelector("Lethal Company Data", "nomnom.lc_project_patcher.lc_data_folder", "C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company_Data".Replace('/', Path.DirectorySeparatorChar));
-        }
-
-        private static VisualElement CreatePathSelector(string name, string key, string defaultValue) {
-            var path = EditorPrefs.GetString(key, defaultValue);
-            var pathHorizontal = new VisualElement {
-                style = {
-                    flexDirection = FlexDirection.Row
-                }
-            };
-            pathHorizontal.name = "PathHorizontal";
-            var projectPath = new TextField($"{name} path") {
-                value = path,
-                multiline = false,
-                isDelayed = true
-            };
-            projectPath.RegisterValueChangedCallback(x => {
-                EditorPrefs.SetString(key, x.newValue);
-            });
-            var browseButton = new Button(() => {
-                var newPath = EditorUtility.OpenFolderPanel($"Select {name} Path", path, "");
-                if (string.IsNullOrEmpty(newPath)) {
-                    return;
-                }
-
-                projectPath.value = newPath;
-                EditorPrefs.SetString(key, newPath);
-            }) {
-                text = "Browse"
-            };
-            pathHorizontal.Add(projectPath);
-            pathHorizontal.Add(browseButton);
-            return pathHorizontal;
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             "VideoClip"
         };
 
-        public static UniTask RunAssetRipper(LCPatcherSettings settings) {
+        public static async UniTask RunAssetRipper(LCPatcherSettings settings) {
             var assetRipperExePath = ModuleUtility.AssetRipperDirectory;
             var pathToData = ModuleUtility.LethalCompanyDataFolder;
             var outputPath = ModuleUtility.AssetRipperTempDirectory;
@@ -51,7 +51,40 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             var dllLocation = Path.Combine(Path.GetDirectoryName(assetRipperExePath), "AssetRipper.SourceGenerated.dll");
             if (!File.Exists(dllLocation)) {
                 var dllUrl = ModuleUtility.AssetRipperDllUrl;
+                var zipLocation = $"{dllLocation}.zip";
                 EditorUtility.DisplayProgressBar("Downloading AssetRipper DLL", $"Downloading from {dllUrl}", 0.5f);
+                
+                using (var client = new System.Net.WebClient()) {
+                    client.DownloadProgressChanged += (_, args) => {
+                        EditorUtility.DisplayProgressBar("Downloading AssetRipper DLL", $"Downloading from {dllUrl}", args.ProgressPercentage / 100f);
+                    };
+                    await client.DownloadFileTaskAsync(dllUrl, zipLocation);
+                }
+                
+                EditorUtility.ClearProgressBar();
+                
+                if (!File.Exists(zipLocation)) {
+                    throw new Exception("Failed to download AssetRipper DLL");
+                }
+                
+                Debug.Log($"Extracting {zipLocation} to {dllLocation}");
+                
+                try {
+                    System.IO.Compression.ZipFile.ExtractToDirectory(zipLocation, Path.GetDirectoryName(dllLocation));
+                } catch (Exception e) {
+                    Debug.LogError(e);
+                    throw;
+                }
+
+                try {
+                    File.Delete(zipLocation);
+                } catch (Exception e) {
+                    Debug.LogError(e);
+                }
+                
+                if (!File.Exists(dllLocation)) {
+                    throw new Exception("Failed to extract AssetRipper DLL");
+                }
             }
 
             // run asset ripper
@@ -93,8 +126,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 Debug.LogError(e);
                 throw;
             }
-            
-            return UniTask.CompletedTask;
         }
 
         public static bool HasDunGenAsset {

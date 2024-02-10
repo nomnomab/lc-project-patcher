@@ -2,76 +2,17 @@
     padding: 8px;
 }
 
-.scope-box {
-    flex-grow: 1;
-    border-radius: 4px;
-    display: flex;
-    flex-direction: column;
-    border-top-color: rgb(24, 24, 24);
-    border-top-width: 1px;
-    border-bottom-color: rgb(24, 24, 24);
-    border-bottom-width: 1px;
-    border-left-color: rgb(24, 24, 24);
-    border-left-width: 1px;
-    border-right-color: rgb(24, 24, 24);
-    border-right-width: 1px;
-    padding: 8px;
-    background-color: rgb(66, 66, 66);
+Toggle > .unity-toggle__input {
+    justify-content: flex-end;
 }
 
-Button {
-    height: 18px;
+Foldout .unity-toggle__input {
+    justify-content: flex-start;
 }
 
-#Title {
-    background-color: rgb(66, 66, 66);
-    /*font-size: 18px;*/
-    margin-bottom: 8px;
-    -unity-text-align: middle-left;
-    margin-top: 16px;
-    -unity-font-style: bold;
-}
-
-.patch-step {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 3px;
-    margin-bottom: 3px;
-}
-
-#PathHorizontal {
-    flex-direction: row;
-}
-
-#PathHorizontal > TextField {
-    flex: 1;
-}
-
-.tab-button {
-    border-radius: 0;
-    opacity: 0.5;
-}
-
-.tab-button.selected {
-    opacity: 1;
-}
-
-EditorToolbarButton {
-    padding-left: 4px;
-    padding-right: 4px;
-    padding-top: 2px;
-}
-
-.section-label {
-    font-size: 11px;
-    -unity-font-style: italic;
-}
-
-.section-label.gap-top {
-    margin-top: 8px;
-}
-
-#last-patched-at {
-    margin-top: 4px;
+Foldout {
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
 }

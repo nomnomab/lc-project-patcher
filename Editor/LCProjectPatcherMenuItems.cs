@@ -5,7 +5,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
     public static class LCProjectPatcherMenuItems {
         [MenuItem("Tools/Nomnom/LC - Project Patcher/Open", priority = 1)]
         public static void ShowWindow() {
-            EditorWindow.GetWindow<LCProjectPatcherEditorWindow>("LC - Project Patcher");
+            var window = EditorWindow.GetWindow<LCProjectPatcherEditorWindow>("LC - Project Patcher");
+            window.minSize = new UnityEngine.Vector2(400, 400);
         }
         
         [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory")]

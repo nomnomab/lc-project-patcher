@@ -1,0 +1,19 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:Label tabindex="-1" text="Nomnom&apos;s" parse-escape-sequences="true" display-tooltip-when-elided="true" style="font-size: 12px; margin-top: 8px; margin-bottom: 0; padding-top: 0; padding-bottom: 0; -unity-text-align: upper-center; padding-right: 0; padding-left: 0;" />
+    <ui:Label tabindex="-1" text="Lethal Company Project Patcher" parse-escape-sequences="true" display-tooltip-when-elided="true" style="font-size: 32px; width: 100%; margin-top: 0; padding-top: 0; white-space: normal; -unity-font-style: bold; -unity-text-align: upper-center; flex-grow: 0; flex-direction: column; flex-wrap: nowrap; padding-right: 0; padding-left: 0;" />
+    <ui:ScrollView name="scroll" horizontal-scroller-visibility="Hidden" style="padding-top: 16px; padding-right: 16px; padding-bottom: 0; padding-left: 16px;">
+        <ui:VisualElement style="flex-grow: 0;">
+            <ui:Label tabindex="-1" text="Lethal Company Data Path" parse-escape-sequences="true" display-tooltip-when-elided="true" tooltip="Where the game&apos;s data folder is. This folder is typically suffixed with _Data." />
+            <ui:TextField picking-mode="Ignore" value="filler text" name="lc-data-path-input" tooltip="Where the game&apos;s data folder is. This folder is typically suffixed with _Data." style="margin-left: 0; margin-right: 0;">
+                <ui:Button text="Browse" parse-escape-sequences="true" display-tooltip-when-elided="true" style="margin-right: 0;" />
+            </ui:TextField>
+        </ui:VisualElement>
+        <ui:Toggle label="Delete Temp Asset Ripper Files" name="delete-temp-ripper-files-toggle" tooltip="If the patcher should automatically delete the temporary AssetRipper~ directory" style="margin-right: 0; margin-left: 0;" />
+        <ui:Toggle label="Use Game&apos;s BepInEx Folder" name="use-game-bepinex-toggle" tooltip="If this project wants to use an existing BepInEx structure from the game&apos;s directory instead of a local one" style="margin-right: 0; margin-left: 0;" />
+    </ui:ScrollView>
+    <ui:VisualElement name="VisualElement" style="flex-grow: 1;" />
+    <ui:GroupBox name="group-box" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 16px; padding-right: 16px; padding-bottom: 6px; padding-left: 16px;">
+        <ui:Button text="Run Patcher" parse-escape-sequences="true" display-tooltip-when-elided="true" name="patch-button" style="margin-right: 0; margin-left: 0; height: 36px;" />
+        <ui:Label tabindex="-1" text="last ran at: never" parse-escape-sequences="true" display-tooltip-when-elided="true" name="last-patched-at" style="-unity-text-align: upper-center; padding-right: 0; padding-left: 0; margin-top: 4px;" />
+    </ui:GroupBox>
+</ui:UXML>

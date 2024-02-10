@@ -163,7 +163,7 @@ PluginImporter:
                 var file = files[i];
                 EditorUtility.DisplayProgressBar("Installing BepInEx Utility", $"Installing {Path.GetFileName(file)}", (float)i / files.Length);
                 try {
-                    File.Copy(file, Path.Combine(utilityFolder, $"{Path.GetFileNameWithoutExtension(file)}.cs"), true);
+                    File.Copy(file, Path.Combine(utilityFolder, Path.GetFileName(file)), true);
                 } catch (Exception e) {
                     Debug.LogError(e);
                 }
