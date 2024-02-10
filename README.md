@@ -44,7 +44,7 @@ This tool does **not** distribute game files. It uses what is already on your co
 
 1. Make sure you have git installed: https://git-scm.com/download/win
     - After installing, restart Unity
-2. Open the Package Manager from `Window/Package Manager`
+2. Open the Package Manager from `Window > Package Manager`
 3. Click the '+' button in the top-left of the window
 4. Click 'Add package from git URL'
 5. Provide the URL of the this git repository: https://github.com/nomnomab/lc-project-patcher.git#v0.3.0
@@ -55,7 +55,7 @@ This tool does **not** distribute game files. It uses what is already on your co
 1. Create a new Unity project
     - Use version [2022.3.9f1](https://unity.com/releases/editor/archive)
     - Use the 3D (HDRP) template
-2. Open the tool from `Tools/Nomnom/LC - Project Patcher/Open`
+2. Open the tool from `Tools > Nomnom > LC - Project Patcher > Open`
     - This will create some default folders for you when it opens
 3. Download `AssetRipper.SourceGenerated.dll.zip` from the releases of https://github.com/nomnomab/AssetRipper/releases
    - Extract the dll from the zip
@@ -98,7 +98,7 @@ This is a dummy folder that houses the normal BepInEx root and a fake game data 
 
 ### Can I use my normal BepInEx folder in the game directory?
 
-Yep! Just turn on the option located at `Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory`.
+Yep! Just turn on the option located at `Tools > Nomnom > LC - Project Patcher > Use Game BepInEx Directory`.
 
 Afterward, you should restart Unity if you already have some plugins loaded up to unload them.
 
@@ -133,7 +133,7 @@ This is straightforward, as long as your own plugin code supports it.
 
 Not all plugins support this by the way, so expect errors with ones that don't handle static values properly.
 
-1. Open the `Edit\Project Settings` menu
+1. Open the `Edit > Project Settings` menu
 2. Go to the `Editor` tab
 3. Check `Enter Play Mode Options`
 4. Check `Reload Scene`
@@ -167,3 +167,8 @@ For now get it normally via the normal game and the patcher approach. Once you h
 - UYAML Parser - https://gist.github.com/Lachee/5f80fb5cb2be99dad9fc1ae5915d8263
 - MonoMod - https://github.com/MonoMod/MonoMod
 - GameViewSizeShortcut - https://gist.github.com/wappenull/668a492c80f7b7fda0f7c7f42b3ae0b0
+- BepInEx - https://github.com/BepInEx/BepInEx
+
+<br/>
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B6R2Z9U)

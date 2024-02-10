@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using Cysharp.Threading.Tasks;
+using Nomnom.LCProjectPatcher.Editor;
 using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEditor;
 using UnityEngine;
@@ -79,47 +79,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
         private static void CheckMonoScripts(LCPatcherSettings settings, string assetRipperPath) {
             var monoScripts = AssetDatabase.FindAssets("t:MonoScript");
-            var projectRoot = settings.GetBasePath(fullPath: true);
-            var allProjectMetaFiles = Directory.GetFiles(projectRoot, "*.cs.meta", SearchOption.AllDirectories);
-            var allMetaGuids = allProjectMetaFiles.Select(x => {
-                    try {
-                        var text = File.ReadAllText(x);
-                        var match = GuidPattern.Match(text);
-                        if (!match.Success) {
-                            return null;
-                        }
-
-                        var guid = match.Groups["guid"].Value;
-                        if (string.IsNullOrEmpty(guid)) {
-                            return null;
-                        }
-
-                        var relativePath = Path.GetRelativePath(Path.Combine(Application.dataPath, ".."), x);
-                        // Debug.Log($"Found {guid} at {relativePath} in:\n{text}");
-                        
-                        var fileContents = File.ReadAllText(x[..^5]);
-                        var foundNamespaceMatch = NamespacePattern.Match(fileContents);
-                        var foundNamespace = string.Empty;
-                        if (foundNamespaceMatch.Success) {
-                            var @namespace = foundNamespaceMatch.Groups["namespace"].Value;
-                            foundNamespace = @namespace;
-                        }
-
-                        return new {
-                            guid,
-                            file = relativePath,
-                            foundNamespace = foundNamespace
-                        };
-                    } catch (Exception e) {
-                        Debug.LogWarning($"Could not read meta file for {x}: {e}");
-                        return null;
-                    }
-                })
-                .Where(x => x != null)
-                .ToDictionary(x => x.file, x => new {
-                    guid = x.guid,
-                    foundNamespace = x.foundNamespace
-                });
+            var allMetaGuids = GetAllProjectMetaData(settings);
             
             foreach (var (file, guid) in allMetaGuids) {
                 Debug.Log($" - {guid.foundNamespace}.{guid.guid} at {file}");
@@ -564,6 +524,75 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 .Replace("$BASE_CLASS$", "global::ES3Defaults");
             
             File.WriteAllText(Path.Combine(es3DefaultsPath, "ES3Defaults.cs"), es3DefaultsFormat);
+        }
+
+        public static void FixGuidsWithPatcherList(ExtractProjectInformationUtility.ExtractedResults extractedResults) {
+            _monoList.Clear();
+            _scriptableObjectList.Clear();
+            _shaderList.Clear();
+            _animationClipList.Clear();
+            
+            // var settings = ModuleUtility.GetPatcherSettings();
+            // var allMetaGuids = GetAllProjectMetaData(settings);
+            var thisProjectExtractedResults = ExtractProjectInformationUtility.CreateExtractedResults();
+            
+            foreach (var originalResult in extractedResults.guids) {
+                foreach (var projectResult in thisProjectExtractedResults.guids) {
+                    if (originalResult.fullTypeName != projectResult.fullTypeName)continue;
+                    if (originalResult.originalGuid == projectResult.originalGuid) continue;
+                    
+                    // Debug.Log($"Found {originalResult.fullTypeName}::{originalResult.originalGuid} to {projectResult.fullTypeName}::{projectResult.originalGuid}");
+                    _monoList.TryAdd(originalResult.originalGuid, new GuidSwap(projectResult.fullTypeName, projectResult.originalGuid, "11500000"));
+                }
+            }
+            
+            var assetRipperPath = ModuleUtility.ProjectDirectory;
+            FixGuids(assetRipperPath, debugMode: false);
+            
+            _monoList.Clear();
+            
+            AssetDatabase.Refresh();
+        }
+
+        private static Dictionary<string, (string guid, string foundNamespace)> GetAllProjectMetaData(LCPatcherSettings settings) {
+            var projectRoot = settings.GetBasePath(fullPath: true);
+            var allProjectMetaFiles = Directory.GetFiles(projectRoot, "*.cs.meta", SearchOption.AllDirectories);
+            return allProjectMetaFiles.Select(x => {
+                    try {
+                        var text = File.ReadAllText(x);
+                        var match = GuidPattern.Match(text);
+                        if (!match.Success) {
+                            return null;
+                        }
+
+                        var guid = match.Groups["guid"].Value;
+                        if (string.IsNullOrEmpty(guid)) {
+                            return null;
+                        }
+
+                        var relativePath = Path.GetRelativePath(Path.Combine(Application.dataPath, ".."), x);
+                        // Debug.Log($"Found {guid} at {relativePath} in:\n{text}");
+                        
+                        var fileContents = File.ReadAllText(x[..^5]);
+                        var foundNamespaceMatch = NamespacePattern.Match(fileContents);
+                        var foundNamespace = string.Empty;
+                        if (foundNamespaceMatch.Success) {
+                            var @namespace = foundNamespaceMatch.Groups["namespace"].Value;
+                            foundNamespace = @namespace;
+                        }
+
+                        return new {
+                            guid,
+                            file = relativePath,
+                            foundNamespace = foundNamespace
+                        };
+                    } catch (Exception e) {
+                        Debug.LogWarning($"Could not read meta file for {x}: {e}");
+                        return null;
+                    }
+                })
+                .Where(x => x != null)
+                .ToDictionary(x => x.file, x => (x.guid, x.foundNamespace));
         }
     }
 }

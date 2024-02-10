@@ -127,8 +127,8 @@ public class BepInExPatcher: MonoBehaviour {
         
         Chainloader.Start();
         harmony.UnpatchSelf();
-        harmony.PatchAll(typeof(OnlineDisabler));
-        harmony.PatchAll(typeof(SkipMenu));
+        // harmony.PatchAll(typeof(OnlineDisabler));
+        // harmony.PatchAll(typeof(SkipMenu));
         harmony.PatchAll(typeof(EventSystemPatch));
         
         Debug.Log("Loaded BepInEx!");
@@ -272,51 +272,51 @@ public class BepInExPatcher: MonoBehaviour {
         }
     }
 
-    [HarmonyPatch(typeof(PreInitSceneScript))]
-    private static class OnlineDisabler {
-        [HarmonyPatch(nameof(PreInitSceneScript.ChooseLaunchOption))]
-        [HarmonyPrefix]
-        private static bool ChooseLaunchOption(bool online) {
-            if (online) {
-                EditorUtility.DisplayDialog("Error", "Online mode is not supported!", "OK");
-                return false;
-            }
-
-            return true;
-        }
-        
-        [HarmonyPatch("Start")]
-        [HarmonyPostfix]
-        private static void InstantlyStartGame() {
-            if (!WantsInstantStart) return;
-            FindObjectOfType<BepInExPatcher>().StartCoroutine(Waiter());
-        }
-        
-        private static IEnumerator Waiter() {
-            yield return new WaitForSeconds(0.5f + 0.2f);
-            SceneManager.LoadScene("InitSceneLANMode");
-            yield return new WaitForSeconds(0.2f);
-            SceneManager.LoadScene("MainMenu");
-        }
-    }
-
-    [HarmonyPatch(typeof(MenuManager))]
-    private static class SkipMenu {
-        [HarmonyPatch("Start")]
-        [HarmonyPrefix]
-        private static void Start(MenuManager __instance) {
-            if (!WantsInstantStart) return;
-            __instance.StartCoroutine(Waiter());
-        }
-    
-        private static IEnumerator Waiter() {
-            yield return new WaitForSeconds(0.1f);
-            FindObjectOfType<MenuManager>().ClickHostButton();
-            yield return new WaitForSeconds(0.1f);
-            FindObjectOfType<MenuManager>().ConfirmHostButton();
-        }
-    }
-    
+    // [HarmonyPatch(typeof(PreInitSceneScript))]
+    // private static class OnlineDisabler {
+    //     [HarmonyPatch(nameof(PreInitSceneScript.ChooseLaunchOption))]
+    //     [HarmonyPrefix]
+    //     private static bool ChooseLaunchOption(bool online) {
+    //         if (online) {
+    //             EditorUtility.DisplayDialog("Error", "Online mode is not supported!", "OK");
+    //             return false;
+    //         }
+    //
+    //         return true;
+    //     }
+    //     
+    //     [HarmonyPatch("Start")]
+    //     [HarmonyPostfix]
+    //     private static void InstantlyStartGame() {
+    //         if (!WantsInstantStart) return;
+    //         FindObjectOfType<BepInExPatcher>().StartCoroutine(Waiter());
+    //     }
+    //     
+    //     private static IEnumerator Waiter() {
+    //         yield return new WaitForSeconds(0.5f + 0.2f);
+    //         SceneManager.LoadScene("InitSceneLANMode");
+    //         yield return new WaitForSeconds(0.2f);
+    //         SceneManager.LoadScene("MainMenu");
+    //     }
+    // }
+    //
+    // [HarmonyPatch(typeof(MenuManager))]
+    // private static class SkipMenu {
+    //     [HarmonyPatch("Start")]
+    //     [HarmonyPrefix]
+    //     private static void Start(MenuManager __instance) {
+    //         if (!WantsInstantStart) return;
+    //         __instance.StartCoroutine(Waiter());
+    //     }
+    //
+    //     private static IEnumerator Waiter() {
+    //         yield return new WaitForSeconds(0.1f);
+    //         FindObjectOfType<MenuManager>().ClickHostButton();
+    //         yield return new WaitForSeconds(0.1f);
+    //         FindObjectOfType<MenuManager>().ConfirmHostButton();
+    //     }
+    // }
+    //
     [HarmonyPatch(typeof(EventSystem))]
     private static class EventSystemPatch {
         [HarmonyPatch("Update")]
@@ -325,7 +325,7 @@ public class BepInExPatcher: MonoBehaviour {
             if (!Application.isPlaying) {
                 return;
             }
-
+    
             if (___m_EventSystems.Count == 1) return;
             for (var i = 1; i < ___m_EventSystems.Count; i++) {
                 var eventSystem = ___m_EventSystems[i];

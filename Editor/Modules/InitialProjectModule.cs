@@ -12,6 +12,16 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
+
+            var gamePath = settings.GetLethalCompanyGamePath(fullPath: true);
+            if (Directory.Exists(gamePath)) {
+                try {
+                    Directory.Delete(gamePath, true);
+                    Directory.CreateDirectory(gamePath);
+                } catch (IOException e) {
+                    Debug.LogError($"Error deleting game directory, are some plugins loaded? {e.Message}");
+                }
+            }
             
             AssetDatabase.StopAssetEditing();
             AssetDatabase.Refresh();

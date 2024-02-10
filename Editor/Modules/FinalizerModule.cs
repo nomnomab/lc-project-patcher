@@ -1,13 +1,14 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using Cysharp.Threading.Tasks;
-using Lachee.Utilities.Serialization;
 using Nomnom.LCProjectPatcher.Modules;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.Audio;
+using UnityEngine.Pool;
+using Object = UnityEngine.Object;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class FinalizerModule {
@@ -158,43 +159,188 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 .ToArray();
             
             // sort by type
-            var sorted = allScriptableObjects
-                .GroupBy(x => x.GetType().Name)
-                .Where(x => x.Key != null);
-
-            foreach (var group in sorted) {
-                var count = group.Count();
-                if (count == 0) continue;
-                if (count == 1) {
-                    {
-                        var first = group.First();
-                        var assetPath = AssetDatabase.GetAssetPath(first);
-                        var newPath = Path.Combine(soPath, Path.GetFileName(assetPath));
-                        if (assetPath != newPath) {
-                            AssetDatabase.MoveAsset(assetPath, newPath);
-                        }
-                    }
-                    continue;
+            using var _ = DictionaryPool<Type, List<ScriptableObject>>.Get(out var mappings);
+            using var __ = ListPool<string>.Get(out var foldersUsed);
+            foreach (var so in allScriptableObjects) {
+                var type = so.GetType();
+                if (!mappings.TryGetValue(type, out var list)) {
+                    list = new List<ScriptableObject>();
+                    mappings.Add(type, list);
                 }
+                list.Add(so);
+            }
+            
+            foreach (var group in mappings.Where(x => x.Value.Count > 1)) {
+                Debug.Log($"{group.Key} -> {group.Value.Count}");
                 
                 var type = group.Key;
-                // var name = Path.GetFileName(type);
-                var folderPath = Path.Combine(soPath, type);
-                if (!AssetDatabase.IsValidFolder(folderPath)) {
-                    AssetDatabase.CreateFolder(soPath, type);
+                var rootName = string.IsNullOrEmpty(type.Namespace) ? string.Empty : type.Namespace.Split('.')[0];
+                var folderPath = string.IsNullOrEmpty(rootName) ? Path.Combine(soPath, type.Name) : Path.Combine(soPath, rootName, type.Name);
+                var allFolders = folderPath.Replace(soPath, string.Empty).Split(Path.DirectorySeparatorChar);
+                var totalPath = soPath;
+                foreach (var folder in allFolders) {
+                    var currentPath = Path.Combine(totalPath, folder);
+                    if (!AssetDatabase.IsValidFolder(currentPath)) {
+                        Debug.Log($"Creating folder: {folder} in {totalPath}");
+                        AssetDatabase.CreateFolder(totalPath, folder);
+                    }
+                    totalPath = currentPath;
                 }
                 
-                foreach (var so in group) {
-                    try {
-                        var assetPath = AssetDatabase.GetAssetPath(so);
-                        var newPath = Path.Combine(folderPath, Path.GetFileName(assetPath));
-                        if (assetPath != newPath) {
-                            AssetDatabase.MoveAsset(assetPath, newPath);
-                        }
-                    } catch (System.Exception e) {
-                        Debug.LogError(e);
+                foreach (var so in group.Value) {
+                    var assetPath = AssetDatabase.GetAssetPath(so);
+                    var newPath = Path.Combine(folderPath, Path.GetFileName(assetPath));
+                    if (assetPath != newPath) {
+                        AssetDatabase.MoveAsset(assetPath, newPath);
                     }
                 }
+            }
+        }
+        
+        public static void UnSortScriptableObjectFolder(LCPatcherSettings settings) {
+            string soPath;
+            if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
+                soPath = Path.Combine(settings.GetLethalCompanyGamePath(), finalFolder);
+            } else {
+                soPath = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
+            }
+            
+            var allScriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] {soPath})
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(AssetDatabase.LoadAssetAtPath<ScriptableObject>)
+                .Where(x => x)
+                .ToArray();
+            
+            // move all back into MonoBehaviour location and remove other folders
+            foreach (var so in allScriptableObjects) {
+                var assetPath = AssetDatabase.GetAssetPath(so);
+                var newPath = Path.Combine(soPath, Path.GetFileName(assetPath));
+                if (assetPath != newPath) {
+                    AssetDatabase.MoveAsset(assetPath, newPath);
+                }
+            }
+            
+            var folders = AssetDatabase.GetSubFolders(soPath);
+            foreach (var folder in folders) {
+                AssetDatabase.DeleteAsset(folder);
+            }
+        }
+        
+        public static void SortPrefabsFolder(LCPatcherSettings settings) {
+            string prefabsPath;
+            if (settings.AssetRipperSettings.TryGetMapping("Prefabs", out var finalFolder)) {
+                prefabsPath = Path.Combine(settings.GetLethalCompanyGamePath(), finalFolder);
+            } else {
+                prefabsPath = Path.Combine(settings.GetLethalCompanyGamePath(), "Prefabs");
+            }
+            
+            var allPrefabs = AssetDatabase.FindAssets("t:GameObject", new[] {prefabsPath})
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
+                .Where(x => x)
+                .Select(x => new {
+                    prefab = x,
+                    component = getFirstComponent(x)
+                })
+                .ToArray();
+            
+            // var prefabTypeCounts = allPrefabs
+            //     .GroupBy(x => x.GetComponents<MonoBehaviour>().FirstOrDefault()?.GetType().Name)
+            //     .Where(x => x.Key != null)
+            //     .ToDictionary(x => x.Key, x => x.Count());
+            
+            // sort by type
+            using var _ = DictionaryPool<Type, List<GameObject>>.Get(out var mappings);
+            using var __ = ListPool<string>.Get(out var foldersUsed);
+            foreach (var data in allPrefabs) {
+                var firstComponent = data.component;
+                if (firstComponent) {
+                    if (!mappings.TryGetValue(firstComponent.GetType(), out var list)) {
+                        list = new List<GameObject>();
+                        mappings.Add(firstComponent.GetType(), list);
+                    }
+                    list.Add(data.prefab);
+                }
+            }
+
+            foreach (var (key, prefabs) in mappings) {
+                var type = key;
+                if (type != null && prefabs.Count == 1) {
+                    // check base type instead
+                    var baseType = type.BaseType;
+                    if (baseType != null && allPrefabs.Count(x => x.component && baseType.IsAssignableFrom(x.component.GetType())) > 1) {
+                        type = baseType;
+                    }
+                }
+                
+                if (prefabs.Count == 0 || type == null) continue;
+
+                var folder = Path.Combine(prefabsPath, type.Name);
+                Debug.Log($"Folder: {folder}");
+                foldersUsed.Add(folder);
+                if (!AssetDatabase.IsValidFolder(folder)) {
+                    AssetDatabase.CreateFolder(prefabsPath, type.Name);
+                }
+
+                foreach (var prefab in prefabs) {
+                    Debug.Log($"{prefab} -> {type} [{prefabs.Count}]");
+
+                    var assetPath = AssetDatabase.GetAssetPath(prefab);
+                    var newPath = Path.Combine(folder, Path.GetFileName(assetPath));
+                    Debug.Log($"AssetPath: {assetPath} -> {newPath}");
+                    if (assetPath != newPath) {
+                        AssetDatabase.MoveAsset(assetPath, newPath);
+                    }
+                }
+            }
+
+            static Component getFirstComponent(GameObject obj) {
+                var components = obj.GetComponents<Component>();
+                foreach (var component in components) {
+                    if (!component) continue;
+                    if (component is Transform) continue;
+
+                    var @namespace = component.GetType().Namespace;
+                    if (string.IsNullOrEmpty(@namespace)) {
+                        @namespace = string.Empty;
+                    }
+                    
+                    if (@namespace.StartsWith("Unity")) {
+                        continue;
+                    }
+                    
+                    return component;
+                }
+                return null;
+            }
+        }
+        
+        public static void UnSortPrefabsFolder(LCPatcherSettings settings) {
+            string prefabsPath;
+            if (settings.AssetRipperSettings.TryGetMapping("Prefabs", out var finalFolder)) {
+                prefabsPath = Path.Combine(settings.GetLethalCompanyGamePath(), finalFolder);
+            } else {
+                prefabsPath = Path.Combine(settings.GetLethalCompanyGamePath(), "Prefabs");
+            }
+            
+            var allPrefabs = AssetDatabase.FindAssets("t:GameObject", new[] {prefabsPath})
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
+                .Where(x => x)
+                .ToArray();
+            
+            // move all back into Prefabs location and remove other folders
+            foreach (var prefab in allPrefabs) {
+                var assetPath = AssetDatabase.GetAssetPath(prefab);
+                var newPath = Path.Combine(prefabsPath, Path.GetFileName(assetPath));
+                if (assetPath != newPath) {
+                    AssetDatabase.MoveAsset(assetPath, newPath);
+                }
+            }
+            
+            var folders = AssetDatabase.GetSubFolders(prefabsPath);
+            foreach (var folder in folders) {
+                AssetDatabase.DeleteAsset(folder);
             }
         }
 

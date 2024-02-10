@@ -173,6 +173,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             FinalizerModule.PatchHDRPVolumeProfile(settings);
             FinalizerModule.PatchDiageticAudioMixer(settings);
             FinalizerModule.SortScriptableObjectFolder(settings);
+            FinalizerModule.SortPrefabsFolder(settings);
             FinalizerModule.OpenInitScene();
             FinalizerModule.ChangeGameViewResolution();
 

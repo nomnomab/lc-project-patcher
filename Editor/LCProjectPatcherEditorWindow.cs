@@ -15,43 +15,6 @@ namespace Nomnom.LCProjectPatcher.Editor {
         
         private static LCProjectPatcherEditorWindow _instance;
         private int _lastStep;
-        
-        [MenuItem("Tools/Nomnom/LC - Project Patcher/Open")]
-        public static void ShowWindow() {
-            GetWindow<LCProjectPatcherEditorWindow>("LC - Project Patcher");
-        }
-        
-        [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory")]
-        public static void UseGameBepInExDirectory() {
-            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false);
-            EditorPrefs.SetBool("nomnom.lc_project_patcher.use_game_bepinex", !v);
-            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory", v);
-            
-            EditorUtility.DisplayDialog("Restart Unity",
-                "You may have to restart Unity to properly unload any loaded plugins since last changing this value!",
-                "Ok");
-        }
-        
-        [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory", true)]
-        public static bool UseGameBepInExDirectory_Bool() {
-            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false);
-            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory", v);
-            return true;
-        }
-        
-        [MenuItem("Tools/Nomnom/LC - Project Patcher/Skip Main Menu")]
-        public static void WantsInstantStart() {
-            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.skip_main_menu", false);
-            EditorPrefs.SetBool("nomnom.lc_project_patcher.skip_main_menu", !v);
-            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Skip Main Menu", v);
-        }
-        
-        [MenuItem("Tools/Nomnom/LC - Project Patcher/Skip Main Menu", true)]
-        public static bool WantsInstantStart_Bool() {
-            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.skip_main_menu", false);
-            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Skip Main Menu", v);
-            return true;
-        }
 
         private void CreateGUI() {
             if (_instance && _instance != this) {
@@ -176,6 +139,29 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 AssetRipperModule.RunAssetRipper(ModuleUtility.GetPatcherSettings()).Forget();
             }) {
                 text = "Run Asset Ripper"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.SortScriptableObjectFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            }) {
+                text = "Sort ScriptableObjects"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.UnSortScriptableObjectFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            }) {
+                text = "Unsort ScriptableObjects"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.SortPrefabsFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            }) {
+                text = "Sort Prefabs"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.UnSortPrefabsFolder(ModuleUtility.GetPatcherSettings());
+            }) {
+                text = "Unsort Prefabs"
             });
             
             var objField = new ObjectField("ObjectField") {

@@ -46,6 +46,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             }
             
             Directory.CreateDirectory(outputPath);
+            
+            // make sure we have the dll in-place
+            var dllLocation = Path.Combine(Path.GetDirectoryName(assetRipperExePath), "AssetRipper.SourceGenerated.dll");
+            if (!File.Exists(dllLocation)) {
+                var dllUrl = ModuleUtility.AssetRipperDllUrl;
+                EditorUtility.DisplayProgressBar("Downloading AssetRipper DLL", $"Downloading from {dllUrl}", 0.5f);
+            }
 
             // run asset ripper
             Debug.Log($"Running AssetRipper at \"{assetRipperExePath}\" with \"{pathToData}\" and outputting into \"{outputPath}\"");

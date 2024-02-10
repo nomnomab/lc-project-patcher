@@ -196,3 +196,5 @@ public static class ResetNetcodeRpcTables {
     }
 }
 ```
+
+- For the `Unity/Native` folder maybe it should only take what is actually only in the project on creation, and nothing afterward.
