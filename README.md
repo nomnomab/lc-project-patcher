@@ -122,6 +122,8 @@ Yes, but you'll have to do it manually.
 
 If there are any "missing prefab" issues in your prefabs/scenes, then make sure you have the needed assets in the project.
 
+This does not migrate materials, audio clips, meshes, etc to the ones in the new project, so those will have to be manually fixed if needed.
+
 ### Why can I not delete a plugin from the plugins folder?
 
 If a plugin is loaded while playing the game in-editor, then it will stay loaded forever. This is just how Unity handles their dll hooks.
