@@ -127,8 +127,8 @@ public class BepInExPatcher: MonoBehaviour {
         
         Chainloader.Start();
         harmony.UnpatchSelf();
-        // harmony.PatchAll(typeof(OnlineDisabler));
-        // harmony.PatchAll(typeof(SkipMenu));
+        harmony.PatchAll(typeof(OnlineDisabler));
+        harmony.PatchAll(typeof(SkipMenu));
         harmony.PatchAll(typeof(EventSystemPatch));
         
         Debug.Log("Loaded BepInEx!");
