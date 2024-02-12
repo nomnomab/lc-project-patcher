@@ -50,7 +50,8 @@ This tool does **not** distribute game files. It uses what is already on your co
 2. Open the Package Manager from `Window > Package Manager`
 3. Click the '+' button in the top-left of the window
 4. Click 'Add package from git URL'
-5. Provide the URL of the this git repository: https://github.com/nomnomab/lc-project-patcher.git#v0.3.0
+5. Provide the URL of the this git repository: https://github.com/nomnomab/lc-project-patcher.git
+    - If you are using a specific version, you can append it to the end of the git URL, such as `#v0.3.0`
 6. Click the 'add' button
 
 ## Usage
