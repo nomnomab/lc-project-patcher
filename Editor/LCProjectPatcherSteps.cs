@@ -180,7 +180,6 @@ namespace Nomnom.LCProjectPatcher.Editor {
             BepInExModule.CopyTemplateFolder();
             await BepInExModule.Install(settings);
             BepInExModule.InstallMonoMod(settings);
-            BepInExModule.CopyUtility(settings);
             
             SetCurrentStep(5);   
             // return UniTask.CompletedTask;

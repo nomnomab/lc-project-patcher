@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
-using Unity.Netcode;
+using System.Linq;
 using UnityEngine;
 
 // ? eat my socks Unity and your lack of using domain reload
@@ -22,8 +23,11 @@ public static class ResetNetcodeRpcTables {
             return;
         }
 #endif
-        var rpcFuncTableField = typeof(NetworkManager).GetField("__rpc_func_table");
-        var rpcNameTableField = typeof(NetworkManager).GetField("__rpc_name_table");
+        var networkManagerType = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(x => x.GetTypes())
+            .FirstOrDefault(x => x.FullName == "Unity.Netcode.NetworkManager");
+        var rpcFuncTableField = networkManagerType.GetField("__rpc_func_table");
+        var rpcNameTableField = networkManagerType.GetField("__rpc_name_table");
         var rpcFuncTable = (IDictionary)rpcFuncTableField.GetValue(null);
         var rpcNameTable = (IDictionary)rpcNameTableField.GetValue(null);
         rpcFuncTable.Clear();

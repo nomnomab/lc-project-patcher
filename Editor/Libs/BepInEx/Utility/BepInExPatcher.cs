@@ -133,7 +133,8 @@ public class BepInExPatcher: MonoBehaviour {
         Chainloader.Start();
         harmony.UnpatchSelf();
         harmony.PatchAll(typeof(OnlineDisabler));
-        harmony.PatchAll(typeof(SkipMenu));
+        harmony.PatchAll(typeof(IntroSkipper));
+        harmony.PatchAll(typeof(MenuSkipper));
         harmony.PatchAll(typeof(EventSystemPatch));
         
         Debug.Log("Loaded BepInEx!");
@@ -300,7 +301,7 @@ public class BepInExPatcher: MonoBehaviour {
 
     [HarmonyPatch]
     private static class IgnoreILHelpers {
-        public static IEnumerable<MethodBase> TargetMethods() {
+        private static IEnumerable<MethodBase> TargetMethods() {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
             foreach (var assembly in assemblies) {
                 Type[] types;
@@ -334,16 +335,17 @@ public class BepInExPatcher: MonoBehaviour {
             }
         }
 
-        public static bool Prefix() {
+        private static bool Prefix() {
             return false;
         }
     }
-
-    [HarmonyPatch(typeof(PreInitSceneScript))]
+    
     private static class OnlineDisabler {
-        [HarmonyPatch(nameof(PreInitSceneScript.ChooseLaunchOption))]
-        [HarmonyPrefix]
-        private static bool ChooseLaunchOption(bool online) {
+        private static MethodBase TargetMethod() {
+            return AccessTools.Method("PreInitSceneScript:ChooseLaunchOption");
+        }
+        
+        private static bool Prefix(bool online) {
             if (online) {
                 EditorUtility.DisplayDialog("Error", "Online mode is not supported!", "OK");
                 return false;
@@ -351,10 +353,14 @@ public class BepInExPatcher: MonoBehaviour {
     
             return true;
         }
+    }
+
+    private static class IntroSkipper {
+        private static MethodBase TargetMethod() {
+            return AccessTools.Method("PreInitSceneScript:Start");
+        }
         
-        [HarmonyPatch("Start")]
-        [HarmonyPostfix]
-        private static void InstantlyStartGame() {
+        private static void Postfix() {
             if (!WantsInstantStart) return;
             FindObjectOfType<BepInExPatcher>().StartCoroutine(Waiter());
         }
@@ -367,20 +373,32 @@ public class BepInExPatcher: MonoBehaviour {
         }
     }
     
-    [HarmonyPatch(typeof(MenuManager))]
-    private static class SkipMenu {
-        [HarmonyPatch("Start")]
-        [HarmonyPrefix]
-        private static void Start(MenuManager __instance) {
+    private static class MenuSkipper {
+        private static MethodBase TargetMethod() {
+            return AccessTools.Method("MenuManager:Start");
+        }
+        
+        private static void Postfix(MonoBehaviour __instance) {
             if (!WantsInstantStart) return;
             __instance.StartCoroutine(Waiter());
         }
     
         private static IEnumerator Waiter() {
             yield return new WaitForSeconds(0.1f);
-            FindObjectOfType<MenuManager>().ClickHostButton();
+            var menuManagerObj = GameObject.Find("Canvas/MenuManager");
+            var menuManager = menuManagerObj.GetComponents<MonoBehaviour>().FirstOrDefault(x => x.GetType().Name == "MenuManager");
+            if (!menuManager) {
+                Debug.LogError("Failed to find MenuManager!");
+                yield break;
+            }
+            
+            var clickHostButtonMethod = AccessTools.Method(menuManager.GetType(), "ClickHostButton");
+            clickHostButtonMethod.Invoke(menuManager, null);
+            
             yield return new WaitForSeconds(0.1f);
-            FindObjectOfType<MenuManager>().ConfirmHostButton();
+            
+            var confirmHostButtonMethod = AccessTools.Method(menuManager.GetType(), "ConfirmHostButton");
+            confirmHostButtonMethod.Invoke(menuManager, null);
         }
     }
     
