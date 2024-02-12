@@ -13,6 +13,7 @@ using Mono.Cecil;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
@@ -47,6 +48,7 @@ public class BepInExPatcher: MonoBehaviour {
     private static string GameDataPath => Path.Combine(DirectoryPath, "Lethal Company_Data");
     private static string ManagedPath => Path.Combine(GameDataPath, "Managed");
     
+    private static CustomPassVolume _posterizationVolume;
     private static List<Assembly> _assemblies = new();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
@@ -104,7 +106,6 @@ public class BepInExPatcher: MonoBehaviour {
         var gamePlugins = Path.Combine(Path.GetDirectoryName(filePath), "BepInEx", "plugins");
         var gameDlls = Directory.GetFiles(gamePlugins, "*.dll", SearchOption.AllDirectories);
         _assemblies.Clear();
-
         foreach (var gameDll in gameDlls) {
             Debug.Log($"Loading {Path.GetFileName(gameDll)}");
             try {
@@ -142,6 +143,11 @@ public class BepInExPatcher: MonoBehaviour {
         DontDestroyOnLoad(obj);
         
         Debug.Log($"BepInExPatcher took {stopwatch.ElapsedMilliseconds}ms to load");
+
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        SceneManager.sceneUnloaded -= OnSceneUnloaded;
+        SceneManager.sceneUnloaded += OnSceneUnloaded;
     }
 
     private static void OverridePaths() {
@@ -227,6 +233,28 @@ public class BepInExPatcher: MonoBehaviour {
                     // Debug.LogWarning($"Failed to reset {field.Name} in {type.FullName}: {e}");
                 }
             }
+        }
+    }
+    
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode) {
+        var useExperimentalPosterizationShader = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_experimental_posterization_shader", false);
+        if (scene.name == "SampleSceneRelay" && !_posterizationVolume && useExperimentalPosterizationShader) {
+            var volume = Resources.Load<CustomPassVolume>("Posterization/PosterizationGlobalVolume");
+            if (!volume) {
+                Debug.LogWarning("Failed to load PosterizationGlobalVolume!");
+                return;
+            }
+            
+            _posterizationVolume = Instantiate(volume);
+            _posterizationVolume.gameObject.SetActive(true);
+            SceneManager.MoveGameObjectToScene(_posterizationVolume.gameObject, scene);
+        }
+    }
+    
+    private static void OnSceneUnloaded(Scene scene) {
+        if (scene.name == "SampleSceneRelay" && _posterizationVolume) {
+            Destroy(_posterizationVolume.gameObject);
+            _posterizationVolume = null;
         }
     }
 

@@ -193,6 +193,7 @@ For now get it normally via the normal game and the patcher approach. Once you h
 - MonoMod - https://github.com/MonoMod/MonoMod
 - GameViewSizeShortcut - https://gist.github.com/wappenull/668a492c80f7b7fda0f7c7f42b3ae0b0
 - BepInEx - https://github.com/BepInEx/BepInEx
+- IntegrityChaos - for the posterization shader remake
 
 <br/>
 

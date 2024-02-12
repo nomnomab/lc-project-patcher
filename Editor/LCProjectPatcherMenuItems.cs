@@ -27,6 +27,20 @@ namespace Nomnom.LCProjectPatcher.Editor {
             return true;
         }
         
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Experimental Posterization Shader")]
+        public static void UseExperimentalPosterizationShader() {
+            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_experimental_posterization_shader", false);
+            EditorPrefs.SetBool("nomnom.lc_project_patcher.use_experimental_posterization_shader", !v);
+            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Use Experimental Posterization Shader", v);
+        }
+        
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Experimental Posterization Shader", true)]
+        public static bool UseExperimentalPosterizationShader_Bool() {
+            var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_experimental_posterization_shader", false);
+            Menu.SetChecked("Tools/Nomnom/LC - Project Patcher/Use Experimental Posterization Shader", v);
+            return true;
+        }
+        
         [MenuItem("Tools/Nomnom/LC - Project Patcher/Skip Main Menu")]
         public static void WantsInstantStart() {
             var v = EditorPrefs.GetBool("nomnom.lc_project_patcher.skip_main_menu", false);
