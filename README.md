@@ -1,6 +1,8 @@
 ﻿# Lethal Company Project Patcher
 
 > This tool is still in development and is quite experimental, but should be usable.
+> 
+> This also does not support exporting a plugin from within the editor *yet*.
 
 This tool fills in a unity project with functional assets so you can run the game in the editor to test custom plugins.
 

@@ -46,6 +46,8 @@ public class BepInExPatcher: MonoBehaviour {
     private static string DirectoryPath => Path.GetDirectoryName(ActualExePath);
     private static string GameDataPath => Path.Combine(DirectoryPath, "Lethal Company_Data");
     private static string ManagedPath => Path.Combine(GameDataPath, "Managed");
+    
+    private static List<Assembly> _assemblies = new();
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void OnLoad() {
@@ -101,10 +103,12 @@ public class BepInExPatcher: MonoBehaviour {
         // sub-dependencies are not always loaded
         var gamePlugins = Path.Combine(Path.GetDirectoryName(filePath), "BepInEx", "plugins");
         var gameDlls = Directory.GetFiles(gamePlugins, "*.dll", SearchOption.AllDirectories);
+        _assemblies.Clear();
+
         foreach (var gameDll in gameDlls) {
             Debug.Log($"Loading {Path.GetFileName(gameDll)}");
             try {
-                Assembly.LoadFile(gameDll);
+                _assemblies.Add(Assembly.LoadFile(gameDll));
             } catch (Exception e) {
                 Debug.LogError($"Failed to load {gameDll}: {e}");
             }
@@ -175,6 +179,10 @@ public class BepInExPatcher: MonoBehaviour {
         Harmony.UnpatchAll();
         ResetNetcodeRpcTables.DidReset = false;
 
+        DisposePlugins();
+        _assemblies.Clear();
+
+        // clean up hidden objects
         foreach (var obj in Resources.FindObjectsOfTypeAll<GameObject>()) {
             if (EditorUtility.IsPersistent(obj.transform.root.gameObject)) {
                 continue;
@@ -187,6 +195,37 @@ public class BepInExPatcher: MonoBehaviour {
             if (obj.hideFlags == HideFlags.HideAndDontSave) {
                 Debug.Log($"Destroying {obj}");
                 Destroy(obj);
+            }
+        }
+    }
+
+    private static void DisposePlugins() {
+        // clear all plugin static information
+        var types = _assemblies.SelectMany(a => a.GetTypes());
+        foreach (var type in types) {
+            var fields = type
+                .GetFields(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(x => !x.Name.StartsWith("<"));
+            foreach (var field in fields) {
+                try {
+                    if (field.FieldType.IsValueType) {
+                        field.SetValue(null, Activator.CreateInstance(field.FieldType));
+                        Debug.Log($"Reset value type \"{field.Name}\" in {type.FullName}");
+                    } else {
+                        if (typeof(IList).IsAssignableFrom(field.FieldType)) {
+                            var list = (IList)field.GetValue(null);
+                            list?.Clear();
+                            // field.SetValue(null, null);
+                            Debug.Log($"Reset list \"{field.Name}\" in {type.FullName}");
+                            continue;
+                        }
+                        
+                        field.SetValue(null, null);
+                        Debug.Log($"Reset reference type \"{field.Name}\" in {type.FullName}");
+                    }
+                } catch {
+                    // Debug.LogWarning($"Failed to reset {field.Name} in {type.FullName}: {e}");
+                }
             }
         }
     }
