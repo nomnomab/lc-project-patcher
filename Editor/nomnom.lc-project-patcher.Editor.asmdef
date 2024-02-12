@@ -1,8 +1,11 @@
 {
     "name": "nomnom.lc-project-patcher.Editor",
-    "rootNamespace": "Nomnom.LCProjectPatcher",
+    "rootNamespace": "Nomnom.LCProjectPatcher.Editor",
     "references": [
-        "GUID:f51ebe6a0ceec4240a699833d6309b23"
+        "GUID:f51ebe6a0ceec4240a699833d6309b23",
+        "GUID:457756d89b35d2941b3e7b37b4ece6f1",
+        "GUID:bcef4751efa24f7f97e177b12962c86a",
+        "GUID:1491147abca9d7d4bb7105af628b223e"
     ],
     "includePlatforms": [
         "Editor"

@@ -1,10 +1,10 @@
 ﻿using System.IO;
 using System.Linq;
-using Cysharp.Threading.Tasks;
+using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEditor;
 using UnityEngine;
 
-namespace Nomnom.LCProjectPatcher.Modules {
+namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class ModifyProjectSettingsModule {
         private readonly static string[] FilesToCopy = new[] {
             "NavMeshAreas.asset",
@@ -13,8 +13,8 @@ namespace Nomnom.LCProjectPatcher.Modules {
             "DynamicsManager.asset"
         };
         
-        public static UniTask Patch() {
-            var assetRipperPath = EditorPrefs.GetString("nomnom.lc_project_patcher.asset_ripper_path");
+        public static void CopyOverProjectSettings() {
+            var assetRipperPath = ModuleUtility.AssetRipperTempDirectoryExportedProject;
             PlayerSettings.allowUnsafeCode = true;
             
             var assetRipperSettingsFolder = Path.Combine(assetRipperPath, "ProjectSettings");
@@ -29,7 +29,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
                 File.Copy(file, projectFile, true);
             }
             
-            return UniTask.CompletedTask;
+            Debug.Log("Project settings copied");
         }
     }
 }

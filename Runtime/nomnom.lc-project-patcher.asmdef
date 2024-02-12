@@ -1,0 +1,14 @@
+{
+    "name": "nomnom.lc-project-patcher",
+    "rootNamespace": "Nomnom.LCProjectPatcher",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

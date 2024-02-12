@@ -1,178 +1,239 @@
 using System;
 using System.IO;
 using Cysharp.Threading.Tasks;
+using Nomnom.LCProjectPatcher.Editor.Modules;
 using Nomnom.LCProjectPatcher.Modules;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
-namespace Nomnom.LCProjectPatcher {
+namespace Nomnom.LCProjectPatcher.Editor {
     public class LCProjectPatcherEditorWindow : EditorWindow {
-        [MenuItem("Tools/Nomnom/LC - Project Patcher")]
-        public static void ShowWindow() {
-            GetWindow<LCProjectPatcherEditorWindow>("LC - Project Patcher");
-        }
+        public static LCProjectPatcherEditorWindow Instance { get; private set; }
+        
+        private static LCProjectPatcherEditorWindow _instance;
+        private int _lastStep;
 
         private void CreateGUI() {
+            if (_instance && _instance != this) {
+                Close();
+                return;
+            }
+            
+            // validate that folders exists
+            var settings = ModuleUtility.GetPatcherSettings();
+            ModuleUtility.CreateDirectory(settings.GetBaseUnityPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetBaseLethalCompanyPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetNativePath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
+            
+            AssetDatabase.Refresh();
+            
+            _instance = this;
             rootVisualElement.styleSheets.Add(Resources.Load<StyleSheet>("MissingScriptValidator_Styles"));
 
-            var scopeBox = new VisualElement();
-            scopeBox.AddToClassList("scope-box");
-
-            var scroll = new ScrollView();
-
-            rootVisualElement.Add(scopeBox);
-
-            scopeBox.Add(scroll);
-            scroll.Add(CreateAssetRipperPathSelector());
-            scroll.Add(CreateLethalCompanyDataPathSelector());
-
-            var label = new Label("Installation");
-            label.name = "Title";
-            scroll.Add(label);
-
-            scroll.Add(CreateStep(string.Empty, () => InstallAll().Forget(), buttonText: "Install All"));
-            scroll.Add(CreateStep("Update project settings", null, null));
-            scroll.Add(CreateStep("Install required packages", null, null));
-            // scroll.Add(CreateStep("Install required packages", () => Fix(PackagesModule.Patch).Forget()));
-            scroll.Add(CreateStep("Copy required Lethal Company files", null, null));
-            scroll.Add(CreateStep("Strip all Assembly-CSharp scripts", null, null));
-
-            label = new Label("Fixes");
-            label.name = "Title";
-            scroll.Add(label);
-
-            scroll.Add(CreateStep(string.Empty, () => FixAll().Forget(), buttonText: "Fix All"));
-            scroll.Add(CreateStep("Patch Scripts", null, null));
-            scroll.Add(CreateStep("Patch Scriptable Objects", null, null));
-            scroll.Add(CreateStep("Patch Materials", null, null));
-            // scroll.Add(CreateStep("Patch Animation Clips", null, null));
-            scroll.Add(CreateStep("Copy final Asset Ripper files", null, null));
+            var mainDocument = Resources.Load<VisualTreeAsset>("LCPatcher_Main");
+            mainDocument.CloneTree(rootVisualElement);
             
-            // scroll.Add(new Button(() => {
-            //     GuidPatcherModule.Patch(debugMode: true).Forget();
-            // }) {
-            //     text = "Debug monoscripts"
-            // });
+            const string lastPatchedAtKey = "nomnom.lc_project_patcher.last_patched_at";
+            var lastPatchedAt = EditorPrefs.GetString(lastPatchedAtKey, "never");
+            var lastPatchedAtLabel = rootVisualElement.Q<Label>("last-patched-at");
+            lastPatchedAtLabel.text = $"last patched at: {lastPatchedAt}";
+
+            const string dataFolderPathKey = "nomnom.lc_project_patcher.lc_data_folder";
+            var dataPath = EditorPrefs.GetString(dataFolderPathKey, "C:/Program Files (x86)/Steam/steamapps/common/Lethal Company/Lethal Company_Data".Replace('/', Path.DirectorySeparatorChar));
+            var lethalCompanyDataPath = rootVisualElement.Q<TextField>("lc-data-path-input");
+            lethalCompanyDataPath.value = dataPath;
+            
+            var lethalCompanyDataPathBrowseButton = rootVisualElement.Q<Button>();
+            
+            lethalCompanyDataPath.RegisterValueChangedCallback(x => {
+                EditorPrefs.SetString(dataFolderPathKey, x.newValue);
+            });
+            
+            lethalCompanyDataPathBrowseButton.clicked += () => {
+                var newPath = EditorUtility.OpenFolderPanel("Select Lethal Company Data Path", dataPath, "");
+                if (string.IsNullOrEmpty(newPath)) {
+                    return;
+                }
+
+                lethalCompanyDataPath.value = newPath;
+                EditorPrefs.SetString(dataFolderPathKey, newPath);
+            };
+            
+            const string deleteTempAssetRipperFilesKey = "nomnom.lc_project_patcher.delete_temp_asset_ripper_files";
+            var deleteTempAssetRipperFiles = rootVisualElement.Q<Toggle>("delete-temp-ripper-files-toggle");
+            deleteTempAssetRipperFiles.value = EditorPrefs.GetBool(deleteTempAssetRipperFilesKey, true);
+            deleteTempAssetRipperFiles.RegisterValueChangedCallback(evt => {
+                EditorPrefs.SetBool(deleteTempAssetRipperFilesKey, evt.newValue);
+            });
+            
+            const string useGameBepInExKey = "nomnom.lc_project_patcher.use_game_bepinex";
+            var useGamesBepInExDirectory = rootVisualElement.Q<Toggle>("use-game-bepinex-toggle");
+            useGamesBepInExDirectory.value = EditorPrefs.GetBool(useGameBepInExKey, false);
+            useGamesBepInExDirectory.RegisterValueChangedCallback(x => {
+                EditorPrefs.SetBool(useGameBepInExKey, x.newValue);
+                EditorUtility.DisplayDialog("Restart Unity",
+                    "You may have to restart Unity to properly unload any loaded plugins since last changing this value!",
+                    "Ok");
+            });
+            
+            var patcherButton = rootVisualElement.Q<Button>("patch-button");
+            patcherButton.clicked += RunPatcher;
+            patcherButton.clicked += () => {
+                var lastPatchedAt = EditorPrefs.GetString(lastPatchedAtKey, "never");
+                lastPatchedAtLabel.text = $"last patched at: {lastPatchedAt}";
+            };
+            
+            CreateDebugFoldout(rootVisualElement.Q("scroll"));
+            
+            LCProjectPatcherSteps.onCompleted += () => {
+                SetWindowState(true);
+                Debug.Log("Patcher has completed :)");
+                
+                if (EditorPrefs.GetBool(deleteTempAssetRipperFilesKey, true)) {
+                    var assetRipperPath = ModuleUtility.AssetRipperTempDirectory;
+                    try {
+                        if (Directory.Exists(assetRipperPath)) {
+                            Directory.Delete(assetRipperPath, recursive: true);
+                        }
+                    
+                        Debug.Log("Deleted temp Asset Ripper files");
+                    } catch (Exception e) {
+                        Debug.LogError($"Failed to delete temp Asset Ripper files: {e}");
+                    }
+                }
+            };
         }
 
-        private static async UniTask Fix(Func<UniTask> task) {
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-            try {
-                await task();
-            } catch (Exception e) {
-                Debug.LogException(e);
-            }
-            stopwatch.Stop();
-            Debug.Log($"A task finished in {stopwatch.ElapsedMilliseconds}ms");
-        }
-        
-        private static async UniTask<T> Fix<T>(Func<UniTask<T>> task) {
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-            T result = default;
-            try {
-                result = await task();
-            } catch (Exception e) {
-                Debug.LogException(e);
-            }
-            stopwatch.Stop();
-            Debug.Log($"A task finished in {stopwatch.ElapsedMilliseconds}ms");
-            return result;
-        }
-
-        private async UniTask InstallAll() {
-            rootVisualElement.SetEnabled(false);
-            AssetDatabase.StartAssetEditing();
-            
-            await Fix(ModifyProjectSettingsModule.Patch);
-            var installedNewPackage = await Fix(PackagesModule.Patch);
-            await Fix(SteamGameModule.Patch);
-            await Fix(AssetRipperModule.PatchInstall);
-            
-            AssetDatabase.StopAssetEditing();
-            rootVisualElement.SetEnabled(true);
-            
-            // ? re-open editor otherwise Unity is a bit stupid and won't reload packages until randomly later
-            // ? this also forces the Input System backend pop-up to show up and actually do what it needs to
-            if (installedNewPackage) {
-                EditorApplication.OpenProject(Directory.GetCurrentDirectory());
-            } else {
+        private void CreateDebugFoldout(VisualElement parent) {
+            var foldout = new Foldout {
+                text = "Debug tools",
+                value = false
+            };
+            parent.Add(foldout);
+            foldout.Add(new Button(() => {
+                GuidPatcherModule.PatchAll(ModuleUtility.GetPatcherSettings(), debugMode: true);
+            }) {
+                text = "Debug monoscripts"
+            });
+            foldout.Add(new Button(() => {
+                AssetRipperModule.RemoveDunGenFromOutputIfNeeded(ModuleUtility.GetPatcherSettings());
+            }) {
+                text = "Test DunGen path"
+            });
+            foldout.Add(new Button(() => {
+                AssetRipperModule.RunAssetRipper(ModuleUtility.GetPatcherSettings()).Forget();
+            }) {
+                text = "Run Asset Ripper"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.SortScriptableObjectFolder(ModuleUtility.GetPatcherSettings());
                 AssetDatabase.Refresh();
-                AssetDatabase.RefreshSettings();
-                ReimportRandomAsset();
+            }) {
+                text = "Sort ScriptableObjects"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.UnSortScriptableObjectFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            }) {
+                text = "Unsort ScriptableObjects"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.SortPrefabsFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            }) {
+                text = "Sort Prefabs"
+            });
+            foldout.Add(new Button(() => {
+                FinalizerModule.UnSortPrefabsFolder(ModuleUtility.GetPatcherSettings());
+            }) {
+                text = "Unsort Prefabs"
+            });
+            
+            var objField = new ObjectField("ObjectField") {
+                objectType = typeof(Object)
+            };
+            foldout.Add(objField);
+            
+            var findGuidButton = new Button(() => {
+                var obj = objField.value;
+                var globalID = GlobalObjectId.GetGlobalObjectIdSlow(obj);
+                Debug.Log(globalID);
+            }) {
+                text = "Find GUID"
+            };
+            foldout.Add(findGuidButton);
+            
+            var clearPrefs = new Button(() => {
+                PlayerPrefs.DeleteAll();
+                PlayerPrefs.Save();
+            }) {
+                text = "Clear Prefs"
+            };
+            foldout.Add(clearPrefs);
+            
+            var diagetic = new Button(() => {
+                FinalizerModule.PatchDiageticAudioMixer(ModuleUtility.GetPatcherSettings());
+            }) {
+                text = "Fix Diagetic Mixer"
+            };
+            foldout.Add(diagetic);
+        }
+
+        private void RunPatcher() {
+            // validate data path
+            var dataPath = ModuleUtility.LethalCompanyDataFolder;
+            if (string.IsNullOrEmpty(dataPath) || !Directory.Exists(dataPath)) {
+                Debug.LogError("Lethal Company data path is invalid!");
+                return;
             }
+            
+            if (!dataPath.EndsWith("_Data")) {
+                Debug.LogError("The data path needs to end in \"_Data\"!");
+                return;
+            }
+            
+            if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {
+                return;
+            }
+            
+            SetWindowState(false);
+            var date = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            EditorPrefs.SetString("nomnom.lc_project_patcher.last_patched_at", date);
+            LCProjectPatcherSteps.SetCurrentStep(1);
+            _lastStep = 1;
+            LCProjectPatcherSteps.RunAll().Forget();
         }
 
-        private async UniTask FixAll() {
-            rootVisualElement.SetEnabled(false);
-            AssetDatabase.StartAssetEditing();
-            
-            await Fix(() => GuidPatcherModule.Patch());
-            // await Fix(AnimationClipPatcherModule.Patch);
-            await Fix(AssetRipperModule.PatchFix);
-            
-            AssetDatabase.StopAssetEditing();
+        public void SetWindowState(bool enabled) {
             rootVisualElement.SetEnabled(true);
-            AssetDatabase.Refresh();
-            AssetDatabase.RefreshSettings();
-            ReimportRandomAsset();
         }
 
-        private static void ReimportRandomAsset() {
-            var assets = AssetDatabase.FindAssets("t:Object");
-            var randomAsset = assets[UnityEngine.Random.Range(0, assets.Length)];
-            AssetDatabase.ImportAsset(AssetDatabase.GUIDToAssetPath(randomAsset));
+        private void Update() {
+            if (LCProjectPatcherSteps.GetCurrentStep() is {} step && step != _lastStep) {
+                if (LCProjectPatcherSteps.IsWorking) return;
+                _lastStep = step;
+                Debug.Log($"Step {step}");
+                SetWindowState(false);
+                LCProjectPatcherSteps.RunAll().Forget();
+            }
         }
 
         private static VisualElement CreateStep(string label, Action callback, string buttonText = "Fix") {
             var element = new VisualElement();
             element.AddToClassList("patch-step");
             element.Add(new Label(label));
-            if (!string.IsNullOrEmpty(buttonText)) {
+            if (callback != null && !string.IsNullOrEmpty(buttonText)) {
                 element.Add(new Button(callback) {
-                    text = buttonText
+                    text = $"dev: {buttonText}"
                 });
             }
             return element;
-        }
-
-        private static VisualElement CreateAssetRipperPathSelector() {
-            return CreatePathSelector("Asset Ripper", "nomnom.lc_project_patcher.asset_ripper_path");
-        }
-
-        private static VisualElement CreateLethalCompanyDataPathSelector() {
-            return CreatePathSelector("Lethal Company Data", "nomnom.lc_project_patcher.lc_data_folder");
-        }
-
-        private static VisualElement CreatePathSelector(string name, string key) {
-            var path = EditorPrefs.GetString(key);
-            var pathHorizontal = new VisualElement {
-                style = {
-                    flexDirection = FlexDirection.Row
-                }
-            };
-            pathHorizontal.name = "PathHorizontal";
-            var projectPath = new TextField($"{name} path") {
-                value = path,
-                multiline = false,
-                isDelayed = true
-            };
-            var browseButton = new Button(() => {
-                var newPath = EditorUtility.OpenFolderPanel($"Select {name} Path", path, "");
-                if (string.IsNullOrEmpty(newPath)) {
-                    return;
-                }
-
-                projectPath.value = newPath;
-                EditorPrefs.SetString(key, newPath);
-            }) {
-                text = "Browse"
-            };
-            pathHorizontal.Add(projectPath);
-            pathHorizontal.Add(browseButton);
-            return pathHorizontal;
         }
     }
 }
