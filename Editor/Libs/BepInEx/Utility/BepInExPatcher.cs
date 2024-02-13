@@ -70,33 +70,33 @@ public class BepInExPatcher: MonoBehaviour {
         var useGameBepInEx = EditorPrefs.GetBool("nomnom.lc_project_patcher.use_game_bepinex", false);
         var filePath = useGameBepInEx ? ActualExePath : FakeExePath;
         var setExecutablePath = typeof(Paths).GetMethod("SetExecutablePath", BindingFlags.NonPublic | BindingFlags.Static);
-        setExecutablePath.Invoke(null, new object[] { filePath, null, null, null });
+        setExecutablePath?.Invoke(null, new object[] { filePath, null, null, null });
 
         // reset logger sources
         var sources = typeof(BepInEx.Logging.Logger).GetProperty("Sources", BindingFlags.Public | BindingFlags.Static);
-        var sourcesValue = (ICollection<ILogSource>)sources.GetValue(null);
-        sourcesValue.Clear();
+        var sourcesValue = (ICollection<ILogSource>)sources?.GetValue(null);
+        sourcesValue?.Clear();
         
         // reset _Listeners
         var listeners = typeof(BepInEx.Logging.Logger).GetField("_Listeners", BindingFlags.NonPublic | BindingFlags.Static);
-        var listenersValue = (ICollection<ILogListener>)listeners.GetValue(null);
-        listenersValue.Clear();
+        var listenersValue = (ICollection<ILogListener>)listeners?.GetValue(null);
+        listenersValue?.Clear();
         
         // reset Chainloader._initialized
         var initialized = typeof(Chainloader).GetField("_initialized", BindingFlags.NonPublic | BindingFlags.Static);
-        initialized.SetValue(null, false);
+        initialized?.SetValue(null, false);
         
         // reset _loaded
         var loaded = typeof(Chainloader).GetField("_loaded", BindingFlags.NonPublic | BindingFlags.Static);
-        loaded.SetValue(null, false);
+        loaded?.SetValue(null, false);
         
         // reset internalLogsInitialized
         var internalLogsInitialized = typeof(BepInEx.Logging.Logger).GetField("internalLogsInitialized", BindingFlags.NonPublic | BindingFlags.Static);
-        internalLogsInitialized.SetValue(null, false);
+        internalLogsInitialized?.SetValue(null, false);
         
         // change UnityLogListener.WriteStringToUnityLog to debug log
-        var writeStringToUnityLog = typeof(BepInEx.Logging.UnityLogListener).GetField("WriteStringToUnityLog", BindingFlags.NonPublic | BindingFlags.Static);
-        writeStringToUnityLog.SetValue(null, new Action<string>(Debug.Log));
+        var writeStringToUnityLog = typeof(UnityLogListener).GetField("WriteStringToUnityLog", BindingFlags.NonPublic | BindingFlags.Static);
+        writeStringToUnityLog?.SetValue(null, new Action<string>(Debug.Log));
         
         var harmony = new Harmony("com.nomnom.test-bepinex");
         harmony.PatchAll(typeof(FindPluginTypesPatch));
@@ -105,7 +105,7 @@ public class BepInExPatcher: MonoBehaviour {
         // let up do something dumb! :)
         // get all dlls from game's plugins and manually load them since
         // sub-dependencies are not always loaded
-        var gamePlugins = Path.Combine(Path.GetDirectoryName(filePath), "BepInEx", "plugins");
+        var gamePlugins = Path.Combine(Path.GetDirectoryName(filePath)!, "BepInEx", "plugins");
         var gameDlls = Directory.GetFiles(gamePlugins, "*.dll", SearchOption.AllDirectories);
         _assemblies.Clear();
         
@@ -159,31 +159,31 @@ public class BepInExPatcher: MonoBehaviour {
         
         // ExecutablePath
         var executablePathProperty = typeof(Paths).GetProperty("ExecutablePath");
-        executablePathProperty.SetValue(null, ActualExePath);
+        executablePathProperty?.SetValue(null, ActualExePath);
         
         // ManagedPath
         var managedPathProperty = typeof(Paths).GetProperty("ManagedPath");
-        managedPathProperty.SetValue(null, ManagedPath);
+        managedPathProperty?.SetValue(null, ManagedPath);
         
         // DllSearchPaths
         var dllSearchPathsProperty = typeof(Paths).GetProperty("DllSearchPaths");
-        dllSearchPathsProperty.SetValue(null, new string[] {ManagedPath});
+        dllSearchPathsProperty?.SetValue(null, new[] {ManagedPath});
     }
 
-    private static void DebugPaths() {
-        Debug.Log($"BepInExAssemblyDirectory: {Paths.BepInExAssemblyDirectory}");
-        Debug.Log($"BepInExAssemblyPath: {Paths.BepInExAssemblyPath}");
-        Debug.Log($"BepInExRootPath: {Paths.BepInExRootPath}");
-        Debug.Log($"ExecutablePath: {Paths.ExecutablePath}");
-        Debug.Log($"GameRootPath: {Paths.GameRootPath}");
-        Debug.Log($"ManagedPath: {Paths.ManagedPath}");
-        Debug.Log($"ConfigPath: {Paths.ConfigPath}");
-        Debug.Log($"BepInExConfigPath: {Paths.BepInExConfigPath}");
-        Debug.Log($"CachePath: {Paths.CachePath}");
-        Debug.Log($"PatcherPluginPath: {Paths.PatcherPluginPath}");
-        Debug.Log($"PluginPath: {Paths.PluginPath}");
-        Debug.Log($"ProcessName: {Paths.ProcessName}");
-    }
+    // private static void DebugPaths() {
+    //     Debug.Log($"BepInExAssemblyDirectory: {Paths.BepInExAssemblyDirectory}");
+    //     Debug.Log($"BepInExAssemblyPath: {Paths.BepInExAssemblyPath}");
+    //     Debug.Log($"BepInExRootPath: {Paths.BepInExRootPath}");
+    //     Debug.Log($"ExecutablePath: {Paths.ExecutablePath}");
+    //     Debug.Log($"GameRootPath: {Paths.GameRootPath}");
+    //     Debug.Log($"ManagedPath: {Paths.ManagedPath}");
+    //     Debug.Log($"ConfigPath: {Paths.ConfigPath}");
+    //     Debug.Log($"BepInExConfigPath: {Paths.BepInExConfigPath}");
+    //     Debug.Log($"CachePath: {Paths.CachePath}");
+    //     Debug.Log($"PatcherPluginPath: {Paths.PatcherPluginPath}");
+    //     Debug.Log($"PluginPath: {Paths.PluginPath}");
+    //     Debug.Log($"ProcessName: {Paths.ProcessName}");
+    // }
 
     private void OnDestroy() {
         Harmony.UnpatchAll();
@@ -359,7 +359,7 @@ public class BepInExPatcher: MonoBehaviour {
                 foreach (var type in types) {
                     if (type == null) continue;
 
-                    var isPlugin = false;
+                    bool isPlugin;
                     try {
                         isPlugin = typeof(BaseUnityPlugin).IsAssignableFrom(type);
                     } catch {
@@ -371,7 +371,7 @@ public class BepInExPatcher: MonoBehaviour {
                         var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic);
                         foreach (var method in methods) {
                             if (method.Name == "IlHook") {
-                                yield return (MethodBase)method;
+                                yield return method;
                             }
                         }
                     }

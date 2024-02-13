@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
@@ -174,23 +173,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             AssetDatabase.ImportPackage(packagepath, false);
             EditorUtility.ClearProgressBar();
         }
-
-        // public static void CopyAssetRipperScripts(LCPatcherSettings settings) {
-        //     var assetRipperSettings = settings.AssetRipperSettings;
-        //     var outputRootFolder = settings.GetLethalCompanyGamePath(fullPath: true);
-        //     
-        //     var assetRipperTempFolder = ModuleUtility.AssetRipperTempDirectoryExportedProject;
-        //     var assetsFolder = Path.Combine(assetRipperTempFolder, "Assets");
-        //     
-        //     string scriptsFolder;
-        //     if (assetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
-        //         scriptsFolder = Path.Combine(outputRootFolder, finalFolder);
-        //     } else {
-        //         scriptsFolder = Path.Combine(outputRootFolder, "Scripts");
-        //     }
-        //     
-        //     ModuleUtility.CopyFilesRecursively(Path.Combine(assetsFolder, "Scripts", "Assembly-CSharp"), scriptsFolder);
-        // }
         
         public static void CopyAssetRipperContents(LCPatcherSettings settings) {
             var assetRipperSettings = settings.AssetRipperSettings;
@@ -277,59 +259,5 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 Directory.Delete(soPath, recursive: true);
             }
         }
-
-        // public static UniTask PatchFix() {
-        //     var assetRipperPath = ModuleUtility.AssetRipperCloneDirectory;
-        //     
-        //     // copy shadergraph shaders
-        //     var shaderGraphPath = Path.Combine(assetRipperPath, "Assets", "Shader");
-        //     var projectShaderGraphPath = Path.Combine(Application.dataPath, "Shader");
-        //     Directory.CreateDirectory(projectShaderGraphPath);
-        //
-        //     var shaderGraphFiles = Directory
-        //         .GetFiles(shaderGraphPath, "*.shader", SearchOption.AllDirectories)
-        //         .Where(x => Path.GetFileNameWithoutExtension(x).StartsWith("Shader Graphs"))
-        //         .ToArray();
-        //
-        //     for (var i = 0; i < shaderGraphFiles.Length; i++) {
-        //         var file = shaderGraphFiles[i];
-        //         var fileName = Path.GetFileName(file);
-        //         var projectFilePath = Path.Combine(projectShaderGraphPath, fileName);
-        //         EditorUtility.DisplayProgressBar("Copying Shader Graphs", $"Copying {fileName} to {projectFilePath}", (float)i / shaderGraphFiles.Length);
-        //         File.Copy(file, projectFilePath, overwrite: true);
-        //     }
-        //
-        //     for (var i = 0; i < FinalFolders.Length; i++) {
-        //         var folder = FinalFolders[i];
-        //         var ripperPath = Path.Combine(assetRipperPath, "Assets", folder);
-        //         var projectPath = Path.Combine(Application.dataPath, folder);
-        //         EditorUtility.DisplayProgressBar("Copying AssetRipper files", $"Copying {folder} to {projectPath}", (float)i / FinalFolders.Length);
-        //         
-        //         ModuleUtility.CopyFilesRecursively(ripperPath, projectPath);
-        //         Debug.Log($"Copying {ripperPath} to {projectPath}");
-        //     }
-        //     
-        //     // fix es3 defaults manually in Assets/Resources/es3/ES3Defaults.asset
-        //     var filePath = Path.Combine(Application.dataPath, "Resources", "es3", "ES3Defaults.asset");
-        //     var fileContents = File.ReadAllText(filePath);
-        //     var match = GuidPatcherModule.GuidPattern.Match(fileContents);
-        //     if (!match.Success) {
-        //         throw new Exception("Could not find guid for ES3Defaults");
-        //     }
-        //     
-        //     var es3Script = AssetDatabase.LoadAssetAtPath<MonoScript>("Assets/Scripts/Resources/es3/ES3Defaults.cs");
-        //     var globalId = GlobalObjectId.GetGlobalObjectIdSlow(es3Script);
-        //     var assetGuid = globalId.assetGUID.ToString();
-        //     var objectId = globalId.targetObjectId;
-        //     Debug.Log($"Found ES3Defaults | {assetGuid} | {objectId}");
-        //     fileContents = GuidPatcherModule.GuidPattern.Replace(fileContents, $"guid: {assetGuid}");
-        //     Debug.Log($"Fixed ES3Defaults at {filePath} to {fileContents}");
-        //             
-        //     File.WriteAllText(filePath, fileContents);
-        //     
-        //     EditorUtility.ClearProgressBar();
-        //
-        //     return UniTask.CompletedTask;
-        // }
     }
 }

@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.Rendering.HighDefinition;
 using Object = UnityEngine.Object;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
@@ -105,6 +106,18 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 Debug.LogError("Could not find HDRenderPipelineGlobalSettings");
             }
+        }
+
+        public static void PatchQualityPipelineAsset(LCPatcherSettings settings) {
+            string sos;
+            if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
+                sos = Path.Combine(settings.GetLethalCompanyGamePath(), finalFolder);
+            } else {
+                sos = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
+            }
+            
+            var hdRenderPipelineAsset = AssetDatabase.LoadAssetAtPath<HDRenderPipelineAsset>(Path.Combine(sos, "HDRenderPipelineAsset.asset"));
+            QualitySettings.renderPipeline = hdRenderPipelineAsset;
         }
 
         public static void PatchDiageticAudioMixer(LCPatcherSettings settings) {
