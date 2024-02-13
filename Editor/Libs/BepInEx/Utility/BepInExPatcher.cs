@@ -10,7 +10,9 @@ using BepInEx.Bootstrap;
 using BepInEx.Logging;
 using HarmonyLib;
 using Mono.Cecil;
+using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Rendering.HighDefinition;
@@ -106,6 +108,7 @@ public class BepInExPatcher: MonoBehaviour {
         var gamePlugins = Path.Combine(Path.GetDirectoryName(filePath), "BepInEx", "plugins");
         var gameDlls = Directory.GetFiles(gamePlugins, "*.dll", SearchOption.AllDirectories);
         _assemblies.Clear();
+        
         foreach (var gameDll in gameDlls) {
             Debug.Log($"Loading {Path.GetFileName(gameDll)}");
             try {
@@ -217,18 +220,18 @@ public class BepInExPatcher: MonoBehaviour {
                 try {
                     if (field.FieldType.IsValueType) {
                         field.SetValue(null, Activator.CreateInstance(field.FieldType));
-                        Debug.Log($"Reset value type \"{field.Name}\" in {type.FullName}");
+                        // Debug.Log($"Reset value type \"{field.Name}\" in {type.FullName}");
                     } else {
                         if (typeof(IList).IsAssignableFrom(field.FieldType)) {
                             var list = (IList)field.GetValue(null);
                             list?.Clear();
                             // field.SetValue(null, null);
-                            Debug.Log($"Reset list \"{field.Name}\" in {type.FullName}");
+                            // Debug.Log($"Reset list \"{field.Name}\" in {type.FullName}");
                             continue;
                         }
                         
                         field.SetValue(null, null);
-                        Debug.Log($"Reset reference type \"{field.Name}\" in {type.FullName}");
+                        // Debug.Log($"Reset reference type \"{field.Name}\" in {type.FullName}");
                     }
                 } catch {
                     // Debug.LogWarning($"Failed to reset {field.Name} in {type.FullName}: {e}");
@@ -277,22 +280,63 @@ public class BepInExPatcher: MonoBehaviour {
         }
 
         public static Dictionary<string, List<PluginInfo>> Postfix(Dictionary<string, List<PluginInfo>> result) {
-            var file = typeof(FindPluginTypesPatch).Module.FullyQualifiedName;
-            var assemblyDefinition = AssemblyDefinition.ReadAssembly(file, TypeLoader.ReaderParameters);
-            var hasBepinPluginsFunction = AccessTools.Method(typeof(Chainloader), "HasBepinPlugins");
+            var settings = ModuleUtility.GetPatcherSettings();
+            var modsDirectory = settings.GetModsPath().Replace("\\", "/");
+            
+            var assets = AssetDatabase.FindAssets("t:AssemblyDefinitionAsset");
+            var found = new List<string>();
+            foreach (var asset in assets) {
+                var path = AssetDatabase.GUIDToAssetPath(asset);
+                if (!path.Contains(modsDirectory)) continue;
+                
+                var assembly = AssetDatabase.LoadAssetAtPath<AssemblyDefinitionAsset>(path);
+                if (!assembly) {
+                    Debug.LogError($"Failed to load \"{path}\"");
+                    continue;
+                }
+                
+                Debug.Log($"Found {assembly.name} at \"{path}\"");
+                found.Add(assembly.name);
+            }
+            
+            modsDirectory = modsDirectory.Replace('/', Path.DirectorySeparatorChar);
+            
+            var files = AccessTools
+                .AllTypes()
+                .Select(x => x.Module.FullyQualifiedName)
+                .Where(x => x.Contains("Assembly-CSharp") || found.Contains(Path.GetFileNameWithoutExtension(x)) || x.Contains(modsDirectory))
+                .Distinct()
+                .Select(x => new {
+                    file = x,
+                    assembly = AssemblyDefinition.ReadAssembly(x, TypeLoader.ReaderParameters)
+                });
 
-            if (!(bool)hasBepinPluginsFunction.Invoke(null, new object[] { assemblyDefinition })) {
-                result[file] = new List<PluginInfo>();
-                assemblyDefinition.Dispose();
-                Debug.Log("No BepInEx plugins found in Assembly-CSharp!");
-            } else {
-                var list = assemblyDefinition.MainModule.Types
+            var hasBepinPluginsFunction = AccessTools.Method(typeof(Chainloader), "HasBepinPlugins");
+            foreach (var pair in files) {
+                if (result.ContainsKey(pair.file)) continue;
+                
+                if (!(bool)hasBepinPluginsFunction.Invoke(null, new object[] { pair.assembly })) {
+                    result[pair.file] = new List<PluginInfo>();
+                    pair.assembly.Dispose();
+                    
+                    Debug.Log($"No BepInEx plugins found in \"{pair.file}\"");
+                    continue;
+                }
+                
+                var list = pair.assembly.MainModule.Types
                     .Select(Chainloader.ToPluginInfo)
                     .Where(t => t != null)
                     .ToList();
-                result[file] = list;
-                assemblyDefinition.Dispose();
-                Debug.Log($"Found {list.Count} BepInEx plugins in Assembly-CSharp!");
+                
+                result[pair.file] = list;
+                pair.assembly.Dispose();
+                
+                Debug.Log($"Found {list.Count} plugins in \"{pair.file}\"");
+
+                for (var i = 0; i < list.Count; i++) {
+                    var plugin = list[i];
+                    Debug.Log($"- [{i}] {plugin.Metadata.GUID} - {plugin.Metadata.Name}");
+                }
             }
 
             return result;

@@ -1,8 +1,6 @@
 ﻿# Lethal Company Project Patcher
 
 > This tool is still in development and is quite experimental, but should be usable.
-> 
-> This also does not support exporting a plugin from within the editor *yet*.
 
 This tool fills in a unity project with functional assets so you can run the game in the editor to test custom plugins.
 
@@ -40,8 +38,6 @@ This tool does **not** distribute game files. It uses what is already on your co
 - [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
   - For running Asset Ripper
 
-[//]: # (- [AssetRipper.SourceGenerated.dll]&#40;https://github.com/nomnomab/AssetRipper/releases&#41;)
-
 ## Installation
 #### Using Unity Package Manager
 
@@ -61,12 +57,6 @@ This tool does **not** distribute game files. It uses what is already on your co
     - Use the 3D (HDRP) template
 2. Open the tool from `Tools > Nomnom > LC - Project Patcher > Open`
     - This will create some default folders for you when it opens
-
-[//]: # (3. Download `AssetRipper.SourceGenerated.dll.zip` from the releases of https://github.com/nomnomab/AssetRipper/releases)
-
-[//]: # (   - Extract the dll from the zip)
-
-[//]: # (   - Place into `[ProjectName]\Library\PackageCache\com.nomnom.lc-project-patcher@[SomeNumbers]\Editor\Libs\AssetRipper~`)
 
 > At this point if you have the DunGen asset, or any other asset store asset, import it now and move it into `Assets\Unity\AssetStore`. 
 > This is the location the patcher checks for existing assets if needed.
@@ -127,6 +117,23 @@ If there are any "missing prefab" issues in your prefabs/scenes, then make sure 
 
 This does not migrate materials, audio clips, meshes, etc to the ones in the new project, so those will have to be manually fixed if needed.
 
+### How can I build my plugin?
+
+This is a tricky question.
+
+Due to how Unity handles its Assembly-CSharp dll, you can't use asmdefs in project *and* reference game code. If it supported this, we could build plugins with only in-editor scripts easily.
+
+However, if you wanted to build asset bundles with proper script references and such, you'll have to use a regular .NET project. Here are some example steps:
+
+1. Make a regular .NET project. Such as using a plugin template, or a bepinex template.
+2. Build the plugin so you get a dll to use.
+3. Put the dll and any additional dependencies into the unity project under `Assets\LethalCompany\Mods\[Your Mod's Name]`
+    - Most plugin dependency dlls are already set up in the project for you
+4. Now you can use the plugin in the editor, make asset bundles with components from the plugin, and test in-editor
+
+To make step 3 simpler, you can set up a post-build step that copies the built plugin into the project for you.
+
+
 ### Why can I not delete a plugin from the plugins folder?
 
 If a plugin is loaded while playing the game in-editor, then it will stay loaded forever. This is just how Unity handles their dll hooks.
@@ -164,10 +171,6 @@ Not all plugins support this by the way, so expect errors with ones that don't h
 4. Check `Reload Scene`
 
 Now it will take like a second to press play instead of a minute 😀
-
-### Why doesn't my plugin get found from inside a folder with an assembly definition?
-
-I only check Assembly-CSharp.dll for in-editor plugins at the moment.
 
 ### How can I add MMHOOK_Assembly-CSharp.dll
 
