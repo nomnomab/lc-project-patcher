@@ -218,8 +218,7 @@ public class BepInExPatcher: MonoBehaviour {
 
         Chainloader.Initialize(gameExePath, false);
         
-        var BepInExRootPath = typeof(Paths).GetProperty("BepInExRootPath", BindingFlags.Public | BindingFlags.Static);
-        BepInExRootPath?.SetValue(null, bepInExFolder);
+        OverrideBepInExPaths();
         
         // var patchAndLoadFunction = AccessTools.Method(typeof(AssemblyPatcher), nameof(AssemblyPatcher.PatchAndLoad));
         // patchAndLoadFunction?.Invoke(null, new object[] { new string[] {
@@ -406,6 +405,30 @@ public class BepInExPatcher: MonoBehaviour {
         // ExecutablePath
         var executablePathProperty = typeof(Paths).GetProperty("ExecutablePath");
         executablePathProperty?.SetValue(null, ModuleUtility.ActualExePath);
+    }
+
+    private static void OverrideBepInExPaths() {
+        var bepInExFolder = ModuleUtility.BepInExFolder;
+        var bepInExRootPath = typeof(Paths).GetProperty("BepInExRootPath", BindingFlags.Public | BindingFlags.Static);
+        bepInExRootPath?.SetValue(null, bepInExFolder);
+        
+        var configPath = typeof(Paths).GetProperty("ConfigPath", BindingFlags.Public | BindingFlags.Static);
+        configPath?.SetValue(null, Path.Combine(bepInExFolder, "config"));
+        
+        var bepInExConfigPath = typeof(Paths).GetProperty("BepInExConfigPath", BindingFlags.Public | BindingFlags.Static);
+        bepInExConfigPath?.SetValue(null, Path.Combine(bepInExFolder, "config", "BepInEx.cfg"));
+        
+        var patcherPluginPath = typeof(Paths).GetProperty("PatcherPluginPath", BindingFlags.Public | BindingFlags.Static);
+        patcherPluginPath?.SetValue(null, Path.Combine(bepInExFolder, "patchers"));
+        
+        var bepInExAssemblyDirectory = typeof(Paths).GetProperty("BepInExAssemblyDirectory", BindingFlags.Public | BindingFlags.Static);
+        bepInExAssemblyDirectory?.SetValue(null, Path.Combine(bepInExFolder, "core"));
+        
+        var bepInExAssemblyPath = typeof(Paths).GetProperty("BepInExAssemblyPath", BindingFlags.Public | BindingFlags.Static);
+        bepInExAssemblyPath?.SetValue(null, Path.Combine(Path.Combine(bepInExFolder, "core"), typeof(Paths).Assembly.GetName().Name + ".dll"));
+        
+        var cachePath = typeof(Paths).GetProperty("CachePath", BindingFlags.Public | BindingFlags.Static);
+        cachePath?.SetValue(null, Path.Combine(bepInExFolder, "cache"));
     }
 
     private static void AssignManagedData(params string[] pluginsPaths) {
