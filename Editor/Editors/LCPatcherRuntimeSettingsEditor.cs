@@ -72,6 +72,15 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             // cheats
             // var autoLoadMoon = obj.FindProperty("AutoLoadMoon");
 
+            var infiniteHealth = obj.FindProperty("InfiniteHealth");
+            var infiniteStamina = obj.FindProperty("InfiniteStamina");
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Cheats", EditorStyles.boldLabel);
+            
+            EditorGUILayout.PropertyField(infiniteHealth);
+            EditorGUILayout.PropertyField(infiniteStamina);
+            
             // EditorGUILayout.Space();
             // EditorGUILayout.LabelField("Cheats", EditorStyles.boldLabel);
             // EditorGUILayout.ObjectField(autoLoadMoon, SelectableLevelType, new GUIContent(autoLoadMoon.displayName));

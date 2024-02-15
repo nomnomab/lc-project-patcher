@@ -56,6 +56,12 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             BepInExLocation.Custom => Path.Combine(GetPatcherRuntimeSettings().CustomBepInExLocation.Replace('/', Path.DirectorySeparatorChar), "plugins"),
             _ => Path.Combine(Path.GetDirectoryName(GameExePath)!, "BepInEx", "plugins")
         };
+
+        private static LCPatcherRuntimeSettings RuntimeInstance;
+        
+        public static void ResetInstance() {
+            RuntimeInstance = null;
+        }
         
         public static void CopyFilesRecursively(string sourceFolder, string targetFolder) {
             Directory.CreateDirectory(targetFolder);
@@ -118,6 +124,14 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
         }
         
         public static LCPatcherRuntimeSettings GetPatcherRuntimeSettings() {
+            if (!Application.isPlaying) {
+                RuntimeInstance = null;
+            }
+            
+            if (RuntimeInstance) {
+                return RuntimeInstance;
+            }
+            
             var settings = AssetDatabase.FindAssets("t:LCPatcherRuntimeSettings");
            
             // if one doesn't exist make one
@@ -129,10 +143,12 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 return asset;
             }
 
-            return settings[0] switch {
+            RuntimeInstance = settings[0] switch {
                 { } setting => AssetDatabase.LoadAssetAtPath<LCPatcherRuntimeSettings>(AssetDatabase.GUIDToAssetPath(setting)),
                 _ => null
             };
+
+            return RuntimeInstance;
         }
     }
 }

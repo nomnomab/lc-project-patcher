@@ -27,6 +27,12 @@ namespace Patches {
             }
             return true;
         }
+        
+        [HarmonyPatch(nameof(Object.DestroyImmediate), argumentTypes: new []{ typeof(Object), typeof(bool) })]
+        [HarmonyPrefix]
+        private static bool OnDestroyImmediate(Object obj, bool allowDestroyingAssets) {
+            return OnDestroyImmediate(obj);
+        }
     }
 }
 #endif

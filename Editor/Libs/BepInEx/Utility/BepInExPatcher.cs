@@ -67,7 +67,9 @@ public class BepInExPatcher: MonoBehaviour {
     private static void OnLoad() {
         var stopwatch = new System.Diagnostics.Stopwatch();
         stopwatch.Start();
+        
         ResetNetcodeRpcTablesPatch.ResetRpcFuncTable();
+        ModuleUtility.ResetInstance();
 
         var bepInExFolder = ModuleUtility.BepInExFolder;
         var gameExePath = ModuleUtility.GameExePath;
@@ -259,6 +261,8 @@ public class BepInExPatcher: MonoBehaviour {
         harmony.PatchAll(typeof(IntroSkipperPatch));
         harmony.PatchAll(typeof(MenuSkipper));
         harmony.PatchAll(typeof(EventSystemPatch));
+        harmony.PatchAll(typeof(InfiniteHealthPatch));
+        harmony.PatchAll(typeof(InfiniteStaminaPatch));
         
         Debug.Log($"Loaded BepInEx in {stopwatch.ElapsedMilliseconds}ms!");
         
