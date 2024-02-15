@@ -32,8 +32,30 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
         public static string AssetRipperDllUrl => "https://github.com/nomnomab/AssetRipper/releases/download/v1.0.0/AssetRipper.SourceGenerated.dll.zip";
         
         public static string ProjectDirectory => Application.dataPath;
-        // public static string ProjectScriptsDirectory => Path.Combine(ProjectDirectory, "Scripts");
-        // public static string ProjectResourcesDirectory => Path.Combine(ProjectDirectory, "Resources");
+        
+        public static string ActualExePath => Path.Combine(LethalCompanyDataFolder, "..", "Lethal Company.exe");
+        public static string FakeExePath => Path.Combine(Application.dataPath, "..", "Lethal Company", "Lethal Company.exenot");
+        public static string DirectoryPath => Path.GetDirectoryName(ActualExePath);
+        public static string GameDataPath => Path.Combine(DirectoryPath, "Lethal Company_Data");
+        public static string ManagedPath => Path.Combine(GameDataPath, "Managed");
+        
+        public static string GameExePath => GetPatcherRuntimeSettings().BepInExLocation switch {
+            BepInExLocation.Local => FakeExePath,
+            BepInExLocation.Game => ActualExePath,
+            BepInExLocation.Custom => ActualExePath,
+            _ => throw new ArgumentOutOfRangeException("BepInExLocation was given an invalid value")
+        };
+        
+        public static string BepInExFolder => GetPatcherRuntimeSettings().BepInExLocation switch {
+            BepInExLocation.Local => Path.Combine(Path.GetDirectoryName(FakeExePath)!, "BepInEx"),
+            BepInExLocation.Custom => GetPatcherRuntimeSettings().CustomBepInExLocation,
+            _ => Path.Combine(GameDataPath, "..", "BepInEx")
+        };
+        
+        public static string GamePluginsPath => GetPatcherRuntimeSettings().BepInExLocation switch {
+            BepInExLocation.Custom => Path.Combine(GetPatcherRuntimeSettings().CustomBepInExLocation.Replace('/', Path.DirectorySeparatorChar), "plugins"),
+            _ => Path.Combine(Path.GetDirectoryName(GameExePath)!, "BepInEx", "plugins")
+        };
         
         public static void CopyFilesRecursively(string sourceFolder, string targetFolder) {
             Directory.CreateDirectory(targetFolder);
@@ -93,6 +115,24 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             }
             
             return asset;
+        }
+        
+        public static LCPatcherRuntimeSettings GetPatcherRuntimeSettings() {
+            var settings = AssetDatabase.FindAssets("t:LCPatcherRuntimeSettings");
+           
+            // if one doesn't exist make one
+            if (settings.Length == 0) {
+                var asset = ScriptableObject.CreateInstance<LCPatcherRuntimeSettings>();
+                AssetDatabase.CreateAsset(asset, "Assets/LCPatcherRuntimeSettings.asset");
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                return asset;
+            }
+
+            return settings[0] switch {
+                { } setting => AssetDatabase.LoadAssetAtPath<LCPatcherRuntimeSettings>(AssetDatabase.GUIDToAssetPath(setting)),
+                _ => null
+            };
         }
     }
 }

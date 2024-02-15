@@ -97,6 +97,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     Arguments = $"\"{pathToData}\" \"{outputPath}\"",
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
+                    RedirectStandardError = true,
                     CreateNoWindow = true
                 }
             };
@@ -113,16 +114,18 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 }
                 EditorUtility.ClearProgressBar();
                 process.WaitForExit();
+                
+                var errorOutput = process.StandardError.ReadToEnd();
 
                 // check for any errors
                 if (process.ExitCode != 0) {
-                    throw new Exception("AssetRipper failed to run");
+                    throw new Exception($"AssetRipper failed to run with exit code {process.ExitCode}. Error: {errorOutput}");
                 }
                 
                 // ? copy the files from the Temp folder into a temp folder in the project
                 // ModuleUtility.CopyFilesRecursively(outputPath, ModuleUtility.AssetRipperTempDirectory);
             } catch (Exception e) {
-                Debug.LogError(e);
+                Debug.LogError($"Error running AssetRipper: {e}");
                 throw;
             }
         }
