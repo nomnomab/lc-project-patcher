@@ -14,13 +14,7 @@ namespace Nomnom.LCProjectPatcher.Patches {
             }
             
             Debug.Log("Applying all injected shaders.");
-            foreach (var shaderInjection in injectionSettings.ShaderInjections) {
-                foreach (var material in shaderInjection.Materials) {
-                    if (material.shader == null || material.shader.name == "Hidden/InternalErrorShader") {
-                        material.shader = shaderInjection.GetInjectedShader();
-                    }
-                }
-            }
+            injectionSettings.InjectAllShadersIntoMaterials();
         }
         #endif
     }

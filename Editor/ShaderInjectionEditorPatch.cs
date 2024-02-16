@@ -21,13 +21,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 return;
             }
 
-            foreach (var shaderInjection in injectionSettings.ShaderInjections) {
-                foreach (var material in shaderInjection.Materials) {
-                    if (material.shader == null || material.shader.name == "Hidden/InternalErrorShader") {
-                        material.shader = shaderInjection.GetInjectedShader();
-                    }
-                }
-            }
+            injectionSettings.InjectAllShadersIntoMaterials();
         }
 
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths, bool didDomainReload) {

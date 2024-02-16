@@ -39,9 +39,19 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             var shaderDirectory = Path.Join(settings.GetStreamingAssetsPath(true), "ShaderInjections");
             Directory.CreateDirectory(shaderDirectory);
 
+            // get all project materials/shaders to filter against later
+            var materials = AssetDatabase.FindAssets("t:material")
+                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                .Select(path => AssetDatabase.LoadAssetAtPath<Material>(path))
+                .ToList();
+            var shaders = AssetDatabase.FindAssets("t:shader")
+                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                .Select(path => AssetDatabase.LoadAssetAtPath<Shader>(path))
+                .ToList();
+                
             List<ShaderInjection> shaderInjections = new();
             
-            for (int i = 0; i <ShadersToGrab.Count; i++) {
+            for (int i = 0; i < ShadersToGrab.Count; i++) {
                 var shaderToGrab = ShadersToGrab[i];
                 var shader = GetShaderFromAssetsFiles(shaderToGrab, assetsFileInstances, assetsManager);
                 if (shader == null) {
@@ -58,7 +68,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     shader,
                     assetsManager);
 
-                shaderInjections.Add(GetShaderInjection(shaderToGrab, shortShaderName));
+                shaderInjections.Add(GetShaderInjection(shaderToGrab, shortShaderName, materials, shaders));
             }
 
             // Create shaderInjection SO
@@ -79,19 +89,15 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             assetsManager.UnloadAll();
         }
 
-        private static ShaderInjection GetShaderInjection(string shaderName, string bundleName) {
-            var dummyShader = Shader.Find(shaderName);
-            var materials = AssetDatabase.FindAssets("t:material")
-                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
-                .Select(path => AssetDatabase.LoadAssetAtPath<Material>(path))
-                .Where(x => x.shader.name == shaderName)
-                .ToList();
+        private static ShaderInjection GetShaderInjection(string shaderName, string bundleName, List<Material> materials, List<Shader> shaders) {
+            var filteredMaterials = materials.Where(x => x.shader.name == shaderName).ToList();
+            var filteredShaders = shaders.Where(x => x.name == shaderName).ToList();
             
             var shaderInjection = new ShaderInjection {
                 ShaderName = shaderName,
                 BundleName = bundleName,
-                DummyShader = dummyShader,
-                Materials = materials
+                DummyShaders = filteredShaders,
+                Materials = filteredMaterials
             };
 
             return shaderInjection;
