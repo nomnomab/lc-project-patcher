@@ -22,15 +22,24 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
         [MenuItem("Tools/Nomnom/ShaderInjection", priority = 1)]
         public static void Thing() {
             Debug.Log("Oh no.");
-            var bundlePath = Path.Join(Application.streamingAssetsPath, "ShaderInjections",
-                "posterizationfilter.shaderinject");
-            Debug.Log(bundlePath);
-
-            var bundle = AssetBundle.LoadFromFile(bundlePath);
-            var shader = bundle.LoadAsset<Shader>("assets/injectedshaders/posterizationfilter.shader");
+            var shaderInjectionSettings = Resources.Load<LCPatcherShaderInjectionSettings>("ShaderInjectionSettings");
             
-            Debug.Log(shader.name);
-            bundle.Unload(false);
+            foreach (var shaderInjection in shaderInjectionSettings.ShaderInjections) {
+                Debug.Log(shaderInjection.ShaderName);
+                // Load bundle
+                var bundlePath = Path.Join(Application.streamingAssetsPath, "ShaderInjections",
+                    $"{shaderInjection.BundleName}.shaderinject");
+                var bundle = AssetBundle.LoadFromFile(bundlePath);
+                var shader = bundle.LoadAsset<Shader>($"assets/injectedshaders/{shaderInjection.BundleName}.shader");
+
+                // Set material shaders
+                foreach (var material in shaderInjection.Materials) {
+                    material.shader = shader;
+                }
+                
+                // Unload
+                bundle.Unload(false);
+            }
         }
         
         public static void GetShaders(LCPatcherSettings settings) {
@@ -55,7 +64,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
 
             List<ShaderInjection> shaderInjections = new();
             
-            foreach (var shaderToGrab in ShadersToGrab) {
+            for (int i = 0; i <ShadersToGrab.Count; i++) {
+                var shaderToGrab = ShadersToGrab[i];
                 var shader = GetShaderFromAssetsFiles(shaderToGrab, assetsFileInstances, assetsManager);
                 if (shader == null) {
                     continue;
@@ -67,6 +77,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     Path.Join(Application.temporaryCachePath, "dummy"),
                     Path.Join(shaderDirectory, $"{shortShaderName}.shaderinject"),
                     shortShaderName,
+                    i,
                     shader,
                     assetsManager);
 
@@ -109,7 +120,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             return shaderInjection;
         }
 
-        private static void InjectShaderIntoExistingAssetBundle(string currentBundlePath, string newBundlePath, string shaderName, AssetTypeValueField shader, AssetsManager assetsManager) {
+        private static void InjectShaderIntoExistingAssetBundle(string currentBundlePath, string newBundlePath, string shaderName, int index, AssetTypeValueField shader, AssetsManager assetsManager) {
             // I'm not sure if we can easily create fully new AssetBundles using only AssetsTools.NET
             // If we can, refactor this to use CreateValueBaseField to add the actual shader in a brand new assetbundle
             var bundleFileInstance = assetsManager.LoadBundleFile(currentBundlePath);
@@ -136,7 +147,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             // Inject the actual shader
             var (shaderInfo, shaderData) = GetFirstAssetInfoAndBaseOfClassID(assetsFileInstance, AssetClassID.Shader, assetsManager);
             shaderInfo.SetNewData(shader);
-    
+            shaderInfo.PathId -= (index + 1) * 20; // prevent path id overlaps
             // Overwrite AssetsFile in bundle, then write everything to the new path
             bundleFileInstance.file.BlockAndDirInfo.DirectoryInfos[0].SetNewData(assetsFile);
             using AssetsFileWriter writer = new AssetsFileWriter(newBundlePath);

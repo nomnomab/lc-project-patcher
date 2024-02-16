@@ -98,10 +98,6 @@ namespace Nomnom.LCProjectPatcher.Editor {
             {
                 InitialProjectModule.MoveNativeFiles(settings);
 
-                // shaders
-                AssetsToolsModule.GetShaders(settings);
-                throw new Exception("test");
-
                 // asset ripper
                 await AssetRipperModule.RunAssetRipper(settings);
                 AssetRipperModule.DeleteScriptsFromProject(settings);
@@ -182,6 +178,9 @@ namespace Nomnom.LCProjectPatcher.Editor {
             FinalizerModule.SortPrefabsFolder(settings);
             FinalizerModule.OpenInitScene();
             FinalizerModule.ChangeGameViewResolution();
+
+            // shaders
+            AssetsToolsModule.GetShaders(settings);
 
             BepInExModule.CopyTemplateFolder();
             await BepInExModule.Install(settings);

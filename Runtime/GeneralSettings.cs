@@ -51,7 +51,7 @@ namespace Nomnom.LCProjectPatcher {
         }
         
         public string GetStreamingAssetsPath(string path) {
-            return Path.Combine(path, _resourcesPath);
+            return Path.Combine(path, _streamingAssetsPath);
         }
     }
 }
