@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Linq;
+using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEngine;
 
 namespace Patches {
@@ -17,7 +18,7 @@ namespace Patches {
 
         public static void ResetRpcFuncTable() {
             if (DidReset) return;
-            if (!BepInExPatcher.HasDomainReloadingDisabled) return;
+            if (!ModuleUtility.HasDomainReloadingDisabled) return;
             
             var networkManagerType = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypes())

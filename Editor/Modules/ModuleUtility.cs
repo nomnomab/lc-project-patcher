@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class ModuleUtility {
@@ -56,6 +58,18 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             BepInExLocation.Custom => Path.Combine(GetPatcherRuntimeSettings().CustomBepInExLocation.Replace('/', Path.DirectorySeparatorChar), "plugins"),
             _ => Path.Combine(Path.GetDirectoryName(GameExePath)!, "BepInEx", "plugins")
         };
+        
+        public static bool HasDomainReloadingDisabled {
+            get {
+                if (EditorSettings.enterPlayModeOptionsEnabled &&
+                    EditorSettings.enterPlayModeOptions.HasFlag(EnterPlayModeOptions.DisableDomainReload)) {
+                    Debug.LogWarning("Domain reloading is disabled!");
+                    return true;
+                }
+            
+                return false;
+            }
+        }
 
         private static LCPatcherRuntimeSettings RuntimeInstance;
         

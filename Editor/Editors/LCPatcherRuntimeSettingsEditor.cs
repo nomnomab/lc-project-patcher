@@ -22,12 +22,19 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             using var changeCheck = new EditorGUI.ChangeCheckScope();
 
             // general
-            var skipMainMenu = obj.FindProperty("SkipMainMenu");
-            var useGameDirectoryForBepInEx = obj.FindProperty("BepInExLocation");
-            var customBepInExDirectory = obj.FindProperty("CustomBepInExLocation");
-            var loadProjectPlugins = obj.FindProperty("LoadProjectPlugins");
-
+            var skipIntro = obj.FindProperty(nameof(LCPatcherRuntimeSettings.SkipIntro));
+            var skipMainMenu = obj.FindProperty(nameof(LCPatcherRuntimeSettings.SkipMainMenu));
+            var saveFileIndex = obj.FindProperty(nameof(LCPatcherRuntimeSettings.SaveFileIndex));
+            var saveFileResetBeforeLoad = obj.FindProperty(nameof(LCPatcherRuntimeSettings.SaveFileResetBeforeLoad));
+            
+            EditorGUILayout.PropertyField(skipIntro);
             EditorGUILayout.PropertyField(skipMainMenu);
+            EditorGUILayout.PropertyField(saveFileIndex);
+            EditorGUILayout.PropertyField(saveFileResetBeforeLoad);
+            
+            var useGameDirectoryForBepInEx = obj.FindProperty(nameof(LCPatcherRuntimeSettings.BepInExLocation));
+            var customBepInExDirectory = obj.FindProperty(nameof(LCPatcherRuntimeSettings.CustomBepInExLocation));
+            var loadProjectPlugins = obj.FindProperty(nameof(LCPatcherRuntimeSettings.LoadProjectPlugins));
             
             var bepInExLocation = (BepInExLocation)useGameDirectoryForBepInEx.enumValueIndex;
 
@@ -70,10 +77,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             }
 
             // cheats
-            // var autoLoadMoon = obj.FindProperty("AutoLoadMoon");
-
-            var infiniteHealth = obj.FindProperty("InfiniteHealth");
-            var infiniteStamina = obj.FindProperty("InfiniteStamina");
+            var infiniteHealth = obj.FindProperty(nameof(LCPatcherRuntimeSettings.InfiniteHealth));
+            var infiniteStamina = obj.FindProperty(nameof(LCPatcherRuntimeSettings.InfiniteStamina));
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Cheats", EditorStyles.boldLabel);
@@ -81,12 +86,21 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             EditorGUILayout.PropertyField(infiniteHealth);
             EditorGUILayout.PropertyField(infiniteStamina);
             
+            var autoLoadMoon = obj.FindProperty(nameof(LCPatcherRuntimeSettings.AutoLoadMoon));
+            var autoLoadMoonSceneName = obj.FindProperty(nameof(LCPatcherRuntimeSettings.AutoLoadMoonSceneName));
+            
             // EditorGUILayout.Space();
             // EditorGUILayout.LabelField("Cheats", EditorStyles.boldLabel);
-            // EditorGUILayout.ObjectField(autoLoadMoon, SelectableLevelType, new GUIContent(autoLoadMoon.displayName));
+            GUI.enabled = string.IsNullOrEmpty(autoLoadMoonSceneName.stringValue);
+            EditorGUILayout.ObjectField(autoLoadMoon, SelectableLevelType, new GUIContent(autoLoadMoon.displayName));
+            GUI.enabled = true;
+            
+            GUI.enabled = !autoLoadMoon.objectReferenceValue;
+            EditorGUILayout.PropertyField(autoLoadMoonSceneName);
+            GUI.enabled = true;
 
             // experimental
-            var loadPosterizationShader = obj.FindProperty("LoadPosterizationShader");
+            var loadPosterizationShader = obj.FindProperty(nameof(LCPatcherRuntimeSettings.LoadPosterizationShader));
             
             EditorGUILayout.PropertyField(loadPosterizationShader);
 

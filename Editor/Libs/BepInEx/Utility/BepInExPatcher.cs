@@ -21,40 +21,6 @@ using UnityEngine.SceneManagement;
 using Debug = UnityEngine.Debug;
 
 public class BepInExPatcher: MonoBehaviour {
-    public static bool HasDomainReloadingDisabled {
-        get {
-            if (EditorSettings.enterPlayModeOptionsEnabled &&
-                EditorSettings.enterPlayModeOptions.HasFlag(EnterPlayModeOptions.DisableDomainReload)) {
-                Debug.LogWarning("Domain reloading is disabled!");
-                return true;
-            }
-            
-            return false;
-        }
-    }
-    
-    private static string LethalCompanyDataFolder {
-        get {
-            var path = EditorPrefs.GetString("nomnom.lc_project_patcher.lc_data_folder");
-            if (string.IsNullOrEmpty(path)) {
-                return null;
-            }
-                
-            if (!path.EndsWith("_Data")) {
-                var folderName = Path.GetFileNameWithoutExtension(path);
-                var dataFolder = $"{folderName}_Data";
-                path = Path.Combine(path, dataFolder);
-
-                if (!Directory.Exists(path)) {
-                    Debug.LogError("The data path needs to end in \"_Data\"!");
-                    return null;
-                }
-            }
-
-            return path;
-        }
-    }
-    
     private static bool LoadPosterizationShader => ModuleUtility.GetPatcherRuntimeSettings().LoadPosterizationShader;
     private static BepInExLocation BepInExLocation => ModuleUtility.GetPatcherRuntimeSettings().BepInExLocation;
     private static string CustomBepInExLocation => ModuleUtility.GetPatcherRuntimeSettings().CustomBepInExLocation;
@@ -263,6 +229,7 @@ public class BepInExPatcher: MonoBehaviour {
         harmony.PatchAll(typeof(EventSystemPatch));
         harmony.PatchAll(typeof(InfiniteHealthPatch));
         harmony.PatchAll(typeof(InfiniteStaminaPatch));
+        harmony.PatchAll(typeof(AutoMoonLoaderPatch));
         
         Debug.Log($"Loaded BepInEx in {stopwatch.ElapsedMilliseconds}ms!");
         
