@@ -19,6 +19,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetResourcesPath(fullPath: true));
 
             var gamePath = settings.GetLethalCompanyGamePath(fullPath: true);
             if (Directory.Exists(gamePath)) {

@@ -11,10 +11,27 @@ using UnityEngine;
 // This may be redundant for AssetRipper, but I'm not familiar enough with AssetRipper's codebase to make it do this
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class AssetsToolsModule {
+        public static readonly List<string> ShadersToGrab = new() {
+            "Shader Graphs/PosterizationFilter"
+        };
+        
         private static List<string> _loadedAssetsFilePaths = new();
-        private static readonly string _shaderString = "Shader Graphs/PosterizationFilter";
-    
-        public static void GetShader(LCPatcherSettings settings) {
+        
+        [MenuItem("Tools/Nomnom/ShaderInjection", priority = 1)]
+        public static void Thing() {
+            Debug.Log("Oh no.");
+            var bundlePath = Path.Join(Application.streamingAssetsPath, "ShaderInjections",
+                "posterizationfilter.shaderinject");
+            Debug.Log(bundlePath);
+
+            var bundle = AssetBundle.LoadFromFile(bundlePath);
+            var shader = bundle.LoadAsset<Shader>("assets/injectedshaders/posterizationfilter.shader");
+            
+            Debug.Log(shader.name);
+            bundle.Unload(false);
+        }
+        
+        public static void GetShaders(LCPatcherSettings settings) {
             AssetsManager assetsManager = new();
             
             // clear loaded paths
@@ -26,25 +43,34 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             
             // Get assets files and attempt to find our shaders
             var assetsFileInstances = LoadAssetsFilesFromDataPath(ModuleUtility.GameDataPath, assetsManager);
-            var shader = GetShaderFromAssetsFiles(_shaderString, assetsFileInstances, assetsManager);
-            Debug.Log("HUH1");
 
-            if (shader == null) {
-                return;
-            }
-            
             // create dummy shader bundle. not sure if there's a way to create a 100% new assetbundle using AssetsTools.net
             AssetBundleModule.CreateShaderBundle("dummy");
-            Debug.Log("HUH2");
-
-            InjectShaderIntoExistingAssetBundle(
-                Path.Join(Application.temporaryCachePath, "dummy"),
-                Path.Join(Application.temporaryCachePath, "dummy2"),
-                "posterization",
-                shader,
-                assetsManager);
             
-            Debug.Log("HUH3");
+            // setup resources folder for shader bundles
+            var shaderDirectory = Path.Join(settings.GetResourcesPath(true), "ShaderInjections");
+            Directory.CreateDirectory(shaderDirectory);
+            
+            foreach (var shaderToGrab in ShadersToGrab) {
+                var shader = GetShaderFromAssetsFiles(shaderToGrab, assetsFileInstances, assetsManager);
+                if (shader == null) {
+                    continue;
+                }
+
+                // may need better parsing if more complex shader names are ever filtered against
+                var shortShaderName = shaderToGrab.Split("/").Last().Replace(" ", "").ToLower();
+                Debug.Log(settings.GetResourcesPath(true));
+                InjectShaderIntoExistingAssetBundle(
+                    Path.Join(Application.temporaryCachePath, "dummy"),
+                    Path.Join(shaderDirectory, $"{shortShaderName}.shaderinject"),
+                    shortShaderName,
+                    shader,
+                    assetsManager);
+            }
+            
+            // Get rid of progress bar from loading the asset files
+            EditorUtility.ClearProgressBar();
+            
             // Unload
             assetsManager.UnloadAll();
         }

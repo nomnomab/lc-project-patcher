@@ -96,10 +96,11 @@ namespace Nomnom.LCProjectPatcher.Editor {
 
             try
             {
-                AssetsToolsModule.GetShader(settings);
-                throw new Exception("test");
-                
                 InitialProjectModule.MoveNativeFiles(settings);
+
+                // shaders
+                AssetsToolsModule.GetShaders(settings);
+                throw new Exception("test");
 
                 // asset ripper
                 await AssetRipperModule.RunAssetRipper(settings);

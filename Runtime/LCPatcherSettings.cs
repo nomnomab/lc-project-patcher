@@ -49,6 +49,10 @@ namespace Nomnom.LCProjectPatcher {
             return GetFullPathOrNot(_generalSettings.GetToolsPath(GetBaseLethalCompanyPath()), fullPath);
         }
         
+        public string GetResourcesPath(bool fullPath = false) {
+            return GetFullPathOrNot(_generalSettings.GetResourcesPath(GetBasePath()), fullPath);
+        }
+        
         private string GetFullPathOrNot(string path, bool fullPath) {
             return fullPath ? Path.GetFullPath(path) : path;
         }
