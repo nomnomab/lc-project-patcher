@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using JetBrains.Annotations;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEngine.SceneManagement;
 
@@ -41,7 +42,10 @@ namespace Nomnom.LCProjectPatcher.Patches {
             drawRenderersCustomPass.layerMask = ~0; // LayerMask.Everything
             drawRenderersCustomPass.overrideMaterial = passMaterial;
             drawRenderersCustomPass.overrideMaterialPassName = "ForwardOnly";
-            
+            drawRenderersCustomPass.depthWrite = true;
+            drawRenderersCustomPass.overrideDepthState = true;
+            drawRenderersCustomPass.depthCompareFunction = CompareFunction.Equal;
+            drawRenderersCustomPass.sortingCriteria = SortingCriteria.CommonOpaque;
             customPassVolume.customPasses.Add(drawRenderersCustomPass);
         }
     }
