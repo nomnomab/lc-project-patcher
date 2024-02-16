@@ -171,6 +171,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             ModifyProjectSettingsModule.CopyOverProjectSettings();
             FinalizerModule.PatchSceneList(settings);
             FinalizerModule.PatchHDRPVolumeProfile(settings);
+            FinalizerModule.PatchQualityPipelineAsset(settings);
             FinalizerModule.PatchDiageticAudioMixer(settings);
             FinalizerModule.SortScriptableObjectFolder(settings);
             FinalizerModule.SortPrefabsFolder(settings);
@@ -180,7 +181,6 @@ namespace Nomnom.LCProjectPatcher.Editor {
             BepInExModule.CopyTemplateFolder();
             await BepInExModule.Install(settings);
             BepInExModule.InstallMonoMod(settings);
-            BepInExModule.CopyUtility(settings);
             
             SetCurrentStep(5);   
             // return UniTask.CompletedTask;

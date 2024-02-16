@@ -81,7 +81,7 @@ PluginImporter:
 
         public static UniTask Install(LCPatcherSettings settings) {
             var pluginsPath = Path.Combine(settings.GetToolsPath(), "Plugins");
-            var packageBepInExPath = Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/BepInEx~");
+            var packageBepInExPath = Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/BepInEx");
             var bepInExPath = Path.Combine(pluginsPath, "BepInEx");
             ModuleUtility.CreateDirectory(bepInExPath);
             
@@ -91,7 +91,9 @@ PluginImporter:
             var bepInExCoreFolder = Path.Combine(bepInExInnerFolder, "core");
             
             // copy over bepinex dlls
-            var bepInExFiles = Directory.GetFiles(packageBepInExPath, "*.*");
+            var bepInExFiles = Directory.GetFiles(packageBepInExPath, "*.*", SearchOption.TopDirectoryOnly)
+                .Where(x => x.EndsWith(".dll") || x.EndsWith(".pdb") || x.EndsWith(".md"))
+                .ToArray();
             for (var i = 0; i < bepInExFiles.Length; i++) {
                 var file = bepInExFiles[i];
                 EditorUtility.DisplayProgressBar("Installing BepInEx", $"Installing {Path.GetFileName(file)}", (float)i / bepInExFiles.Length);
@@ -120,8 +122,10 @@ PluginImporter:
         }
 
         public static void InstallMonoMod(LCPatcherSettings settings) {
-            var monoModInPackagePath = Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/MonoMod~");
-            var dlls = Directory.GetFiles(monoModInPackagePath, "*.dll");
+            var monoModInPackagePath = Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/MonoMod");
+            var dlls = Directory.GetFiles(monoModInPackagePath, "*.*", SearchOption.TopDirectoryOnly)
+                .Where(x => x.EndsWith(".dll") || x.EndsWith(".pdb") || x.EndsWith(".md"))
+                .ToArray();
             var bepInExPath = Path.Combine(settings.GetToolsPath(), "Plugins", "MonoMod");
             
             ModuleUtility.CreateDirectory(bepInExPath);
@@ -148,26 +152,6 @@ PluginImporter:
             }
             
             EditorUtility.ClearProgressBar();
-        }
-
-        public static void CopyUtility(LCPatcherSettings settings) {
-            var pluginsPath = Path.Combine(settings.GetToolsPath(), "Plugins");
-            var bepInExPath = Path.Combine(pluginsPath, "BepInEx");
-            var utilityPath = Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/BepInExUtility~");
-            var files = Directory.GetFiles(utilityPath);
-
-            var utilityFolder = Path.Combine(bepInExPath, "Utility");
-            ModuleUtility.CreateDirectory(utilityFolder);
-            
-            for (var i = 0; i < files.Length; i++) {
-                var file = files[i];
-                EditorUtility.DisplayProgressBar("Installing BepInEx Utility", $"Installing {Path.GetFileName(file)}", (float)i / files.Length);
-                try {
-                    File.Copy(file, Path.Combine(utilityFolder, Path.GetFileName(file)), true);
-                } catch (Exception e) {
-                    Debug.LogError(e);
-                }
-            }
         }
 
         public static void CopyTemplateFolder() {

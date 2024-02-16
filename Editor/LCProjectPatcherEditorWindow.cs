@@ -24,6 +24,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             
             // validate that folders exists
             var settings = ModuleUtility.GetPatcherSettings();
+            _ = ModuleUtility.GetPatcherRuntimeSettings();
             ModuleUtility.CreateDirectory(settings.GetBaseUnityPath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetBaseLethalCompanyPath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetNativePath(fullPath: true));

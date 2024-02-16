@@ -1,6 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEditor;
 using UnityEngine;
 
@@ -10,7 +9,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             "NavMeshAreas.asset",
             "TagManager.asset",
             "TimeManager.asset",
-            "DynamicsManager.asset"
+            "DynamicsManager.asset",
+            "QualitySettings.asset"
         };
         
         public static void CopyOverProjectSettings() {

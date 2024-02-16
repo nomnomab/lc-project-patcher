@@ -4,15 +4,15 @@ using Nomnom.LCProjectPatcher.Attributes;
 using UnityEngine;
 
 namespace Nomnom.LCProjectPatcher {
-    [CreateAssetMenu(fileName = "NewLCPatcherSettings", menuName = "LC Project Patcher/LCPatcherSettings")]
+    [CreateAssetMenu(fileName = "NewLCPatcherSettings", menuName = "LC Project Patcher/LC Patcher Settings")]
     public class LCPatcherSettings: ScriptableObject {
         public AssetRipperSettings AssetRipperSettings => _assetRipperSettings;
         public GeneralSettings GeneralSettings => _generalSettings;
 
-        [SerializedPath(nameof(LCPatcherSettings.GetBasePath))]
+        [SerializedPath(nameof(GetBasePath))]
         [SerializeField] private string _baseUnityPath = "Unity";
         
-        [SerializedPath(nameof(LCPatcherSettings.GetBasePath))]
+        [SerializedPath(nameof(GetBasePath))]
         [SerializeField] private string _baseLethalCompanyPath = "LethalCompany";
         [SerializeField] private AssetRipperSettings _assetRipperSettings;
         [SerializeField] private GeneralSettings _generalSettings;
