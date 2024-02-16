@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Linq;
 using Cysharp.Threading.Tasks;
 using Nomnom.LCProjectPatcher.Editor.Modules;
 using Nomnom.LCProjectPatcher.Modules;
 using UnityEditor;
+using UnityEditor.PackageManager;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -90,7 +92,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 lastPatchedAtLabel.text = $"last patched at: {lastPatchedAt}";
             };
             
-            CreateDebugFoldout(rootVisualElement.Q("scroll"));
+            // CreateDebugFoldout(rootVisualElement.Q("scroll"));
+            CreateUtilityFoldout(rootVisualElement.Q("utilities"));
             
             LCProjectPatcherSteps.onCompleted += () => {
                 SetWindowState(true);
@@ -108,6 +111,100 @@ namespace Nomnom.LCProjectPatcher.Editor {
                         Debug.LogError($"Failed to delete temp Asset Ripper files: {e}");
                     }
                 }
+            };
+        }
+
+        private void CreateUtilityFoldout(VisualElement parent) {
+            var utilitiesFoldout = (Foldout)parent;
+            utilitiesFoldout.value = false;
+            
+            var packageList = parent.Q("package-list");
+            packageList.Clear();
+
+            utilitiesFoldout.RegisterValueChangedCallback(x => {
+                if (x.newValue) {
+                    packageList.Clear();
+                    
+                    var packages = PackagesModule.Packages;
+                    var gitPackages = PackagesModule.GitPackages;
+
+                    var installedPackages = Client.List(false, false);
+                    while (!installedPackages.IsCompleted) {
+                        if (installedPackages.Error != null) {
+                            Debug.LogError($"Failed to get installed packages: {installedPackages.Error}");
+                            break;
+                        }
+                    }
+
+                    foreach (var (packageName, version) in packages) {
+                        var packageString = version == null ? packageName : $"{packageName}@{version}";
+                        var isInstalled = installedPackages.Result.Any(x => x.packageId == packageString);
+
+                        var packageNameLabel = new Label(packageName);
+                        packageNameLabel.AddToClassList("package-label");
+
+                        var packageVersionLabel = new Label($"{version} ({(isInstalled ? "installed" : "not installed")})");
+                        packageVersionLabel.AddToClassList("package-version");
+
+                        packageList.Add(packageNameLabel);
+                        packageList.Add(packageVersionLabel);
+                    }
+
+                    foreach (var gitPackage in gitPackages) {
+                        var isInstalled = installedPackages.Result.Any(x => x.packageId.EndsWith(gitPackage));
+
+                        var packageNameLabel = new Label(gitPackage);
+                        packageNameLabel.AddToClassList("package-label");
+                        var packageVersionLabel = new Label($"(git) ({(isInstalled ? "installed" : "not installed")})");
+                        packageVersionLabel.AddToClassList("package-version");
+
+                        packageList.Add(packageNameLabel);
+                        packageList.Add(packageVersionLabel);
+                    }
+                }
+            });
+            
+            var runAssetRipperButton = parent.Q("run-asset-ripper").Q<Button>();
+            var installPackagesButton = parent.Q("install-packages").Q<Button>();
+            var fixMixerButton = parent.Q("fix-mixer").Q<Button>();
+            var fixInputActionsButton = parent.Q("fix-input-actions").Q<Button>();
+            var sortPrefabsButtons = parent.Q("sort-prefabs").Query<Button>().ToList();
+            var sortScriptableObjectsButtons = parent.Q("sort-sos").Query<Button>().ToList();
+            
+            runAssetRipperButton.clicked += () => {
+                AssetRipperModule.RunAssetRipper(ModuleUtility.GetPatcherSettings()).Forget();
+            };
+            
+            installPackagesButton.clicked += () => {
+                PackagesModule.InstallAll();
+            };
+            
+            fixMixerButton.clicked += () => {
+                FinalizerModule.PatchDiageticAudioMixer(ModuleUtility.GetPatcherSettings());
+            };
+            
+            fixInputActionsButton.clicked += () => {
+                InputActionsModule.FixAll(ModuleUtility.GetPatcherSettings());
+            };
+            
+            sortPrefabsButtons[0].clicked += () => {
+                FinalizerModule.SortPrefabsFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            };
+            
+            sortPrefabsButtons[1].clicked += () => {
+                FinalizerModule.UnSortPrefabsFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            };
+            
+            sortScriptableObjectsButtons[0].clicked += () => {
+                FinalizerModule.SortScriptableObjectFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
+            };
+            
+            sortScriptableObjectsButtons[1].clicked += () => {
+                FinalizerModule.UnSortScriptableObjectFolder(ModuleUtility.GetPatcherSettings());
+                AssetDatabase.Refresh();
             };
         }
 
