@@ -134,26 +134,77 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             string unityVersion = assetsFile.Metadata.UnityVersion;
             assetsManager.LoadClassDatabaseFromPackage(unityVersion);
             
-            // Get actual AssetBundle asset
+            // Inject the actual shader
+            var (shaderInfo, shaderData) = GetFirstAssetInfoAndBaseOfClassID(assetsFileInstance, AssetClassID.Shader, assetsManager);
+            var newPathId = shaderInfo.PathId - (index + 1) * 20; // prevent path id overlaps from other assets
+
+            // Get AssetBundle asset
             var (assetBundleInfo, assetBundleData) = GetFirstAssetInfoAndBaseOfClassID(assetsFileInstance, AssetClassID.AssetBundle, assetsManager);
             
             // Force set AssetBundle name & paths to line up
             // If you try to load an AssetBundle with the same name/assets twice, it will refuse to load
             assetBundleData["m_Name"].AsString = shaderName;
             assetBundleData["m_AssetBundleName"].AsString = shaderName;
-            assetBundleData["m_Container.Array"].Children[0]["first"].AsString = $"assets/injectedshaders/{shaderName}.shader"; // ???
-            assetBundleInfo.SetNewData(assetBundleData);
             
-            // Inject the actual shader
-            var (shaderInfo, shaderData) = GetFirstAssetInfoAndBaseOfClassID(assetsFileInstance, AssetClassID.Shader, assetsManager);
+            // Replace name with a fake "assets" path that won't conflict with anything
+            assetBundleData["m_Container.Array"].Children[0]["first"].AsString = $"assets/injectedshaders/{shaderName}.shader";
+            
+            // Replace m_Container (assetbundle internal object array) with our new Path ID
+            assetBundleData["m_Container.Array"].Children[0]["second"]["asset"]["m_PathID"].AsLong = newPathId;
+            
+            // Remap the preload table pptrs. Only this method worked. I have no idea why.
+            RemapPPtrs(assetBundleData["m_PreloadTable.Array"], new Dictionary<(int fileId, long pathId), (int fileId, long pathId)> {
+                {(0, shaderInfo.PathId), (0, newPathId)}
+            });
+            
+            // Finally, set shader iD and our new data
+            shaderInfo.PathId = newPathId; 
             shaderInfo.SetNewData(shader);
-            shaderInfo.PathId -= (index + 1) * 20; // prevent path id overlaps
+            assetBundleInfo.SetNewData(assetBundleData);
+
             // Overwrite AssetsFile in bundle, then write everything to the new path
             bundleFileInstance.file.BlockAndDirInfo.DirectoryInfos[0].SetNewData(assetsFile);
             using AssetsFileWriter writer = new AssetsFileWriter(newBundlePath);
             bundleFileInstance.file.Write(writer);
         }
 
+        // https://github.com/PassivePicasso/BundleKit/blob/0b53bdf51b968094a3aa753f695237d13a97f649/Editor/Utility/AssetsToolsExtensions.cs#L179
+        public static void RemapPPtrs(this AssetTypeValueField field, IDictionary<(int fileId, long pathId), (int fileId, long pathId)> map) {
+            var fieldStack = new Stack<AssetTypeValueField>();
+            fieldStack.Push(field);
+            while (fieldStack.Any()) {
+                var current = fieldStack.Pop();
+                foreach (AssetTypeValueField child in current.Children) {
+                    //not a value (ie not an int)
+                    if (!child.TemplateField.HasValue) {
+                        //not array of values either
+                        if (child.TemplateField.IsArray && child.TemplateField.Children[1].ValueType != AssetValueType.None) {
+                            continue;
+                        }
+
+                        string typeName = child.TemplateField.Type;
+                        //is a pptr
+                        if (typeName.StartsWith("PPtr<") && typeName.EndsWith(">")) {
+                            var fileIdField = child.Get("m_FileID").Value;
+                            var pathIdField = child.Get("m_PathID").Value;
+                            var pathId = pathIdField.AsLong;
+                            var fileId = fileIdField.AsInt;
+                            if (!map.ContainsKey((fileId, pathId))) {
+                                continue;
+                            }
+
+                            var newPPtr = map[(fileId, pathId)];
+                            fileIdField.AsInt = newPPtr.fileId;
+                            pathIdField.AsLong = newPPtr.pathId;
+                        }
+
+                        //recurse through dependencies
+                        fieldStack.Push(child);
+                    }
+                }
+            }
+        }
+        
         [CanBeNull]
         private static AssetTypeValueField GetShaderFromAssetsFiles(string requiredShaderName, List<AssetsFileInstance> assetsFileInstances, AssetsManager assetsManager) {
             for (int i = 0; i < assetsFileInstances.Count; i++) {
