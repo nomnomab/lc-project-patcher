@@ -28,6 +28,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             var assetsFileInstances = LoadAssetsFilesFromDataPath(ModuleUtility.GameDataPath, assetsManager);
             var shader = GetShaderFromAssetsFiles(_shaderString, assetsFileInstances, assetsManager);
 
+            if (shader == null) {
+                return;
+            }
+            
+            // create dummy shader bundle. not sure if there's a way to create a 100% new assetbundle using AssetsTools.net
+            AssetBundleModule.CreateShaderBundle("dummy");
+            
             Debug.Log(shader);
             
             // Unload
