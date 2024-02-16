@@ -32,18 +32,22 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             EditorGUILayout.PropertyField(saveFileIndex);
             EditorGUILayout.PropertyField(saveFileResetBeforeLoad);
             
-            var useGameDirectoryForBepInEx = obj.FindProperty(nameof(LCPatcherRuntimeSettings.BepInExLocation));
+            var bepInExLocation = obj.FindProperty(nameof(LCPatcherRuntimeSettings.BepInExLocation));
             var customBepInExDirectory = obj.FindProperty(nameof(LCPatcherRuntimeSettings.CustomBepInExLocation));
             var loadProjectPlugins = obj.FindProperty(nameof(LCPatcherRuntimeSettings.LoadProjectPlugins));
             
-            var bepInExLocation = (BepInExLocation)useGameDirectoryForBepInEx.enumValueIndex;
+            var bepInExLocationValue = (BepInExLocation)bepInExLocation.enumValueIndex;
+            
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("BepInEx", EditorStyles.boldLabel);
 
-            switch (bepInExLocation) {
+            switch (bepInExLocationValue) {
                 case BepInExLocation.Custom:
                     var customDirectoryIsEmpty = string.IsNullOrEmpty(customBepInExDirectory.stringValue);
                     
                     using (new EditorGUILayout.HorizontalScope()) {
-                        EditorGUILayout.PropertyField(useGameDirectoryForBepInEx);
+                        // EditorGUILayout.PropertyField(bepInExLocation);
+                        bepInExLocation.enumValueIndex = EditorGUILayout.Popup("BepInEx Location", bepInExLocation.enumValueIndex, bepInExLocation.enumDisplayNames);
                         GUI.enabled = !customDirectoryIsEmpty;
                         if (GUILayout.Button("Open", GUILayout.Width(50))) {
                             EditorApplication.delayCall += () => {
@@ -61,7 +65,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
                     break;
                 default:
                     using (new EditorGUILayout.HorizontalScope()) {
-                        EditorGUILayout.PropertyField(useGameDirectoryForBepInEx);
+                        // EditorGUILayout.PropertyField(bepInExLocation);
+                        bepInExLocation.enumValueIndex = EditorGUILayout.Popup("BepInEx Location", bepInExLocation.enumValueIndex, bepInExLocation.enumDisplayNames);
                         if (GUILayout.Button("Open", GUILayout.Width(50))) {
                             EditorApplication.delayCall += () => {
                                 EditorUtility.RevealInFinder(ModuleUtility.BepInExFolder);
