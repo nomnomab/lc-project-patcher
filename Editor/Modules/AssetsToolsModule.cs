@@ -18,30 +18,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
         };
         
         private static List<string> _loadedAssetsFilePaths = new();
-        
-        [MenuItem("Tools/Nomnom/ShaderInjection", priority = 1)]
-        public static void Thing() {
-            Debug.Log("Oh no.");
-            var shaderInjectionSettings = Resources.Load<LCPatcherShaderInjectionSettings>("ShaderInjectionSettings");
-            
-            foreach (var shaderInjection in shaderInjectionSettings.ShaderInjections) {
-                Debug.Log(shaderInjection.ShaderName);
-                // Load bundle
-                var bundlePath = Path.Join(Application.streamingAssetsPath, "ShaderInjections",
-                    $"{shaderInjection.BundleName}.shaderinject");
-                var bundle = AssetBundle.LoadFromFile(bundlePath);
-                var shader = bundle.LoadAsset<Shader>($"assets/injectedshaders/{shaderInjection.BundleName}.shader");
 
-                // Set material shaders 
-                foreach (var material in shaderInjection.Materials) {
-                    material.shader = shader;
-                }
-                
-                // Unload
-                bundle.Unload(false);
-            }
-        }
-        
         public static void GetShaders(LCPatcherSettings settings) {
             AssetsManager assetsManager = new();
             
