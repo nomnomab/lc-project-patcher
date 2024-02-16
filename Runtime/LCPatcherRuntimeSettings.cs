@@ -18,10 +18,14 @@ namespace Nomnom.LCProjectPatcher {
         public bool LoadProjectPlugins = true;
 
         [Header("Cheats")] 
-        public Object AutoLoadMoon;
-        public string AutoLoadMoonSceneName;
         public bool InfiniteHealth;
         public bool InfiniteStamina;
+        public int StartingCredits = -1;
+        
+        [Header("Moons")]
+        public bool AutoLoadMoon;
+        public Object AutoLoadMoonReference;
+        public string AutoLoadMoonSceneName;
         
         [Header("Experimental")]
         public bool LoadPosterizationShader;
