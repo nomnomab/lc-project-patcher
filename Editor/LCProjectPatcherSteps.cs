@@ -94,7 +94,11 @@ namespace Nomnom.LCProjectPatcher.Editor {
         public static async UniTask RunPreProcessGroup(LCPatcherSettings settings) {
             AssetDatabase.StartAssetEditing();
 
-            try {
+            try
+            {
+                AssetsToolsModule.GetShader(settings);
+                throw new Exception("test");
+                
                 InitialProjectModule.MoveNativeFiles(settings);
 
                 // asset ripper

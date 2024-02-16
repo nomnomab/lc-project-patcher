@@ -14,7 +14,8 @@
     "allowUnsafeCode": false,
     "overrideReferences": true,
     "precompiledReferences": [
-        "Nomnom.LCProjectPatcherScriptCleaner.dll"
+        "Nomnom.LCProjectPatcherScriptCleaner.dll",
+        "AssetsTools.NET.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],
