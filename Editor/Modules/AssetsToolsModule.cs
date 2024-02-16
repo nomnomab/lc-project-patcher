@@ -27,6 +27,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             // Get assets files and attempt to find our shaders
             var assetsFileInstances = LoadAssetsFilesFromDataPath(ModuleUtility.GameDataPath, assetsManager);
             var shader = GetShaderFromAssetsFiles(_shaderString, assetsFileInstances, assetsManager);
+            Debug.Log("HUH1");
 
             if (shader == null) {
                 return;
@@ -34,11 +35,52 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             
             // create dummy shader bundle. not sure if there's a way to create a 100% new assetbundle using AssetsTools.net
             AssetBundleModule.CreateShaderBundle("dummy");
+            Debug.Log("HUH2");
+
+            InjectShaderIntoExistingAssetBundle(
+                Path.Join(Application.temporaryCachePath, "dummy"),
+                Path.Join(Application.temporaryCachePath, "dummy2"),
+                "posterization",
+                shader,
+                assetsManager);
             
-            Debug.Log(shader);
-            
+            Debug.Log("HUH3");
             // Unload
             assetsManager.UnloadAll();
+        }
+
+        private static void InjectShaderIntoExistingAssetBundle(string currentBundlePath, string newBundlePath, string shaderName, AssetTypeValueField shader, AssetsManager assetsManager) {
+            // I'm not sure if we can easily create fully new AssetBundles using only AssetsTools.NET
+            // If we can, refactor this to use CreateValueBaseField to add the actual shader in a brand new assetbundle
+            var bundleFileInstance = assetsManager.LoadBundleFile(currentBundlePath);
+            var assetsFileInstance = assetsManager.LoadAssetsFileFromBundle(bundleFileInstance, 0);
+            var assetsFile = assetsFileInstance?.file;
+            if (assetsFileInstance == null || assetsFile == null) {
+                throw new Exception($"Could not load bundle file at {currentBundlePath}");
+            }
+
+            // Load unity version so we can get the correct class database setup
+            string unityVersion = assetsFile.Metadata.UnityVersion;
+            assetsManager.LoadClassDatabaseFromPackage(unityVersion);
+            
+            // Get actual AssetBundle asset
+            var (assetBundleInfo, assetBundleData) = GetFirstAssetInfoAndBaseOfClassID(assetsFileInstance, AssetClassID.AssetBundle, assetsManager);
+            
+            // Force set AssetBundle name & paths to line up
+            // If you try to load an AssetBundle with the same name/assets twice, it will refuse to load
+            assetBundleData["m_Name"].AsString = shaderName;
+            assetBundleData["m_AssetBundleName"].AsString = shaderName;
+            assetBundleData["m_Container.Array"].Children[0]["first"].AsString = $"assets/injectedshaders/{shaderName}.shader"; // ???
+            assetBundleInfo.SetNewData(assetBundleData);
+            
+            // Inject the actual shader
+            var (shaderInfo, shaderData) = GetFirstAssetInfoAndBaseOfClassID(assetsFileInstance, AssetClassID.Shader, assetsManager);
+            shaderInfo.SetNewData(shader);
+    
+            // Overwrite AssetsFile in bundle, then write everything to the new path
+            bundleFileInstance.file.BlockAndDirInfo.DirectoryInfos[0].SetNewData(assetsFile);
+            using AssetsFileWriter writer = new AssetsFileWriter(newBundlePath);
+            bundleFileInstance.file.Write(writer);
         }
 
         [CanBeNull]
@@ -47,16 +89,11 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 var assetsFileInstance = assetsFileInstances[i];
                 EditorUtility.DisplayProgressBar("Extracting shaders", $"Extracting from {assetsFileInstance.name}", (float)i / assetsFileInstances.Count);
                 
-                var assetsFile = assetsFileInstance.file;
-                foreach (var shaderInfo in assetsFile.GetAssetsOfType(AssetClassID.Shader)) {
-                    var shaderBase = assetsManager.GetBaseField(assetsFileInstance, shaderInfo);
-                    if (shaderBase == null) {
-                        continue;
-                    }
-                    var shaderName = shaderBase["m_ParsedForm"]["m_Name"].AsString;
-                    if (shaderName == requiredShaderName) {
-                        return shaderBase;
-                    }
+                var shader = GetAssetInfoAndBaseOfClassID(assetsFileInstance, AssetClassID.Shader, assetsManager)
+                    .Select(x => x.assetBase)
+                    .FirstOrDefault(x => x["m_ParsedForm"]["m_Name"].AsString == requiredShaderName);
+                if (shader != null) {
+                    return shader;
                 }
             }
 
@@ -82,7 +119,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             }
 
             // Load unity version so we can get the correct class database setup
-            string unityVersion = assetsFile?.Metadata.UnityVersion;
+            string unityVersion = assetsFile.Metadata.UnityVersion;
             assetsManager.LoadClassDatabaseFromPackage(unityVersion);
 
             for (int i = 0; i < assetsFile.Metadata.Externals.Count; i++) {
@@ -111,6 +148,38 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             return assetsFileInstances;
         }
 
+        // handles all the annoying null checks for assetfile/assetdata
+        [CanBeNull]
+        private static (AssetFileInfo assetInfo, AssetTypeValueField assetBase) GetFirstAssetInfoAndBaseOfClassID(AssetsFileInstance assetsFileInstance, AssetClassID assetClassID, AssetsManager assetsManager) {
+            var assetsInfoAndData = GetAssetInfoAndBaseOfClassID(assetsFileInstance, assetClassID, assetsManager);
+            var assetInfoAndData = assetsInfoAndData?.FirstOrDefault();
+            if (assetInfoAndData == null) {
+                throw new Exception($"Could not find asset of class {assetClassID} in assetsFileInstance.");
+            }
+            return assetInfoAndData!.Value;
+        } 
+        
+        // handles all the annoying null checks for assetfile/assetdata
+        private static List<(AssetFileInfo assetInfo, AssetTypeValueField assetBase)> GetAssetInfoAndBaseOfClassID(AssetsFileInstance assetsFileInstance, AssetClassID assetClassID, AssetsManager assetsManager) {
+            var assetsFile = assetsFileInstance.file;
+            if (assetsFile == null) {
+                return new();
+            }
+            List<(AssetFileInfo, AssetTypeValueField)> assetsInfoAndData = new();
+            foreach (var assetInfo in assetsFile.GetAssetsOfType(assetClassID)) {
+                if (assetInfo == null) {
+                    continue;
+                }
+                var assetBase = assetsManager.GetBaseField(assetsFileInstance, assetInfo);
+                if (assetBase == null) {
+                    continue;
+                }
+                assetsInfoAndData.Add((assetInfo, assetBase));
+            }
+
+            return assetsInfoAndData;
+        }
+        
         private static IEnumerable<string> GetAssetsFilePathsFromDataPath(string dataPath) {
             if (!Directory.Exists(dataPath)) {
                 throw new DirectoryNotFoundException("Could not find data folder");
