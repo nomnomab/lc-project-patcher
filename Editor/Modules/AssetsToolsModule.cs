@@ -12,9 +12,13 @@ using UnityEngine;
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class AssetsToolsModule {
         public static readonly string ShaderInjectionSettingsPath = "Assets/Resources/ShaderInjectionSettings.asset";
+        // TODO: Replace this so all custom shaders are automatically replaced, instead of needing a hardcoded list
         public static readonly List<string> ShadersToGrab = new() {
             "Shader Graphs/PosterizationFilter",
             "Shader Graphs/WaterShaderHDRP",
+            "Shader Graphs/BlobShader",
+            "Shader Graphs/HologramShader",
+            // "Hidden/VFX/FlyingBugs/System/Output Particle HDRP Lit Mesh" // disabled as-is because the VisualEffect is broken anyways
         };
         
         private static List<string> _loadedAssetsFilePaths = new();
