@@ -32,7 +32,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 var bundle = AssetBundle.LoadFromFile(bundlePath);
                 var shader = bundle.LoadAsset<Shader>($"assets/injectedshaders/{shaderInjection.BundleName}.shader");
 
-                // Set material shaders
+                // Set material shaders 
                 foreach (var material in shaderInjection.Materials) {
                     material.shader = shader;
                 }
@@ -157,6 +157,11 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 {(0, shaderInfo.PathId), (0, newPathId)}
             });
             
+            // Remap shader dependencies. I pray there is never more than the shader graph fallback error
+            // This just destroys the dependency array for now. That's probably fine, right?
+            // Needed to avoid "illegal LocalPathID in PersistentManager" error
+            shader["m_Dependencies.Array"].Children = new List<AssetTypeValueField>();
+
             // Finally, set shader iD and our new data
             shaderInfo.PathId = newPathId; 
             shaderInfo.SetNewData(shader);
@@ -192,7 +197,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                             if (!map.ContainsKey((fileId, pathId))) {
                                 continue;
                             }
-
                             var newPPtr = map[(fileId, pathId)];
                             fileIdField.AsInt = newPPtr.fileId;
                             pathIdField.AsLong = newPPtr.pathId;
