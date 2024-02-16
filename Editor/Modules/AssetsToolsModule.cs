@@ -11,8 +11,10 @@ using UnityEngine;
 // This may be redundant for AssetRipper, but I'm not familiar enough with AssetRipper's codebase to make it do this
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class AssetsToolsModule {
+        public static readonly string ShaderInjectionSettingsPath = "Assets/Resources/ShaderInjectionSettings.asset";
         public static readonly List<string> ShadersToGrab = new() {
-            "Shader Graphs/PosterizationFilter"
+            "Shader Graphs/PosterizationFilter",
+            "Shader Graphs/WaterShaderHDRP",
         };
         
         private static List<string> _loadedAssetsFilePaths = new();
@@ -48,8 +50,10 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             AssetBundleModule.CreateShaderBundle("dummy");
             
             // setup resources folder for shader bundles
-            var shaderDirectory = Path.Join(settings.GetResourcesPath(true), "ShaderInjections");
+            var shaderDirectory = Path.Join(settings.GetStreamingAssetsPath(true), "ShaderInjections");
             Directory.CreateDirectory(shaderDirectory);
+
+            List<ShaderInjection> shaderInjections = new();
             
             foreach (var shaderToGrab in ShadersToGrab) {
                 var shader = GetShaderFromAssetsFiles(shaderToGrab, assetsFileInstances, assetsManager);
@@ -59,20 +63,50 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
 
                 // may need better parsing if more complex shader names are ever filtered against
                 var shortShaderName = shaderToGrab.Split("/").Last().Replace(" ", "").ToLower();
-                Debug.Log(settings.GetResourcesPath(true));
                 InjectShaderIntoExistingAssetBundle(
                     Path.Join(Application.temporaryCachePath, "dummy"),
                     Path.Join(shaderDirectory, $"{shortShaderName}.shaderinject"),
                     shortShaderName,
                     shader,
                     assetsManager);
+
+                shaderInjections.Add(GetShaderInjection(shaderToGrab, shortShaderName));
             }
+
+            // Create shaderInjection SO
+            var injectionSettings = ScriptableObject.CreateInstance<LCPatcherShaderInjectionSettings>();
+            injectionSettings.ShaderInjections = shaderInjections;
+            injectionSettings.EnableShaderInjections = true;
+            
+            // TODO: User-facing warning this is destructive or something?
+            if (AssetDatabase.FindAssets(ShaderInjectionSettingsPath).Length > 0) {
+                AssetDatabase.DeleteAsset(ShaderInjectionSettingsPath);
+            }
+            AssetDatabase.CreateAsset(injectionSettings, ShaderInjectionSettingsPath);
             
             // Get rid of progress bar from loading the asset files
             EditorUtility.ClearProgressBar();
             
             // Unload
             assetsManager.UnloadAll();
+        }
+
+        private static ShaderInjection GetShaderInjection(string shaderName, string bundleName) {
+            var dummyShader = Shader.Find(shaderName);
+            var materials = AssetDatabase.FindAssets("t:material")
+                .Select(guid => AssetDatabase.GUIDToAssetPath(guid))
+                .Select(path => AssetDatabase.LoadAssetAtPath<Material>(path))
+                .Where(x => x.shader.name == shaderName)
+                .ToList();
+            
+            var shaderInjection = new ShaderInjection {
+                ShaderName = shaderName,
+                BundleName = bundleName,
+                DummyShader = dummyShader,
+                Materials = materials
+            };
+
+            return shaderInjection;
         }
 
         private static void InjectShaderIntoExistingAssetBundle(string currentBundlePath, string newBundlePath, string shaderName, AssetTypeValueField shader, AssetsManager assetsManager) {
