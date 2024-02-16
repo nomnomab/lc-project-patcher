@@ -31,5 +31,22 @@ namespace Patches {
             SprintMeter.SetValue(__instance, 1f);
         }
     }
+
+    public static class CreditsPatch {
+        private static readonly FieldInfo GroupCredits = AccessTools.TypeByName("Terminal").GetField("groupCredits");
+        
+        public static MethodBase TargetMethod() {
+            return AccessTools.Method("Terminal:Start");
+        }
+
+        public static void Postfix() {
+            var settings = ModuleUtility.GetPatcherRuntimeSettings();
+            var terminal = settings.GetTerminal();
+            if (terminal == null) return;
+            if (settings.StartingCredits == -1) return;
+            
+            GroupCredits.SetValue(terminal, settings.StartingCredits);
+        }
+    }
 }
 #endif

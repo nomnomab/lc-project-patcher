@@ -16,7 +16,8 @@ namespace Patches {
         
         public static void Postfix() {
             var settings = ModuleUtility.GetPatcherRuntimeSettings();
-            if (!settings.AutoLoadMoon && string.IsNullOrEmpty(settings.AutoLoadMoonSceneName)) {
+            if (!settings.AutoLoadMoon) return;
+            if (!settings.AutoLoadMoonReference && string.IsNullOrEmpty(settings.AutoLoadMoonSceneName)) {
                 return;
             }
             
@@ -33,8 +34,8 @@ namespace Patches {
             int levelId = 0;
             var startOfRound = settings.GetStartOfRound();
 
-            if (settings.AutoLoadMoon) {
-                levelId = (int)settings.AutoLoadMoon.GetType().GetField("levelID").GetValue(settings.AutoLoadMoon);
+            if (settings.AutoLoadMoonReference) {
+                levelId = (int)settings.AutoLoadMoonReference.GetType().GetField("levelID").GetValue(settings.AutoLoadMoonReference);
             } else if(!string.IsNullOrEmpty(settings.AutoLoadMoonSceneName)) {
                 var levels = (Array)startOfRound.GetType().GetField("levels").GetValue(startOfRound);
                 var found = false;

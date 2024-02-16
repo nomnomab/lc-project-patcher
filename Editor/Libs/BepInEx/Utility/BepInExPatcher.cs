@@ -229,6 +229,7 @@ public class BepInExPatcher: MonoBehaviour {
         harmony.PatchAll(typeof(EventSystemPatch));
         harmony.PatchAll(typeof(InfiniteHealthPatch));
         harmony.PatchAll(typeof(InfiniteStaminaPatch));
+        harmony.PatchAll(typeof(CreditsPatch));
         harmony.PatchAll(typeof(AutoMoonLoaderPatch));
         
         Debug.Log($"Loaded BepInEx in {stopwatch.ElapsedMilliseconds}ms!");

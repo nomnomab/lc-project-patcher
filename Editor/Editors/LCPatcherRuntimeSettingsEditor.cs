@@ -79,23 +79,29 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             // cheats
             var infiniteHealth = obj.FindProperty(nameof(LCPatcherRuntimeSettings.InfiniteHealth));
             var infiniteStamina = obj.FindProperty(nameof(LCPatcherRuntimeSettings.InfiniteStamina));
+            var startingCredits = obj.FindProperty(nameof(LCPatcherRuntimeSettings.StartingCredits));
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Cheats", EditorStyles.boldLabel);
+            // EditorGUILayout.Space();
+            // EditorGUILayout.LabelField("Cheats", EditorStyles.boldLabel);
             
             EditorGUILayout.PropertyField(infiniteHealth);
             EditorGUILayout.PropertyField(infiniteStamina);
+            EditorGUILayout.PropertyField(startingCredits);
             
             var autoLoadMoon = obj.FindProperty(nameof(LCPatcherRuntimeSettings.AutoLoadMoon));
+            var autoLoadMoonReference = obj.FindProperty(nameof(LCPatcherRuntimeSettings.AutoLoadMoonReference));
             var autoLoadMoonSceneName = obj.FindProperty(nameof(LCPatcherRuntimeSettings.AutoLoadMoonSceneName));
             
             // EditorGUILayout.Space();
             // EditorGUILayout.LabelField("Cheats", EditorStyles.boldLabel);
+            
+            EditorGUILayout.PropertyField(autoLoadMoon);
+            
             GUI.enabled = string.IsNullOrEmpty(autoLoadMoonSceneName.stringValue);
-            EditorGUILayout.ObjectField(autoLoadMoon, SelectableLevelType, new GUIContent(autoLoadMoon.displayName));
+            EditorGUILayout.ObjectField(autoLoadMoonReference, SelectableLevelType, new GUIContent(autoLoadMoonReference.displayName));
             GUI.enabled = true;
             
-            GUI.enabled = !autoLoadMoon.objectReferenceValue;
+            GUI.enabled = !autoLoadMoonReference.objectReferenceValue;
             EditorGUILayout.PropertyField(autoLoadMoonSceneName);
             GUI.enabled = true;
 
