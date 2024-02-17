@@ -12,8 +12,6 @@ namespace Nomnom.LCProjectPatcher {
                 foreach (var material in shaderInjection.Materials) {
                     if (shaderInjection.MaterialNeedsInjection(material)) {
                         material.shader = shaderInjection.GetInjectedShader();
-                        Debug.Log($"Setting shader of {material} to {material.shader}.");
-                        Debug.Log(material.shader.isSupported);
                     }
                 }
             }
