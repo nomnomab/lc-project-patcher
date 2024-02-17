@@ -92,9 +92,6 @@ namespace Nomnom.LCProjectPatcher.Editor {
         }
 
         public static async UniTask RunPreProcessGroup(LCPatcherSettings settings) {
-            // shaders
-            AssetsToolsModule.GetShaders(settings);
-            throw new Exception("test");
             AssetDatabase.StartAssetEditing();
 
             try
