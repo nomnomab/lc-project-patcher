@@ -78,7 +78,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             // Create shaderInjection SO
             var injectionSettings = ScriptableObject.CreateInstance<LCPatcherShaderInjectionSettings>();
             injectionSettings.ShaderInjections = shaderInjections;
-            injectionSettings.EnableShaderInjections = true;
             
             // TODO: User-facing warning this is destructive or something?
             if (AssetDatabase.FindAssets(ShaderInjectionSettingsPath).Length > 0) {
