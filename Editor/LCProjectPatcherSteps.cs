@@ -181,6 +181,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
             FinalizerModule.SortPrefabsFolder(settings);
             FinalizerModule.OpenInitScene();
             FinalizerModule.ChangeGameViewResolution();
+            
+            InputActionsModule.FixAll(settings);
 
             // shaders
             AssetsToolsModule.GetShaders(settings);

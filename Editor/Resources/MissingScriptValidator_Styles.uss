@@ -16,3 +16,16 @@ Foldout {
     margin-left: 0;
     margin-right: 0;
 }
+
+#utilities .utility-button {
+    width: 50px;
+}
+
+#utilities .package-label {
+    flex-grow: 1;
+    min-width: 80%;
+}
+
+#utilities .package-version {
+    flex-shrink: 1;
+}

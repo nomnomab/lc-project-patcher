@@ -15,6 +15,7 @@
     "overrideReferences": true,
     "precompiledReferences": [
         "Nomnom.LCProjectPatcherScriptCleaner.dll",
+        "Newtonsoft.Json.dll",
         "AssetsTools.NET.dll"
     ],
     "autoReferenced": true,

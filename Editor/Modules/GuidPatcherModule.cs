@@ -19,11 +19,20 @@ namespace Nomnom.LCProjectPatcher.Modules {
             public readonly string name;
             public readonly string guid;
             public readonly string file;
+            public readonly int? type;
             
             public GuidSwap(string name, string guid, string file) {
                 this.name = name;
                 this.guid = guid;
                 this.file = file;
+                type = null;
+            }
+            
+            public GuidSwap(string name, string guid, string file, int type) {
+                this.name = name;
+                this.guid = guid;
+                this.file = file;
+                this.type = type;
             }
         }
         
@@ -405,8 +414,39 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                                     count++;
                                     fileID = string.IsNullOrEmpty(swap.file) ? fileID : swap.file;
-                                    Debug.Log($"Found {swap.name} in {fileID} | {guid} to {swap.guid} in {file}");
-                                    return $"{{fileID: {fileID}, guid: {swap.guid}, type: {type}}}";
+                                    
+                                    var str = $"{{fileID: {fileID}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"Found {swap.name} in {fileID} | {str}");
+                                    return str;
+                                });
+
+                            if (count > 0) {
+                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
+                                if (!debugMode) {
+                                    File.WriteAllText(file, content);
+                                }
+                            }
+                        }
+
+                        // todo: make sure this works fine
+                        if (_scriptableObjectList.Count != 0) {
+                            var content = File.ReadAllText(file);
+                            var count = 0;
+                            content = FullGuidPattern.Replace(content,
+                                x => {
+                                    var fileID = x.Groups["fileID"].Value;
+                                    var guid = x.Groups["guid"].Value;
+                                    var type = x.Groups["type"].Value;
+                                    if (!_scriptableObjectList.TryGetValue(guid, out var swap)) {
+                                        return x.Value;
+                                    }
+
+                                    count++;
+                                    fileID = string.IsNullOrEmpty(swap.file) ? fileID : swap.file;
+                                    
+                                    var str = $"{{fileID: {fileID}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"Found {swap.name} in {fileID} | {str}");
+                                    return str;
                                 });
 
                             if (count > 0) {
@@ -431,8 +471,10 @@ namespace Nomnom.LCProjectPatcher.Modules {
                                     }
 
                                     count++;
-                                    Debug.Log($"Found {swap.name} in {file} | {guid} to {swap.guid} in {file}");
-                                    return $"  m_Script: {{fileID: {swap.file}, guid: {swap.guid}, type: {type}}}";
+                                    
+                                    var str = $"  m_Script: {{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"Found {swap.name} in {file} | {str}");
+                                    return str;
                                 });
 
                             if (count > 0) {
@@ -459,8 +501,10 @@ namespace Nomnom.LCProjectPatcher.Modules {
                                     }
 
                                     count++;
-                                    Debug.Log($"Found {fileId} in {file} | {guid} to {swap.guid} in {file}");
-                                    return $"  m_Shader: {{fileID: {swap.file}, guid: {swap.guid}, type: {type}}}";
+                                    
+                                    var str = $"  m_Shader: {{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"Found {fileId} in {file} | {str}");
+                                    return str;
                                 });
 
                             if (count > 0) {
@@ -486,8 +530,10 @@ namespace Nomnom.LCProjectPatcher.Modules {
                                     }
 
                                     count++;
-                                    Debug.Log($"Found {fileId} in {file} | {guid} to {swap.guid} in {file}");
-                                    return $"{{fileID: {swap.file}, guid: {swap.guid}, type: {type}}}";
+                                    
+                                    var str = $"{{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"Found {fileId} in {file} | {str}");
+                                    return str;
                                 });
 
                             if (count > 0) {
@@ -553,6 +599,18 @@ namespace Nomnom.LCProjectPatcher.Modules {
             _monoList.Clear();
             _scriptableObjectList.Clear();
             
+            AssetDatabase.Refresh();
+        }
+        
+        public static void FixGuidsForScriptableObject(string originalGuid, string newGuid, string fileId, int type, string fullTypeName) {
+            _monoList.Clear();
+            _shaderList.Clear();
+            _animationClipList.Clear();
+            _scriptableObjectList.Clear();
+            _scriptableObjectList.TryAdd(originalGuid, new GuidSwap(fullTypeName, newGuid, fileId, type));
+            var assetRipperPath = ModuleUtility.ProjectDirectory;
+            FixGuids(assetRipperPath, debugMode: false);
+            _scriptableObjectList.Clear();
             AssetDatabase.Refresh();
         }
 

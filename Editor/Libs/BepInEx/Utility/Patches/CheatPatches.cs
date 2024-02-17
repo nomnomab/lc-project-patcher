@@ -43,7 +43,7 @@ namespace Patches {
             var settings = ModuleUtility.GetPatcherRuntimeSettings();
             var terminal = settings.GetTerminal();
             if (terminal == null) return;
-            if (settings.StartingCredits == -1) return;
+            if (settings.StartingCredits < 0) return;
             
             GroupCredits.SetValue(terminal, settings.StartingCredits);
         }

@@ -51,24 +51,30 @@ This tool does **not** distribute game files. It uses what is already on your co
     - If you are using a specific version, you can append it to the end of the git URL, such as `#v0.3.0`
 6. Click the 'add' button
 
+> If you are using version `0.3` then you need to remove the `Assets\LethalCompany\Tools\Plugins\BepInEx\Utility` folder, 
+> as it is in the package itself now.
+
 ## Usage
 
-1. Create a new Unity project
+1. Make sure you have all requirements installed!
+2. Create a new Unity project
     - Use version [2022.3.9f1](https://unity.com/releases/editor/archive)
     - Use the 3D (HDRP) template
-2. Open the tool from `Tools > Nomnom > LC - Project Patcher > Open`
+3. Open the tool from `Tools > Nomnom > LC - Project Patcher > Open`
     - This will create some default folders for you when it opens
 
 > At this point if you have the DunGen asset, or any other asset store asset, import it now and move it into `Assets\Unity\AssetStore`. 
 > This is the location the patcher checks for existing assets if needed.
+> 
+> If you don't put DunGen in that location, it will not exclude the guids from the asset ripper export and things will explode :)
 
-3. Assign the Game's data directory path at the top
+4. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
-4. Click the `Run Patcher` button
+5. Click the `Run Patcher` button
     - This process *will* take a while, so be patient
     - The editor may restart a few times, this is normal
     - When it asks about the New Input System and switching backends, click `Yes`
-5. Now you should have a nice template to work from!
+6. Now you should have a nice template to work from!
 
 ## BepInEx Usage
 
@@ -220,6 +226,7 @@ So for now I'm not supporting it. Use it with cation if you use it anyway!
 - MonoMod - https://github.com/MonoMod/MonoMod
 - GameViewSizeShortcut - https://gist.github.com/wappenull/668a492c80f7b7fda0f7c7f42b3ae0b0
 - BepInEx - https://github.com/BepInEx/BepInEx
+- Newtonsoft Json.NET - https://www.newtonsoft.com/json
 - IntegrityChaos - for the posterization shader remake
 
 <br/>

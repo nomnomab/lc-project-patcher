@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class PackagesModule {
-        private readonly static (string, string)[] Packages = new[] {
+        public readonly static (string, string)[] Packages = new[] {
             ("com.unity.ai.navigation", "1.1.5"),
             ("com.unity.animation.rigging", "1.2.1"),
             ("com.unity.collections", "1.2.4"),
@@ -16,7 +16,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             ("com.unity.inputsystem", "1.7.0"),
         };
 
-        private readonly static string[] GitPackages = new[] {
+        public readonly static string[] GitPackages = new[] {
             "https://github.com/Unity-Technologies/AssetBundles-Browser.git",
         };
         

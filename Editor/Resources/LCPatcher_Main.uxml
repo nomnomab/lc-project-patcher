@@ -10,6 +10,57 @@
         </ui:VisualElement>
         <ui:Toggle label="Delete Temp Asset Ripper Files" name="delete-temp-ripper-files-toggle" tooltip="If the patcher should automatically delete the temporary AssetRipper~ directory" style="margin-right: 0; margin-left: 0;" />
         <ui:Toggle label="Use Game&apos;s BepInEx Folder" name="use-game-bepinex-toggle" tooltip="If this project wants to use an existing BepInEx structure from the game&apos;s directory instead of a local one" style="margin-right: 0; margin-left: 0;" />
+        <ui:Foldout text="Assets" name="assets" value="false" style="display: none;">
+            <ui:ListView focusable="true" />
+        </ui:Foldout>
+        <ui:Foldout text="Utility" name="utilities" value="true" style="flex-grow: 1; flex-shrink: 0;">
+            <ui:Label tabindex="-1" text="These are some optional options for after patching if needed. You generally won&apos;t need them." parse-escape-sequences="true" display-tooltip-when-elided="true" style="-unity-font-style: bold-and-italic; font-size: 12px; padding-bottom: 4px; padding-top: 2px; white-space: normal;" />
+            <ui:VisualElement name="run-asset-ripper" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Run AssetRipper" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Run" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="install-packages" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Install packages" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Install" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="package-list" style="flex-grow: 1; flex-direction: row; flex-wrap: wrap; padding-top: 4px; padding-right: 8px; padding-bottom: 4px; padding-left: 8px;">
+                <ui:Label tabindex="-1" text="com.unity.package" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; min-width: 80%;" />
+                <ui:Label tabindex="-1" text="1.0.0" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="fix-mixer" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Fix diagetic audio mixer" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Fix" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="fix-input-actions" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Fix input actions" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Fix" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="sort-prefabs" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Sort prefabs" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Sort" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+                <ui:Button text="Unsort" parse-escape-sequences="true" display-tooltip-when-elided="true" enable-rich-text="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="sort-sos" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Sort scriptable objects" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Sort" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+                <ui:Button text="Unsort" parse-escape-sequences="true" display-tooltip-when-elided="true" enable-rich-text="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
+        </ui:Foldout>
+        <ui:Foldout text="Debug" name="debug" value="false" style="flex-grow: 1; flex-shrink: 0; display: none;">
+            <ui:Button text="Validate DunGen Path" parse-escape-sequences="true" display-tooltip-when-elided="true" />
+            <ui:VisualElement style="flex-direction: row;">
+                <ui:Button text="Sort ScriptableObjects" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; width: 45%;" />
+                <ui:Button text="Unsort ScriptableObjects" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; width: 45%;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-direction: row;">
+                <ui:Button text="Sort Prefabs" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; width: 45%;" />
+                <ui:Button text="Unsort Prefabs" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; width: 45%;" />
+            </ui:VisualElement>
+            <ui:VisualElement style="flex-direction: row;">
+                <uie:ObjectField style="flex-grow: 1;" />
+                <ui:Button text="Find GUID" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 0; flex-shrink: 1;" />
+            </ui:VisualElement>
+        </ui:Foldout>
     </ui:ScrollView>
     <ui:VisualElement name="VisualElement" style="flex-grow: 1;" />
     <ui:GroupBox name="group-box" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 16px; padding-right: 16px; padding-bottom: 6px; padding-left: 16px;">
