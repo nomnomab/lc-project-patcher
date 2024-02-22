@@ -1,4 +1,5 @@
 ﻿#if UNITY_EDITOR
+using System;
 using System.Collections;
 using System.Linq;
 using System.Reflection;
@@ -6,6 +7,7 @@ using HarmonyLib;
 using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 namespace Patches {
     public static class IntroSkipperPatch {
@@ -24,6 +26,34 @@ namespace Patches {
             yield return SceneManager.LoadSceneAsync("InitSceneLANMode");
             yield return new WaitForSeconds(0.2f);
             yield return SceneManager.LoadSceneAsync("MainMenu");
+        }
+    }
+
+    [HarmonyPatch(typeof(MonoBehaviour))]
+    public static class TestStartCoroutineRouterLLL {
+        private static MonoBehaviour _runner;
+        
+        [HarmonyPatch(nameof(MonoBehaviour.StartCoroutine), new Type[] { typeof(IEnumerator) })]
+        [HarmonyPrefix]
+        private static bool Prefix(MonoBehaviour __instance, IEnumerator routine) {
+            if (ModuleUtility.GetPatcherRuntimeSettings().DisablePreInitScriptCoroutineReplacer) {
+                return true;
+            }
+            
+            if (__instance.GetType().Name != "PreInitSceneScript") {
+                return true;
+            }
+            
+            // take the coroutine and say no
+            if (!_runner) {
+                var runner = new GameObject("[PreInitCoroutineRunner]");
+                _runner = runner.AddComponent<Empty>();
+                Object.DontDestroyOnLoad(_runner);
+            }
+            
+            _runner.StartCoroutine(routine);
+            Debug.Log("Started coroutine on runner.");
+            return false;
         }
     }
     

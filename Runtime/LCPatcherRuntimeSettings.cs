@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -21,6 +22,7 @@ namespace Nomnom.LCProjectPatcher {
         public bool InfiniteHealth;
         public bool InfiniteStamina;
         public int StartingCredits = -1;
+        public float Time;
         
         [Header("Moons")]
         public bool AutoLoadMoon;
@@ -30,9 +32,21 @@ namespace Nomnom.LCProjectPatcher {
         [Header("Experimental")]
         public bool LoadPosterizationShader;
 
+        [Header("Other")] 
+        public bool DisableAutomaticScriptableObjectReloading;
+        public bool DisablePreInitScriptCoroutineReplacer;
+
+        private static MonoBehaviour _timeOfDay;
+        
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void OnLoad() {
+            _timeOfDay = null;
+        }
+
         private void OnValidate() {
             if (!Application.isPlaying) return;
             HandleInfiniteHealth();
+            HandleTimeOfDay();
             SaveFileIndex = Mathf.Max(SaveFileIndex, 0);
         }
 
@@ -43,6 +57,22 @@ namespace Nomnom.LCProjectPatcher {
             var allowLocalPlayerDeath = startOfRound.GetType().GetField("allowLocalPlayerDeath");
             allowLocalPlayerDeath.SetValue(startOfRound, !InfiniteHealth);
             Debug.Log($"Infinite health: {InfiniteHealth}");
+        }
+
+        public void HandleTimeOfDay() {
+            var timeOfDay = GetTimeOfDay();
+            if (!timeOfDay) return;
+
+            var currentDayTime = GetCurrentDayTimeField();
+            var totalTime = GetTotalTimeField();
+            var timeNormalized = Time;
+            var newTime = timeNormalized * (float)totalTime?.GetValue(timeOfDay);
+            var globalTime = GetGlobalTimeField();
+            var startingGlobalTime = GetConstantStartingGlobalTimeField();
+            
+            var newGlobalTime = (int)startingGlobalTime?.GetValue(timeOfDay) + newTime;
+            Debug.Log($"{globalTime.GetValue(timeOfDay)} to {newGlobalTime}");
+            globalTime.SetValue(timeOfDay, newGlobalTime);
         }
 
         public MonoBehaviour GetGameNetworkManager() {
@@ -61,6 +91,54 @@ namespace Nomnom.LCProjectPatcher {
             return GameObject
                 .FindObjectsOfType<MonoBehaviour>()
                 .FirstOrDefault(x => x.GetType().Name == "Terminal");
+        }
+
+        public MonoBehaviour GetTimeOfDay() {
+            if (!Application.isPlaying) {
+                return null;
+            }
+            
+            if (_timeOfDay) {
+                return _timeOfDay;
+            }
+
+            var timeOfDay = GameObject
+                .FindObjectsOfType<MonoBehaviour>()
+                .FirstOrDefault(x => x.GetType().Name == "TimeOfDay");
+
+            if (Application.isPlaying) {
+                _timeOfDay = timeOfDay;
+            }
+
+            return _timeOfDay;
+        }
+
+        public FieldInfo GetCurrentDayTimeField() {
+            var timeOfDay = GetTimeOfDay();
+            if (!timeOfDay) return null;
+            
+            return timeOfDay.GetType().GetField("currentDayTime");
+        }
+        
+        public FieldInfo GetTotalTimeField() {
+            var timeOfDay = GetTimeOfDay();
+            if (!timeOfDay) return null;
+            
+            return timeOfDay.GetType().GetField("totalTime");
+        }
+        
+        public FieldInfo GetGlobalTimeField() {
+            var timeOfDay = GetTimeOfDay();
+            if (!timeOfDay) return null;
+            
+            return timeOfDay.GetType().GetField("globalTime");
+        }
+        
+        public FieldInfo GetConstantStartingGlobalTimeField() {
+            var timeOfDay = GetTimeOfDay();
+            if (!timeOfDay) return null;
+            
+            return timeOfDay.GetType().GetField("startingGlobalTime");
         }
     }
 }

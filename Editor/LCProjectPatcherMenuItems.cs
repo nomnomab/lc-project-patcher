@@ -1,4 +1,5 @@
-﻿using Nomnom.LCProjectPatcher.Modules;
+﻿using Nomnom.LCProjectPatcher.Editor.Modules;
+using Nomnom.LCProjectPatcher.Modules;
 using UnityEditor;
 
 namespace Nomnom.LCProjectPatcher.Editor {
@@ -7,6 +8,13 @@ namespace Nomnom.LCProjectPatcher.Editor {
         public static void ShowWindow() {
             var window = EditorWindow.GetWindow<LCProjectPatcherEditorWindow>("LC - Project Patcher");
             window.minSize = new UnityEngine.Vector2(400, 400);
+        }
+        
+        [MenuItem("Tools/Nomnom/LC - Project Patcher/Open Runtime Settings", priority = 2)]
+        public static void ShowRuntimeSettings() {
+            var settings = ModuleUtility.GetPatcherRuntimeSettings();
+            EditorUtility.FocusProjectWindow();
+            Selection.activeObject = settings;
         }
         
         // [MenuItem("Tools/Nomnom/LC - Project Patcher/Use Game BepInEx Directory")]

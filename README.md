@@ -90,6 +90,8 @@ This is a dummy folder that houses the normal BepInEx root and a fake game data 
 
 There are some settings you can change in the `LCPatcherRuntimeSettings` asset in the project (generally at the root of your project).
 
+- You can also open it at any time from the menu item `Tools > Nomnom > LC - Project Patcher > Open Runtime Settings`
+
 In there you can change things like experimental settings, skips if available, bepinex settings, and more.
 
 ## Project Structure
