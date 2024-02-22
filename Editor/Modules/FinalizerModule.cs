@@ -95,16 +95,17 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 var serializedObject = new SerializedObject(hdrpSettings);
                 var volumeProfile = serializedObject.FindProperty("m_DefaultVolumeProfile");
                 if (volumeProfile != null) {
-                    var newSettings = AssetDatabase.LoadAssetAtPath<Object>(Path.Combine(soPath, "DefaultSettingsVolumeProfile.asset"));
+                    var newSettingsPath = Path.Combine(soPath, "DefaultSettingsVolumeProfile.asset");
+                    var newSettings = AssetDatabase.LoadAssetAtPath<Object>(newSettingsPath);
                     if (newSettings) {
                         volumeProfile.objectReferenceValue = newSettings;
                         serializedObject.ApplyModifiedProperties();
                     } else {
-                        Debug.LogWarning("Could not find DefaultSettingsVolumeProfile");
+                        Debug.LogWarning($"Could not find DefaultSettingsVolumeProfile at \"{newSettingsPath}\"");
                     }
                 }
             } else {
-                Debug.LogError("Could not find HDRenderPipelineGlobalSettings");
+                Debug.LogError($"Could not find HDRenderPipelineGlobalSettings at \"{hdrpSettingsPath}\"");
             }
         }
 
@@ -115,8 +116,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 sos = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
             }
-            
-            var hdRenderPipelineAsset = AssetDatabase.LoadAssetAtPath<HDRenderPipelineAsset>(Path.Combine(sos, "HDRenderPipelineAsset.asset"));
+
+            var pipelineAssetPath = Path.Combine(sos, "HDRenderPipelineAsset.asset");
+            var hdRenderPipelineAsset = AssetDatabase.LoadAssetAtPath<HDRenderPipelineAsset>(pipelineAssetPath);
+            if (!hdRenderPipelineAsset) {
+                Debug.LogError($"Could not find HDRenderPipelineAsset at \"{pipelineAssetPath}\"");
+                return;
+            }
             QualitySettings.renderPipeline = hdRenderPipelineAsset;
         }
 
