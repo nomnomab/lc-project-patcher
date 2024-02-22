@@ -169,6 +169,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             var fixMixerButton = parent.Q("fix-mixer").Q<Button>();
             var fixInputActionsButton = parent.Q("fix-input-actions").Q<Button>();
             var fixHDRPVolumeButton = parent.Q("fix-hdrp-volume").Q<Button>();
+            var fixHDRPRenderPipelineButton = parent.Q("fix-hdrp-render-pipeline").Q<Button>();
             var fixQualitySettingsButton = parent.Q("fix-quality-settings").Q<Button>();
             var fixSceneListButton = parent.Q("fix-scene-list").Q<Button>();
             var sortPrefabsButtons = parent.Q("sort-prefabs").Query<Button>().ToList();
@@ -192,6 +193,10 @@ namespace Nomnom.LCProjectPatcher.Editor {
             
             fixHDRPVolumeButton.clicked += () => {
                 FinalizerModule.PatchHDRPVolumeProfile(ModuleUtility.GetPatcherSettings());
+            };
+            
+            fixHDRPRenderPipelineButton.clicked += () => {
+                FinalizerModule.PatchRenderPipelineAsset(ModuleUtility.GetPatcherSettings());
             };
             
             fixQualitySettingsButton.clicked += () => {

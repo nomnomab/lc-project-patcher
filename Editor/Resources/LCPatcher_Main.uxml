@@ -39,6 +39,10 @@
                 <ui:Label tabindex="-1" text="Fix HDRP volume asset" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
                 <ui:Button text="Fix" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
             </ui:VisualElement>
+            <ui:VisualElement name="fix-hdrp-render-pipeline" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Fix HDRP render pipeline asset" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Fix" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
             <ui:VisualElement name="fix-quality-settings" style="flex-grow: 1; flex-direction: row;">
                 <ui:Label tabindex="-1" text="Fix quality settings" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
                 <ui:Button text="Fix" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
