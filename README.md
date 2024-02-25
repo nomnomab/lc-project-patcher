@@ -210,6 +210,19 @@ Some mods don't support domain reloading, and sometimes even when disposing ever
 
 So for now I'm not supporting it. Use it with cation if you use it anyway!
 
+### How can I split the combined meshes that I can find in scenes?
+
+There are a few ways to do this:
+
+1. Select a combined mesh in the Project window, right click it, and select `Split Combined Meshes in Scenes` near the bottom
+    - This will split the mesh for all objects in all game scenes that use it
+2. Select an object in scene that has a combined mesh, right click its MeshFilter, and select `Split Combined Mesh` near the bottom
+    - This will only split the mesh for that object
+3. Select an object in scene that has a combined mesh, right click its MeshFilter, and select `Split Combined Mesh in Scene` near the bottom
+    - This will split the mesh for all objects in the current scene that use it
+
+For meshes that have a material with pixel displacement, their uvs will tend to warp and distort. This is being looked at.
+
 ## Useful packages
 
 - Parrel Sync - https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync
