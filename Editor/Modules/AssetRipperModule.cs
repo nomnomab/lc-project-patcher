@@ -187,7 +187,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             var folders = Directory.GetDirectories(assetsFolder);
             foreach (var folder in folders) {
                 var folderName = Path.GetFileName(folder);
-                if (folderName == "Scripts") {
+                if (folderName == "Scripts" || folderName == "Shader") {
                     continue;
                 }
                 
