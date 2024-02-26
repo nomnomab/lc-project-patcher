@@ -227,6 +227,7 @@ public class BepInExPatcher: MonoBehaviour {
         harmony.PatchAll(typeof(OnlineDisablerPatch));
         harmony.PatchAll(typeof(TestStartCoroutineRouterLLL));
         harmony.PatchAll(typeof(IntroSkipperPatch));
+        harmony.PatchAll(typeof(SkipTerminalIntroPatch));
         harmony.PatchAll(typeof(MenuSkipper));
         harmony.PatchAll(typeof(EventSystemPatch));
         harmony.PatchAll(typeof(InfiniteHealthPatch));

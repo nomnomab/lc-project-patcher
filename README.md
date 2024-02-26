@@ -38,6 +38,7 @@ This tool does **not** distribute game files. It uses what is already on your co
 - [Unity 2022.3.9f1](https://unity.com/releases/editor/archive)
 - [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
   - For running Asset Ripper
+- If using DunGen, then at least version `2.15.1`
 
 ## Installation
 #### Using Unity Package Manager
@@ -76,7 +77,18 @@ This tool does **not** distribute game files. It uses what is already on your co
     - When it asks about the New Input System and switching backends, click `Yes`
 6. Now you should have a nice template to work from!
 
-## BepInEx Usage
+## After Usage
+
+### DunGen
+
+> The version I test with is version `2.15.1`
+
+If you have an older version of DunGen and you get some errors related to the NavMeshAdapter, then do the following:
+
+- Put `using Unity.AI.Navigation.Editor;` at the top of `DunGen/Integration/Unity NavMesh/Editor/UnityNavMeshAdapterInspector.cs`
+- Put `using Unity.AI.Navigation;` at the top of `DunGen/Integration/Unity NavMesh/UnityNavMeshAdapter.cs`
+
+### BepInEx
 
 You can make plugins directly in the editor like normal.
 
@@ -86,7 +98,7 @@ If you want to add some normal plugins, you'll have to navigate outside of `Asse
 
 This is a dummy folder that houses the normal BepInEx root and a fake game data structure so it can initialize before I route it to the actual game files.
 
-## Notes
+### Notes
 
 There are some settings you can change in the `LCPatcherRuntimeSettings` asset in the project (generally at the root of your project).
 

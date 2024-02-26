@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Nomnom.LCProjectPatcher.Editor.Modules;
 using UnityEditor;
@@ -85,6 +86,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             // cheats
             var infiniteHealth = obj.FindProperty(nameof(LCPatcherRuntimeSettings.InfiniteHealth));
             var infiniteStamina = obj.FindProperty(nameof(LCPatcherRuntimeSettings.InfiniteStamina));
+            var skipTerminalIntro = obj.FindProperty(nameof(LCPatcherRuntimeSettings.SkipTerminalIntro));
             var startingCredits = obj.FindProperty(nameof(LCPatcherRuntimeSettings.StartingCredits));
             var time = obj.FindProperty(nameof(LCPatcherRuntimeSettings.Time));
 
@@ -93,6 +95,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             
             EditorGUILayout.PropertyField(infiniteHealth);
             EditorGUILayout.PropertyField(infiniteStamina);
+            EditorGUILayout.PropertyField(skipTerminalIntro);
             EditorGUILayout.PropertyField(startingCredits);
             
             time.floatValue = EditorGUILayout.Slider(time.displayName, time.floatValue, 0f, 1f);
@@ -151,6 +154,49 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
             
             if (disablePreInitScriptCoroutineReplacer.boolValue) {
                 EditorGUILayout.HelpBox("This will disable the coroutine replacer for PreInitSceneScript coroutines. For mods like LLL that load things with that object, if SkipIntro is enabled, things may not load in correctly, or at all.", MessageType.Warning);
+            }
+            
+            EditorGUILayout.Space();
+
+            if (GUILayout.Button("Open Saves Location")) {
+                EditorUtility.RevealInFinder($"{Application.persistentDataPath}{Path.DirectorySeparatorChar}");
+            }
+
+            if (GUILayout.Button("Clear LCGeneralSaveData")) {
+                var result = EditorUtility.DisplayDialog("Clear LCGeneralSaveData", "Are you sure you want to clear your LCGeneralSaveData file?", "Yes", "No");
+                if (result) {
+                    var file = Path.Combine(Application.persistentDataPath, "LCGeneralSaveData");
+                    if (File.Exists(file)) {
+                        try {
+                            File.Delete(file);
+                            Debug.Log("Deleted LCGeneralSaveData.");
+                        } catch (Exception e) {
+                            Debug.LogError("Failed to delete LCGeneralSaveData.");
+                            Debug.LogException(e);
+                        }
+                    }
+                }
+            }
+
+            if (GUILayout.Button("Clear Saves")) {
+                var result = EditorUtility.DisplayDialog("Clear Saves", "Are you sure you want to clear your save files?", "Yes", "No");
+                if (result) {
+                    var files = Directory.GetFiles(Application.persistentDataPath);
+                    foreach (var file in files) {
+                        var name = Path.GetFileNameWithoutExtension(file);
+                        if (name == "LCGeneralSaveData" || !name.Contains("Save")) {
+                            continue;
+                        }
+                        
+                        try {
+                            File.Delete(file);
+                            Debug.Log($"Deleted {file}.");
+                        } catch (Exception e) {
+                            Debug.LogError($"Failed to delete {file}.");
+                            Debug.LogException(e);
+                        }
+                    }
+                }
             }
             
             if (changeCheck.changed) {

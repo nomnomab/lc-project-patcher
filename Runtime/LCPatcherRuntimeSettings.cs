@@ -21,6 +21,7 @@ namespace Nomnom.LCProjectPatcher {
         [Header("Cheats")] 
         public bool InfiniteHealth;
         public bool InfiniteStamina;
+        public bool SkipTerminalIntro;
         public int StartingCredits = -1;
         public float Time;
         
