@@ -33,6 +33,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
             ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
             ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetResourcesPath(fullPath: true));
+            ModuleUtility.CreateDirectory(settings.GetStreamingAssetsPath(fullPath: true));
             
             AssetDatabase.Refresh();
             

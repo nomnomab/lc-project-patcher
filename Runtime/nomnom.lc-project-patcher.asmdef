@@ -1,7 +1,9 @@
 {
     "name": "nomnom.lc-project-patcher",
     "rootNamespace": "Nomnom.LCProjectPatcher",
-    "references": [],
+    "references": [
+        "GUID:457756d89b35d2941b3e7b37b4ece6f1"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

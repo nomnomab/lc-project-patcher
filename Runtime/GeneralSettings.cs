@@ -21,6 +21,14 @@ namespace Nomnom.LCProjectPatcher {
         [SerializedPath(nameof(LCPatcherSettings.GetBaseLethalCompanyPath))]
         [SerializeField] 
         private string _toolsPath = "Tools";
+        
+        [SerializedPath(nameof(LCPatcherSettings.GetBaseLethalCompanyPath))]
+        [SerializeField] 
+        private string _resourcesPath = "Resources";
+
+        [SerializedPath(nameof(LCPatcherSettings.GetBaseLethalCompanyPath))]
+        [SerializeField] 
+        private string _streamingAssetsPath = "StreamingAssets";
 
         public string GetNativePath(string path) {
             return Path.Combine(path, _nativePath);
@@ -36,6 +44,14 @@ namespace Nomnom.LCProjectPatcher {
         
         public string GetToolsPath(string path) {
             return Path.Combine(path, _toolsPath);
+        }
+        
+        public string GetResourcesPath(string path) {
+            return Path.Combine(path, _resourcesPath);
+        }
+        
+        public string GetStreamingAssetsPath(string path) {
+            return Path.Combine(path, _streamingAssetsPath);
         }
     }
 }

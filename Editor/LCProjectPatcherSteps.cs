@@ -94,7 +94,8 @@ namespace Nomnom.LCProjectPatcher.Editor {
         public static async UniTask RunPreProcessGroup(LCPatcherSettings settings) {
             AssetDatabase.StartAssetEditing();
 
-            try {
+            try
+            {
                 InitialProjectModule.MoveNativeFiles(settings);
 
                 // asset ripper
@@ -180,6 +181,9 @@ namespace Nomnom.LCProjectPatcher.Editor {
             FinalizerModule.ChangeGameViewResolution();
             
             InputActionsModule.FixAll(settings);
+
+            // shaders
+            AssetsToolsModule.GetShaders(settings);
 
             BepInExModule.CopyTemplateFolder();
             await BepInExModule.Install(settings);

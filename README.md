@@ -254,6 +254,9 @@ For meshes that have a material with pixel displacement, their uvs will tend to 
 - GameViewSizeShortcut - https://gist.github.com/wappenull/668a492c80f7b7fda0f7c7f42b3ae0b0
 - BepInEx - https://github.com/BepInEx/BepInEx
 - Newtonsoft Json.NET - https://www.newtonsoft.com/json
+- AssetsTools.NET - https://github.com/nesrak1/AssetsTools.NET
+- UABEA - https://github.com/nesrak1/UABEA
+- BundleKit - https://github.com/PassivePicasso/BundleKit
 - IntegrityChaos - for the posterization shader remake
 
 <br/>
