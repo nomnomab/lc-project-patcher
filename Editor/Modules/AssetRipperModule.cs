@@ -6,35 +6,6 @@ using UnityEngine;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class AssetRipperModule {
-        public readonly static string[] InitialFolders = {
-            "AudioMixerController"
-        };
-        
-        public readonly static string[] FinalFolders = {
-            "AnimationClip",
-            "AnimatorController",
-            "AudioClip",
-            // "AudioMixerController",
-            "Cubemap",
-            "Font",
-            "LightingSettings",
-            "Material",
-            "Mesh",
-            "MonoBehaviour",
-            "NavMeshData",
-            "PhysicMaterial",
-            "PrefabInstance",
-            "RenderTexture",
-            "Resources",
-            "Scenes",
-            "Sprite",
-            "TerrainData",
-            "TerrainLayer",
-            "Texture2D",
-            "Texture3D",
-            "VideoClip"
-        };
-
         public static async UniTask RunAssetRipper(LCPatcherSettings settings) {
             var assetRipperExePath = ModuleUtility.AssetRipperDirectory;
             var pathToData = ModuleUtility.LethalCompanyDataFolder;
@@ -183,6 +154,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             
             var assetRipperTempFolder = ModuleUtility.AssetRipperTempDirectoryExportedProject;
             var assetsFolder = Path.Combine(assetRipperTempFolder, "Assets");
+
+            var minimalCopy = EditorPrefs.GetBool("nomnom.lc_project_patcher.copy_minimal_files", false);
             
             var folders = Directory.GetDirectories(assetsFolder);
             foreach (var folder in folders) {
@@ -190,10 +163,16 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 if (folderName == "Scripts" || folderName == "Shader") {
                     continue;
                 }
-                
+
                 // if (folder == folderName) continue;
                 if (!assetRipperSettings.TryGetMapping(folderName, out var finalFolder)) {
                     continue;
+                }
+                
+                if (minimalCopy) {
+                    if (finalFolder == "Videos" || finalFolder == Path.Combine("Audio", "AudioClips") || finalFolder == Path.Combine("Textures", "Texture2Ds") || finalFolder == Path.Combine("Textures", "Texture3Ds")) {
+                        continue;
+                    }
                 }
                 
                 var finalPath = Path.Combine(outputRootFolder, finalFolder);
@@ -235,32 +214,50 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             // }
         }
         
-        public static void DeleteScriptsFromProject(LCPatcherSettings settings) {
-            string scriptsFolder;
-            if (settings.AssetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
-                scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
-            } else {
-                scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "Scripts");
+        public static void DeleteGameFolderContents(LCPatcherSettings settings) {
+            var gameFolder = settings.GetLethalCompanyGamePath(fullPath: true);
+            if (!Directory.Exists(gameFolder)) {
+                return;
             }
             
-            if (Directory.Exists(scriptsFolder)) {
-                Debug.Log($"Deleting {scriptsFolder}");
-                Directory.Delete(scriptsFolder, recursive: true);
+            var files = Directory.GetFiles(gameFolder, "*", SearchOption.AllDirectories);
+            foreach (var file in files) {
+                if (file.EndsWith(".dll")) continue;
+                
+                try {
+                    File.Delete(file);
+                } catch (Exception e) {
+                    Debug.LogWarning($"Could not delete {file}: {e}");
+                }
             }
         }
-
-        public static void DeleteScriptableObjectsFromProject(LCPatcherSettings settings) {
-            string soPath;
-            if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
-                soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
-            } else {
-                soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "MonoBehaviour");
-            }
-
-            if (Directory.Exists(soPath)) {
-                Debug.Log($"Deleting {soPath}");
-                Directory.Delete(soPath, recursive: true);
-            }
-        }
+        
+        // public static void DeleteScriptsFromProject(LCPatcherSettings settings) {
+        //     string scriptsFolder;
+        //     if (settings.AssetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
+        //         scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
+        //     } else {
+        //         scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "Scripts");
+        //     }
+        //     
+        //     if (Directory.Exists(scriptsFolder)) {
+        //         Debug.Log($"Deleting {scriptsFolder}");
+        //         Directory.Delete(scriptsFolder, recursive: true);
+        //     }
+        // }
+        //
+        // public static void DeleteScriptableObjectsFromProject(LCPatcherSettings settings) {
+        //     string soPath;
+        //     if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
+        //         soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
+        //     } else {
+        //         soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "MonoBehaviour");
+        //     }
+        //
+        //     if (Directory.Exists(soPath)) {
+        //         Debug.Log($"Deleting {soPath}");
+        //         Directory.Delete(soPath, recursive: true);
+        //     }
+        // }
     }
 }

@@ -394,12 +394,14 @@ namespace Nomnom.LCProjectPatcher.Modules {
             var files = Directory.GetFiles(assetRipperPath, "*", SearchOption.AllDirectories);
             for (var i = 0; i < files.Length; i++) {
                 var file = files[i];
+                var fileName = Path.GetFileName(file);
                 var extension = Path.GetExtension(file).ToLowerInvariant();
-                EditorUtility.DisplayProgressBar("Fixing GUIDs", $"Fixing {Path.GetFileName(file)}", (float)i / files.Length);
+                EditorUtility.DisplayProgressBar("Fixing GUIDs", $"Fixing {fileName}", (float)i / files.Length);
 
                 switch (extension) {
                     case ".prefab":
                     case ".unity":
+                    case ".asset":
                         if (_monoList.Count != 0) {
                             var content = File.ReadAllText(file);
                             var count = 0;
@@ -416,12 +418,12 @@ namespace Nomnom.LCProjectPatcher.Modules {
                                     fileID = string.IsNullOrEmpty(swap.file) ? fileID : swap.file;
                                     
                                     var str = $"{{fileID: {fileID}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
-                                    Debug.Log($"Found {swap.name} in {fileID} | {str}");
+                                    Debug.Log($"[{fileName}] Found {guid}::{swap.name} in {fileID} | {str}");
                                     return str;
                                 });
 
                             if (count > 0) {
-                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
+                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)} ({extension})");
                                 if (!debugMode) {
                                     File.WriteAllText(file, content);
                                 }
@@ -429,42 +431,42 @@ namespace Nomnom.LCProjectPatcher.Modules {
                         }
 
                         // todo: make sure this works fine
+                        // if (_scriptableObjectList.Count != 0) {
+                        //     var content = File.ReadAllText(file);
+                        //     var count = 0;
+                        //     content = FullGuidPattern.Replace(content,
+                        //         x => {
+                        //             var fileID = x.Groups["fileID"].Value;
+                        //             var guid = x.Groups["guid"].Value;
+                        //             var type = x.Groups["type"].Value;
+                        //             if (!_scriptableObjectList.TryGetValue(guid, out var swap)) {
+                        //                 return x.Value;
+                        //             }
+                        //
+                        //             count++;
+                        //             fileID = string.IsNullOrEmpty(swap.file) ? fileID : swap.file;
+                        //             
+                        //             var str = $"{{fileID: {fileID}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                        //             Debug.Log($"Found {guid}::{swap.name} in {fileID} | {str}");
+                        //             return str;
+                        //         });
+                        //
+                        //     if (count > 0) {
+                        //         Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
+                        //         if (!debugMode) {
+                        //             File.WriteAllText(file, content);
+                        //         }
+                        //     }
+                        // }
+                        
                         if (_scriptableObjectList.Count != 0) {
                             var content = File.ReadAllText(file);
                             var count = 0;
+                            // content = ScriptPattern.Replace(content,
                             content = FullGuidPattern.Replace(content,
                                 x => {
-                                    var fileID = x.Groups["fileID"].Value;
                                     var guid = x.Groups["guid"].Value;
-                                    var type = x.Groups["type"].Value;
-                                    if (!_scriptableObjectList.TryGetValue(guid, out var swap)) {
-                                        return x.Value;
-                                    }
-
-                                    count++;
-                                    fileID = string.IsNullOrEmpty(swap.file) ? fileID : swap.file;
-                                    
-                                    var str = $"{{fileID: {fileID}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
-                                    Debug.Log($"Found {swap.name} in {fileID} | {str}");
-                                    return str;
-                                });
-
-                            if (count > 0) {
-                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
-                                if (!debugMode) {
-                                    File.WriteAllText(file, content);
-                                }
-                            }
-                        }
-                        break;
-                    case ".asset":
-                        if (_scriptableObjectList.Count != 0) {
-                            var content = File.ReadAllText(file);
-                            var count = 0;
-                            content = ScriptPattern.Replace(content,
-                                x => {
-                                    var guid = x.Groups["guid"].Value;
-                                    // var file = x.Groups["file"].Value;
+                                    var fileID = x.Groups["file"].Value;
                                     var type = x.Groups["type"].Value;
                                     if (!_scriptableObjectList.TryGetValue(guid, out var swap)) {
                                         return x.Value;
@@ -472,19 +474,50 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                                     count++;
                                     
-                                    var str = $"  m_Script: {{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
-                                    Debug.Log($"Found {swap.name} in {file} | {str}");
+                                    // var str = $"  m_Script: {{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    var str = $"{{fileID: {swap.file ?? fileID}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"[{fileName}] Found {guid}::{swap.name} in {file} | {str}");
                                     return str;
                                 });
 
                             if (count > 0) {
-                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
+                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)} ({extension})");
                                 if (!debugMode) {
                                     File.WriteAllText(file, content);
                                 }
                             }
                         }
                         break;
+                    // case ".asset":
+                    //     if (_scriptableObjectList.Count != 0) {
+                    //         var content = File.ReadAllText(file);
+                    //         var count = 0;
+                    //         // content = ScriptPattern.Replace(content,
+                    //         content = FullGuidPattern.Replace(content,
+                    //             x => {
+                    //                 var guid = x.Groups["guid"].Value;
+                    //                 // var file = x.Groups["file"].Value;
+                    //                 var type = x.Groups["type"].Value;
+                    //                 if (!_scriptableObjectList.TryGetValue(guid, out var swap)) {
+                    //                     return x.Value;
+                    //                 }
+                    //
+                    //                 count++;
+                    //                 
+                    //                 // var str = $"  m_Script: {{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                    //                 var str = $"{{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                    //                 Debug.Log($"Found {guid}::{swap.name} in {file} | {str}");
+                    //                 return str;
+                    //             });
+                    //
+                    //         if (count > 0) {
+                    //             Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)} ({extension})");
+                    //             if (!debugMode) {
+                    //                 File.WriteAllText(file, content);
+                    //             }
+                    //         }
+                    //     }
+                    //     break;
                     case ".material":
                     case ".mat":
                         if (_shaderList.Count != 0) {
@@ -502,13 +535,13 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                                     count++;
                                     
-                                    var str = $"  m_Shader: {{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
-                                    Debug.Log($"Found {fileId} in {file} | {str}");
+                                    var str = $"  m_Shader: {{fileID: {swap.file ?? fileId}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"[{fileName}] Found {guid}::{fileId} in {file} | {str}");
                                     return str;
                                 });
 
                             if (count > 0) {
-                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
+                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)} ({extension})");
                                 if (!debugMode) {
                                     File.WriteAllText(file, content);
                                 }
@@ -531,13 +564,13 @@ namespace Nomnom.LCProjectPatcher.Modules {
 
                                     count++;
                                     
-                                    var str = $"{{fileID: {swap.file}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
-                                    Debug.Log($"Found {fileId} in {file} | {str}");
+                                    var str = $"{{fileID: {swap.file ?? fileId}, guid: {swap.guid}, type: {(swap.type?.ToString() ?? type)}}}";
+                                    Debug.Log($"[{fileName}] Found {guid}::{fileId} in {file} | {str}");
                                     return str;
                                 });
 
                             if (count > 0) {
-                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)}");
+                                Debug.Log($"Fixed {count} guids in {Path.GetFileName(file)} ({extension})");
                                 if (!debugMode) {
                                     File.WriteAllText(file, content);
                                 }
@@ -572,7 +605,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
             File.WriteAllText(Path.Combine(es3DefaultsPath, "ES3Defaults.cs"), es3DefaultsFormat);
         }
 
-        public static void FixGuidsWithPatcherList(ExtractProjectInformationUtility.ExtractedResults extractedResults) {
+        public static void FixGuidsWithPatcherList(ExtractProjectInformationUtility.ExtractedResults extractedResults, bool debugMode) {
             _monoList.Clear();
             _scriptableObjectList.Clear();
             _shaderList.Clear();
@@ -580,21 +613,42 @@ namespace Nomnom.LCProjectPatcher.Modules {
             
             // var settings = ModuleUtility.GetPatcherSettings();
             // var allMetaGuids = GetAllProjectMetaData(settings);
-            var thisProjectExtractedResults = ExtractProjectInformationUtility.CreateExtractedResults();
-            
-            foreach (var originalResult in extractedResults.guids) {
-                foreach (var projectResult in thisProjectExtractedResults.guids) {
-                    if (originalResult.fullTypeName != projectResult.fullTypeName)continue;
-                    if (originalResult.originalGuid == projectResult.originalGuid) continue;
+            var thisProjectExtractedResults = ExtractProjectInformationUtility.CreateExtractedResults(false);
+
+            for (var i = 0; i < extractedResults.guids.Length; i++) {
+                var originalResult = extractedResults.guids[i];
+                for (var j = 0; j < thisProjectExtractedResults.guids.Length; j++) {
+                    var projectResult = thisProjectExtractedResults.guids[j];
+                    EditorUtility.DisplayProgressBar("Checking Script Guids", $"Checking {originalResult.originalGuid} | {j} of {thisProjectExtractedResults.guids.Length}", (float) i / extractedResults.guids.Length);
                     
+                    if (originalResult.fullTypeName != projectResult.fullTypeName) continue;
+                    // if (originalResult.originalGuid == projectResult.originalGuid) continue;
+
+                    // Debug.Log($"Found {originalResult.fullTypeName}::{originalResult.originalGuid} to {projectResult.fullTypeName}::{projectResult.originalGuid}");
                     // Debug.Log($"Found {originalResult.fullTypeName}::{originalResult.originalGuid} to {projectResult.fullTypeName}::{projectResult.originalGuid}");
                     _monoList.TryAdd(originalResult.originalGuid, new GuidSwap(projectResult.fullTypeName, projectResult.originalGuid, "11500000"));
-                    _scriptableObjectList.TryAdd(originalResult.originalGuid, new GuidSwap(projectResult.fullTypeName, projectResult.originalGuid, "11500000"));
+                    // _scriptableObjectList.TryAdd(originalResult.originalGuid, new GuidSwap(projectResult.fullTypeName, projectResult.originalGuid, "11500000"));
+                }
+            }
+
+            for (var i = 0; i < extractedResults.assetGuids.Length; i++) {
+                var originalResult = extractedResults.assetGuids[i];
+                for (var j = 0; j < thisProjectExtractedResults.assetGuids.Length; j++) {
+                    var projectResult = thisProjectExtractedResults.assetGuids[j];
+                    EditorUtility.DisplayProgressBar("Checking Asset Guids", $"Checking {originalResult.assetPath} | {j} of {thisProjectExtractedResults.assetGuids.Length}", (float) i / extractedResults.assetGuids.Length);
+                    
+                    if (originalResult.assetPath != projectResult.assetPath) continue;
+                    // if (originalResult.originalGuid == projectResult.originalGuid) continue;
+
+                    // Debug.Log($"Found {originalResult.assetPath}::{originalResult.originalGuid} to {projectResult.assetPath}::{projectResult.originalGuid}");
+                    _scriptableObjectList.TryAdd(originalResult.originalGuid, new GuidSwap(projectResult.assetPath, projectResult.originalGuid, projectResult.fileId));
                 }
             }
             
+            EditorUtility.ClearProgressBar();
+
             var assetRipperPath = ModuleUtility.ProjectDirectory;
-            FixGuids(assetRipperPath, debugMode: false);
+            FixGuids(assetRipperPath, debugMode: debugMode);
             
             _monoList.Clear();
             _scriptableObjectList.Clear();

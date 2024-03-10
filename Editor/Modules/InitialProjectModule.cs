@@ -13,22 +13,15 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
         };
         
         public static void MoveNativeFiles(LCPatcherSettings settings) {
-            ModuleUtility.CreateDirectory(settings.GetBaseUnityPath(fullPath: true));
-            ModuleUtility.CreateDirectory(settings.GetBaseLethalCompanyPath(fullPath: true));
-            ModuleUtility.CreateDirectory(settings.GetNativePath(fullPath: true));
-            ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
-            ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
-            ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
-
-            var gamePath = settings.GetLethalCompanyGamePath(fullPath: true);
-            if (Directory.Exists(gamePath)) {
-                try {
-                    Directory.Delete(gamePath, true);
-                    Directory.CreateDirectory(gamePath);
-                } catch (IOException e) {
-                    Debug.LogError($"Error deleting game directory, are some plugins loaded? {e.Message}");
-                }
-            }
+            // var gamePath = settings.GetLethalCompanyGamePath(fullPath: true);
+            // if (Directory.Exists(gamePath)) {
+            //     try {
+            //         Directory.Delete(gamePath, true);
+            //         Directory.CreateDirectory(gamePath);
+            //     } catch (IOException e) {
+            //         Debug.LogError($"Error deleting game directory, are some plugins loaded? {e.Message}");
+            //     }
+            // }
             
             AssetDatabase.StopAssetEditing();
             AssetDatabase.Refresh();
