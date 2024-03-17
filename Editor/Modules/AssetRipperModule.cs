@@ -7,7 +7,7 @@ using UnityEngine;
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class AssetRipperModule {
         public static async UniTask RunAssetRipper(LCPatcherSettings settings) {
-            var assetRipperExePath = ModuleUtility.AssetRipperDirectory;
+            var assetRipperExePath = ModuleUtility.AssetRipperExecutable;
             var pathToData = ModuleUtility.LethalCompanyDataFolder;
             var outputPath = ModuleUtility.AssetRipperTempDirectory;
 
