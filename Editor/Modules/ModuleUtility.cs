@@ -28,10 +28,23 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 return path;
             }
         }
-        public static string AssetRipperDirectory => Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/AssetRipper~/AssetRipper.Tools.SystemTester.exe");
+        public static string AssetRipperDirectory => Path.GetFullPath("Packages/com.nomnom.lc-project-patcher/Editor/Libs/AssetRipper~");
         public static string AssetRipperTempDirectory => GetProjectDirectory("..", "AssetRipperOutput~");
         public static string AssetRipperTempDirectoryExportedProject => Path.Combine(AssetRipperTempDirectory, "ExportedProject");
         public static string AssetRipperDllUrl => "https://github.com/nomnomab/AssetRipper/releases/download/v1.0.0/AssetRipper.SourceGenerated.dll.zip";
+
+        public static string AssetRipperExecutable
+        {
+            get
+            {
+                if (Application.platform == RuntimePlatform.LinuxEditor)
+                {
+                    return Path.Combine(AssetRipperDirectory, "AssetRipper.Tools.SystemTester");
+                }
+
+                return Path.Combine(AssetRipperDirectory, "AssetRipper.Tools.SystemTester.exe");
+            }
+        }
         
         public static string ProjectDirectory => Application.dataPath;
         
