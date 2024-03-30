@@ -19,7 +19,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             Directory.CreateDirectory(outputPath);
             
             // make sure we have the dll in-place
-            var dllLocation = Path.Combine(Path.GetDirectoryName(ModuleUtility.AssetRipperDirectory), "AssetRipper.SourceGenerated.dll");
+            var dllLocation = Path.Combine(ModuleUtility.AssetRipperDirectory, "AssetRipper.SourceGenerated.dll");
             if (!File.Exists(dllLocation)) {
                 var dllUrl = ModuleUtility.AssetRipperDllUrl;
                 var zipLocation = $"{dllLocation}.zip";
