@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
@@ -7,7 +8,7 @@ using UnityEngine;
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class AssetRipperModule {
         public static async UniTask RunAssetRipper(LCPatcherSettings settings) {
-            var assetRipperExePath = ModuleUtility.AssetRipperDirectory;
+            var assetRipperExePath = ModuleUtility.AssetRipperExecutable;
             var pathToData = ModuleUtility.LethalCompanyDataFolder;
             var outputPath = ModuleUtility.AssetRipperTempDirectory;
 
@@ -18,7 +19,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             Directory.CreateDirectory(outputPath);
             
             // make sure we have the dll in-place
-            var dllLocation = Path.Combine(Path.GetDirectoryName(assetRipperExePath), "AssetRipper.SourceGenerated.dll");
+            var dllLocation = Path.Combine(ModuleUtility.AssetRipperDirectory, "AssetRipper.SourceGenerated.dll");
             if (!File.Exists(dllLocation)) {
                 var dllUrl = ModuleUtility.AssetRipperDllUrl;
                 var zipLocation = $"{dllLocation}.zip";
@@ -148,7 +149,12 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             EditorUtility.ClearProgressBar();
         }
         
-        public static void CopyAssetRipperContents(LCPatcherSettings settings) {
+        public static void CopyAssetRipperContents(LCPatcherSettings settings)
+        {
+            var onLinux = Application.platform == RuntimePlatform.LinuxEditor;
+            // Keep track of all files in lower-case to mimic a case-insensitive file system.
+            var caseInsensitiveFiles = new Dictionary<string, int>();
+            
             var assetRipperSettings = settings.AssetRipperSettings;
             var outputRootFolder = settings.GetLethalCompanyGamePath();
             
@@ -176,6 +182,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 }
                 
                 var finalPath = Path.Combine(outputRootFolder, finalFolder);
+
+                if (onLinux)
+                {
+                    // Fix folder path separator.
+                    finalPath = finalPath.Replace('\\', '/');
+                }
+                
                 // Debug.Log($"{folder} maps to {finalPath}");
                 
                 foreach (var file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories)) {
@@ -185,6 +198,29 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                         Directory.CreateDirectory(finalDirectory);
                     }
                     // Debug.Log($"Copying {file} to {finalFile}");
+                    
+                    // Mimic asset ripper behavior on case-insensitive file system.
+                    if (onLinux)
+                    {
+                        var finalFileCaseInsensitive = finalFile.ToLower();
+                        if (caseInsensitiveFiles.TryGetValue(finalFileCaseInsensitive, out var count))
+                        {
+                            var finalFileName = Path.GetFileName(finalFile);
+                            var finalFilePath = finalFile[..^finalFileName.Length];
+                            var fileNameParts = finalFile[^finalFileName.Length..].Split('.');
+                            var fileNameWithoutExt = fileNameParts[0];
+                            var fileExt = string.Join('.', fileNameParts[1..]);
+
+                            finalFile = Path.Combine(finalFilePath,
+                                $"{fileNameWithoutExt}_{count}.{fileExt}");
+
+                            caseInsensitiveFiles[finalFileCaseInsensitive] = count + 1;
+                        }
+                        else
+                        {
+                            caseInsensitiveFiles[finalFileCaseInsensitive] = 0;
+                        }
+                    }
 
                     try {
                         File.Copy(file, finalFile, overwrite: true);

@@ -40,6 +40,8 @@ This tool does **not** distribute game files. It uses what is already on your co
 - [Unity 2022.3.9f1](https://unity.com/releases/editor/archive)
 - [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
   - For running Asset Ripper
+- [FFmpeg (Optional)](https://ffmpeg.org/)
+  - To re-encode videos for Linux support
 - If using DunGen, then at least version `2.15.1`
 
 ## Installation
