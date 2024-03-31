@@ -171,14 +171,14 @@ namespace Nomnom.LCProjectPatcher.Editor {
             // RunAll().Forget();
         }
 
-        public static UniTask RunGuidGroup(LCPatcherSettings settings) {
+        public static async UniTask RunGuidGroup(LCPatcherSettings settings) {
             GuidPatcherModule.PatchAll(settings);
             AssetRipperModule.RemoveDunGenFromOutputIfNeeded(settings);
             AssetRipperModule.CopyAssetRipperContents(settings);
+            await FFmpegModule.ReEncodeVideosForPlatform(settings);
             FinalizerModule.PatchES3DefaultsScriptableObject(settings);
             
             SetCurrentStep(4);
-            return UniTask.CompletedTask;
         }
 
         public static async UniTask RunPostProcessGroup(LCPatcherSettings settings) {
