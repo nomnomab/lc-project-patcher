@@ -81,17 +81,28 @@ namespace Nomnom.LCProjectPatcher.Editor {
             for (var i = 0; i < allAssets.Length; i++) {
                 var guid = allAssets[i];
                 var assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                if (assetPath.EndsWith(".shadergraph")) {
+                    continue;
+                }
                 
                 EditorUtility.DisplayProgressBar("Extracting Project Information", $"Processing {assetPath}", (float)i / allAssets.Length);
                 
                 var fullAssetPath = Path.GetFullPath(assetPath);
+                
                 var metaPath = fullAssetPath + ".meta";
                 if (!File.Exists(metaPath)) {
                     Debug.LogWarning($"No meta file found for {assetPath}");
                     continue;
                 }
+
+                Object obj = null;
+
+                try {
+                    obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
+                } catch (Exception e) {
+                    Debug.LogWarning($"Error loading {assetPath}: {e.Message}");
+                }
                 
-                var obj = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
                 if (!obj) continue;
 
                 var metaContent = File.ReadAllText(metaPath);
