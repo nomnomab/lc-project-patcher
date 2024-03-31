@@ -347,6 +347,19 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 return;
             }
             
+            var lcSettings = ModuleUtility.GetPatcherSettings();
+            var gamePath = lcSettings.GetLethalCompanyGamePath();
+            // check if it has any files or folders in it
+            var gameAssets = AssetDatabase.FindAssets("t:Object", new string[] { gamePath });
+            if (gameAssets.Any()) {
+                if (!EditorUtility.DisplayDialog("Run Re-Patcher",
+                        "The Lethal Company game path is not empty, which can mean that the project is already patched.\n\nIf so, make sure you back up your project in case re-patching fails!",
+                        "Continue",
+                        "Let me back up first")) {
+                    return;
+                }
+            }
+            
             if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {
                 return;
             }

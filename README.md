@@ -83,6 +83,7 @@ This tool does **not** distribute game files. It uses what is already on your co
     - If this is ran *after* already patching it will attempt to re-patch the project.
       - **Back up your project before doing this** otherwise you risk corrupting your project guids.
       - The re-patching process will take *considerably* longer than the initial patch, as it has a lot more guids to sort through.
+      - When migrating between game versions some things may not properly convert over, such as models or prefabs that were modified. So you may have to do some manual adjustments depending on severity.
 6. Now you should have a nice template to work from!
 
 ## After Usage
