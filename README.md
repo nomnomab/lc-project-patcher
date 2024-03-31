@@ -78,7 +78,7 @@ This tool does **not** distribute game files. It uses what is already on your co
     - This process *will* take a while, so be patient
     - The editor may restart a few times, this is normal
     - When it asks about the New Input System and switching backends, click `Yes`
-      - If this is ran *after* already patching it will attempt to re-patch the project.
+    - If this is ran *after* already patching it will attempt to re-patch the project.
       - **Back up your project before doing this** otherwise you risk corrupting your project guids.
       - The re-patching process will take *considerably* longer than the initial patch, as it has a lot more guids to sort through.
 6. Now you should have a nice template to work from!
