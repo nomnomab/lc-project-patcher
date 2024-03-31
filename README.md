@@ -264,6 +264,7 @@ For meshes that have a material with pixel displacement, their uvs will tend to 
 - BepInEx - https://github.com/BepInEx/BepInEx
 - Newtonsoft Json.NET - https://www.newtonsoft.com/json
 - IntegrityChaos - for the posterization shader remake
+- Rune - for the Linux support
 
 <br/>
 
