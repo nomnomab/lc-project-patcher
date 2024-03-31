@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
@@ -172,8 +173,11 @@ namespace Nomnom.LCProjectPatcher.Editor {
             var fixHDRPRenderPipelineButton = parent.Q("fix-hdrp-render-pipeline").Q<Button>();
             var fixQualitySettingsButton = parent.Q("fix-quality-settings").Q<Button>();
             var fixSceneListButton = parent.Q("fix-scene-list").Q<Button>();
+            var fixLdrTextures = parent.Q("fix-ldr-textures").Q<Button>();
             var sortPrefabsButtons = parent.Q("sort-prefabs").Query<Button>().ToList();
             var sortScriptableObjectsButtons = parent.Q("sort-sos").Query<Button>().ToList();
+            var debugTypesButton = parent.Q("debug-types").Q<Button>();
+            var copyMinimalFilesToggle = parent.Q("copy-minimal-files").Q<Toggle>();
             
             runAssetRipperButton.clicked += () => {
                 AssetRipperModule.RunAssetRipper(ModuleUtility.GetPatcherSettings()).Forget();
@@ -181,6 +185,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             
             installPackagesButton.clicked += () => {
                 PackagesModule.InstallAll();
+                // PackagesModule.ManuallyCheckManifest();
             };
             
             fixMixerButton.clicked += () => {
@@ -207,6 +212,10 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 FinalizerModule.PatchSceneList(ModuleUtility.GetPatcherSettings());
             };
             
+            fixLdrTextures.clicked += () => {
+                FinalizerModule.PatchLDRTextures(ModuleUtility.GetPatcherSettings());
+            };
+            
             sortPrefabsButtons[0].clicked += () => {
                 FinalizerModule.SortPrefabsFolder(ModuleUtility.GetPatcherSettings());
                 AssetDatabase.Refresh();
@@ -226,6 +235,28 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 FinalizerModule.UnSortScriptableObjectFolder(ModuleUtility.GetPatcherSettings());
                 AssetDatabase.Refresh();
             };
+            
+            debugTypesButton.clicked += () => {
+                // var types = ExtractProjectInformationUtility.CreateExtractedResults(true);
+                // var json = JsonUtility.ToJson(types, true);
+                //
+                // Debug.Log(json);
+                
+                var list = ExtractProjectInformationUtility.ExtractProjectInformation();
+                // var springMan1Asset = Path.GetFullPath("Assets/SpringMan 1.prefab");
+                // var contents = File.ReadAllText(springMan1Asset);
+                // contents = contents.Replace(@"enemyType: {fileID: 11400000, guid: 9ed5db2b49ce6804087eb35148d15ecf, type: 2}", "enemyType: {fileID: 11400000, guid: fafafafafafafafa, type: 2}");
+                // File.WriteAllText(springMan1Asset, contents);
+                //
+                // AssetDatabase.Refresh();
+                
+                GuidPatcherModule.FixGuidsWithPatcherList(list, debugMode: true);
+            };
+
+            copyMinimalFilesToggle.value = EditorPrefs.GetBool("nomnom.lc_project_patcher.copy_minimal_files", false);
+            copyMinimalFilesToggle.RegisterValueChangedCallback(x => {
+                EditorPrefs.SetBool("nomnom.lc_project_patcher.copy_minimal_files", x.newValue);
+            });
         }
 
         private void CreateDebugFoldout(VisualElement parent) {
@@ -314,6 +345,19 @@ namespace Nomnom.LCProjectPatcher.Editor {
             if (!dataPath.EndsWith("_Data")) {
                 Debug.LogError("The data path needs to end in \"_Data\"!");
                 return;
+            }
+            
+            var lcSettings = ModuleUtility.GetPatcherSettings();
+            var gamePath = lcSettings.GetLethalCompanyGamePath();
+            // check if it has any files or folders in it
+            var gameAssets = AssetDatabase.FindAssets("t:Object", new string[] { gamePath });
+            if (gameAssets.Any()) {
+                if (!EditorUtility.DisplayDialog("Run Re-Patcher",
+                        "The Lethal Company game path is not empty, which can mean that the project is already patched.\n\nIf so, make sure you back up your project in case re-patching fails!",
+                        "Continue",
+                        "Let me back up first")) {
+                    return;
+                }
             }
             
             if (!EditorUtility.DisplayDialog("Run Patcher", "Are you sure you want to run the patcher? This will modify your project. Make sure you keep the editor focused while it works.", "Yes", "No")) {

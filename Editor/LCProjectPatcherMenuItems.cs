@@ -411,9 +411,19 @@ namespace Nomnom.LCProjectPatcher.Editor {
 
             try {
                 var results = ExtractProjectInformationUtility.GetExtractedResults(pathToFile);
-                GuidPatcherModule.FixGuidsWithPatcherList(results);
+                GuidPatcherModule.FixGuidsWithPatcherList(results, debugMode: false);
             } catch {
                 EditorUtility.DisplayDialog("Error", "Failed to read the file!\n\nWas this the file that was exported via \"Tools/Nomnom/LC - Project Patcher/Extract Project Information\" in the original project?", "Ok");
+            }
+        }
+        
+        [MenuItem("CONTEXT/Object/Debug Guid")]
+        public static void DebugGuid(MenuCommand command) {
+            var obj = (Object) command.context;
+            if (AssetDatabase.TryGetGUIDAndLocalFileIdentifier(obj, out var guid, out long localId)) {
+                Debug.Log($"guid: {guid}, localId: {localId}");
+            } else {
+                Debug.Log("Failed to get guid");
             }
         }
     }

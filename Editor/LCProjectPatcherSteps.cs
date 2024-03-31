@@ -92,15 +92,29 @@ namespace Nomnom.LCProjectPatcher.Editor {
         }
 
         public static async UniTask RunPreProcessGroup(LCPatcherSettings settings) {
+            Debug.Log("Running PreProcessGroup");
+            var types = ExtractProjectInformationUtility.CreateExtractedResults(true);
+            var json = JsonUtility.ToJson(types, true);
+            File.WriteAllText(Path.Combine(Application.persistentDataPath, "extracted-types.json"), json);
+            
             AssetDatabase.StartAssetEditing();
-
             try {
+                AssetRipperModule.DeleteGameFolderContents(settings);
+                
+                ModuleUtility.CreateDirectory(settings.GetBaseUnityPath(fullPath: true));
+                ModuleUtility.CreateDirectory(settings.GetBaseLethalCompanyPath(fullPath: true));
+                ModuleUtility.CreateDirectory(settings.GetNativePath(fullPath: true));
+                ModuleUtility.CreateDirectory(settings.GetAssetStorePath(fullPath: true));
+                ModuleUtility.CreateDirectory(settings.GetModsPath(fullPath: true));
+                ModuleUtility.CreateDirectory(settings.GetToolsPath(fullPath: true));
+                ModuleUtility.CreateDirectory(settings.GetLethalCompanyGamePath(fullPath: true));
+                
                 InitialProjectModule.MoveNativeFiles(settings);
 
                 // asset ripper
                 await AssetRipperModule.RunAssetRipper(settings);
-                AssetRipperModule.DeleteScriptsFromProject(settings);
-                AssetRipperModule.DeleteScriptableObjectsFromProject(settings);
+                // AssetRipperModule.DeleteScriptsFromProject(settings);
+                // AssetRipperModule.DeleteScriptableObjectsFromProject(settings);
 
                 var useCopy = false;
                 DecompiledScriptModule.PatchAll(settings, useCopy);
@@ -157,24 +171,25 @@ namespace Nomnom.LCProjectPatcher.Editor {
             // RunAll().Forget();
         }
 
-        public static UniTask RunGuidGroup(LCPatcherSettings settings) {
+        public static async UniTask RunGuidGroup(LCPatcherSettings settings) {
             GuidPatcherModule.PatchAll(settings);
             AssetRipperModule.RemoveDunGenFromOutputIfNeeded(settings);
             AssetRipperModule.CopyAssetRipperContents(settings);
+            await FFmpegModule.ReEncodeVideosForPlatform(settings);
             FinalizerModule.PatchES3DefaultsScriptableObject(settings);
             
             SetCurrentStep(4);
-            return UniTask.CompletedTask;
         }
 
         public static async UniTask RunPostProcessGroup(LCPatcherSettings settings) {
             ModifyProjectSettingsModule.CopyOverProjectSettings();
             FinalizerModule.PatchSceneList(settings);
-            FinalizerModule.PatchHDRPVolumeProfile(settings);
-            FinalizerModule.PatchRenderPipelineAsset(settings);
             FinalizerModule.PatchQualityPipelineAsset(settings);
             FinalizerModule.PatchDiageticAudioMixer(settings);
             FinalizerModule.SortScriptableObjectFolder(settings);
+            FinalizerModule.PatchRenderPipelineAsset(settings);
+            FinalizerModule.PatchHDRPVolumeProfile(settings);
+            FinalizerModule.PatchLDRTextures(settings);
             FinalizerModule.SortPrefabsFolder(settings);
             FinalizerModule.OpenInitScene();
             FinalizerModule.ChangeGameViewResolution();
@@ -185,7 +200,27 @@ namespace Nomnom.LCProjectPatcher.Editor {
             await BepInExModule.Install(settings);
             BepInExModule.InstallMonoMod(settings);
             
-            SetCurrentStep(5);   
+            SetCurrentStep(5);
+            
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            
+            var path = Path.Combine(Application.persistentDataPath, "extracted-types.json");
+            if (File.Exists(path)) {
+                try {
+                    var json = File.ReadAllText(path);
+                    var types = JsonUtility.FromJson<ExtractProjectInformationUtility.ExtractedResults>(json);
+                    GuidPatcherModule.FixGuidsWithPatcherList(types, debugMode: false);
+                } catch (Exception e) {
+                    Debug.LogWarning($"Could not read extracted types file: {e}");
+                }
+                finally {
+                    try {
+                        File.Delete(path);
+                    } catch (Exception e) {
+                        Debug.LogWarning($"Could not delete extracted types file: {e}");
+                    }
+                }
+            }
             // return UniTask.CompletedTask;
         }
         

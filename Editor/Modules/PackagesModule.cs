@@ -1,6 +1,8 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
-using Cysharp.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEditor.PackageManager;
 using UnityEngine;
@@ -53,6 +55,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 }
             
                 Client.Resolve();
+                ManuallyCheckManifest();
+                EditorUtility.RequestScriptReload();
                 EditorUtility.ClearProgressBar();
             } catch(Exception e) {
                 EditorUtility.ClearProgressBar();
@@ -62,6 +66,47 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             
             Debug.Log("Packages installed");
             return true;
+        }
+
+        public static void ManuallyCheckManifest() {
+            var manifestFile = Path.GetFullPath(Path.Combine("Packages", "manifest.json"));
+            if (!File.Exists(manifestFile)) {
+                Debug.LogError($"Could not find {manifestFile}");
+                return;
+            }
+            
+            var manifest = File.ReadAllText(manifestFile);
+            var manifestJson = JObject.Parse(manifest);
+            var dependencies = (JObject)manifestJson["dependencies"]!;
+            var changed = false;
+            
+            foreach (var (name, version) in Packages) {
+                if (!dependencies.TryGetValue(name, out var versionObj)) {
+                    dependencies[name] = new JValue(version);
+                    Debug.Log($"Added {name} to {manifestFile}");
+                    changed = true;
+                }
+
+                var value = (JValue)versionObj!;
+                var valueString = value.ToString();
+                Debug.Log($"Checking if {name} has version {version} | {value}");
+                if (valueString != version) {
+                    value.Value = version;
+                    Debug.Log($"- Updated {name} to {version}");
+                    changed = true;
+                } else {
+                    Debug.Log($"- {name} already has version {version}");
+                }
+            }
+
+            if (!changed) {
+                return;
+            }
+            
+            Debug.Log($"Updated {manifestFile}");
+
+            var json = manifestJson.ToString(Formatting.Indented);
+            File.WriteAllText(manifestFile, json);
         }
 
         private static void ImportTMP() {

@@ -21,19 +21,19 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 scenesPath = Path.Combine(settings.GetLethalCompanyGamePath(), "Scenes");
             }
-            var scenes = AssetDatabase.FindAssets("t:SceneAsset", new[] {scenesPath})
+            var scenes = AssetDatabase.FindAssets("t:SceneAsset", new[] { scenesPath })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .ToArray();
-            
+
             // move InitSceneLaunchOptions to the top
             var initScene = scenes.FirstOrDefault(scene => scene.Contains("InitSceneLaunchOptions"));
             if (initScene == null) {
                 Debug.LogError("Could not find InitSceneLaunchOptions");
                 return;
             }
-            
+
             scenes = scenes.Where(scene => scene != initScene).Prepend(initScene).ToArray();
-            
+
             // build scenes out
             EditorBuildSettings.scenes = scenes
                 .Select(scene => new EditorBuildSettingsScene(scene, true))
@@ -57,14 +57,14 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 resources = Path.Combine(gamePath, "Resources");
             }
-            
+
             string scripts;
             if (settings.AssetRipperSettings.TryGetMapping("Scripts", out finalFolder)) {
                 scripts = Path.Combine(gamePath, finalFolder);
             } else {
                 scripts = Path.Combine(gamePath, "Scripts");
             }
-            
+
             var es3DefaultsScriptsPath = Path.Combine(scripts, "es3", "ES3Defaults.cs.meta");
             var metaText = File.ReadAllText(es3DefaultsScriptsPath);
             var guid = GuidPatcherModule.GuidPattern.Match(metaText);
@@ -72,7 +72,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 Debug.LogError("Could not find guid in ES3Defaults.cs");
                 return;
             }
-                    
+
             var guidString = guid.Groups["guid"].Value;
             var es3DefaultsResourcesPath = Path.Combine(resources, "es3", "ES3Defaults.asset");
             var text = File.ReadAllText(es3DefaultsResourcesPath);
@@ -81,15 +81,6 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
         }
 
         public static void PatchHDRPVolumeProfile(LCPatcherSettings settings) {
-            var settingsPath = settings.GetNativePath();
-            
-            string soPath;
-            if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
-                soPath = Path.Combine(settings.GetLethalCompanyGamePath(), finalFolder);
-            } else {
-                soPath = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
-            }
-
             // ? if I can figure out how to assign this in the HDRP quality settings, then I can just assign the asset directly
             // UnityEditor.Rendering.HighDefinition.HDRenderPipelineGlobalSettingsEditor
             // var allScriptableObjects = Resources.FindObjectsOfTypeAll<ScriptableObject>();
@@ -148,7 +139,16 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             // volumeProfile.objectReferenceValue = volumeProfileAsset;
             // serializedObject.ApplyModifiedProperties();
 
-            var hdrpSettingsPath = Path.Combine(settingsPath, "Settings", "HDRPDefaultResources", "HDRenderPipelineGlobalSettings.asset");
+            // var settingsPath = settings.GetNativePath();
+
+            string soPath;
+            if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
+                soPath = Path.Combine(settings.GetLethalCompanyGamePath(), finalFolder);
+            } else {
+                soPath = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
+            }
+
+            var hdrpSettingsPath = Path.Combine(soPath, "HDRenderPipelineGlobalSettings.asset");
             var hdrpSettings = AssetDatabase.LoadAssetAtPath<Object>(hdrpSettingsPath);
             if (hdrpSettings) {
                 var serializedObject = new SerializedObject(hdrpSettings);
@@ -160,6 +160,26 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                         volumeProfile.objectReferenceValue = newSettings;
                         serializedObject.ApplyModifiedProperties();
                         Debug.Log($"Set m_DefaultVolumeProfile to one found at \"{newSettingsPath}\"");
+
+                        // this is so jank
+                        try {
+                            var graphicsSettingsAsset = AssetDatabase.LoadAssetAtPath<Object>("ProjectSettings/GraphicsSettings.asset");
+
+                            serializedObject = new SerializedObject(graphicsSettingsAsset);
+                            var iterator = serializedObject.GetIterator();
+                            iterator.Next(true);
+
+                            while (iterator.Next(true)) {
+                                if (iterator.propertyPath == "m_SRPDefaultSettings.Array.data[0].second") {
+                                    iterator.objectReferenceValue = hdrpSettings;
+                                    serializedObject.ApplyModifiedProperties();
+                                    Debug.Log($"Set m_SRPDefaultSettings to {hdrpSettingsPath}");
+                                    break;
+                                }
+                            }
+                        } catch (Exception e) {
+                            Debug.LogError($"Failed to set m_SRPDefaultSettings to {hdrpSettingsPath}: {e}");
+                        }
                     } else {
                         Debug.LogWarning($"Could not find DefaultSettingsVolumeProfile at \"{newSettingsPath}\"");
                     }
@@ -167,8 +187,10 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 Debug.LogError($"Could not find HDRenderPipelineGlobalSettings at \"{hdrpSettingsPath}\"");
             }
+
+            AssetDatabase.SaveAssets();
         }
-        
+
         public static void PatchRenderPipelineAsset(LCPatcherSettings settings) {
             string sos;
             if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
@@ -176,8 +198,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 sos = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
             }
-            
-            var renderPipelineAssets = AssetDatabase.FindAssets("t:RenderPipelineAsset", new[] {sos})
+
+            var renderPipelineAssets = AssetDatabase.FindAssets("t:RenderPipelineAsset", new[] { sos })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<RenderPipelineAsset>)
                 .Where(x => x)
@@ -187,16 +209,16 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 Debug.LogError($"Could not find RenderPipelineAsset in \"{sos}\"");
                 return;
             }
-            
+
             var renderPipelineAsset = renderPipelineAssets[0];
             if (!renderPipelineAsset) {
                 Debug.LogError($"Could not find RenderPipelineAsset at \"{sos}\"");
                 return;
             }
-            
+
             GraphicsSettings.renderPipelineAsset = renderPipelineAsset;
             AssetDatabase.Refresh();
-            
+
             var assetPath = AssetDatabase.GetAssetPath(renderPipelineAsset);
             Debug.Log($"Set RenderPipelineAsset to one found at \"{assetPath}\"");
         }
@@ -234,18 +256,18 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 var finalText = new StringBuilder();
                 for (var i = 0; i < lines.Length; i++) {
                     finalText.AppendLine(lines[i].TrimEnd());
-                
+
                     if (!lines[i].Contains("m_EffectName: Echo")) {
                         continue;
                     }
-                
+
                     for (var j = i + 1; j < lines.Length; j++) {
                         if (lines[j].Contains("m_Bypass:")) {
                             finalText.AppendLine("  m_Bypass: 1");
                             i = j;
                             break;
                         }
-                    
+
                         finalText.AppendLine(lines[j].TrimEnd());
                     }
                 }
@@ -262,13 +284,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 soPath = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
             }
-            
-            var allScriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] {soPath})
+
+            var allScriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { soPath })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<ScriptableObject>)
                 .Where(x => x)
                 .ToArray();
-            
+
             // sort by type
             using var _ = DictionaryPool<Type, List<ScriptableObject>>.Get(out var mappings);
             foreach (var so in allScriptableObjects) {
@@ -279,13 +301,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 }
                 list.Add(so);
             }
-            
+
             AssetDatabase.StartAssetEditing();
             using var __ = ListPool<string>.Get(out var foldersUsed);
             try {
                 foreach (var group in mappings.Where(x => x.Value.Count > 1)) {
                     Debug.Log($"{group.Key} -> {group.Value.Count}");
-                
+
                     var type = group.Key;
                     var rootName = string.IsNullOrEmpty(type.Namespace) ? string.Empty : type.Namespace.Split('.')[0];
                     var folderPath = string.IsNullOrEmpty(rootName) ? Path.Combine(soPath, type.Name) : Path.Combine(soPath, rootName, type.Name);
@@ -305,7 +327,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                         }
                         totalPath = currentPath;
                     }
-                
+
                     foreach (var so in group.Value) {
                         var assetPath = AssetDatabase.GetAssetPath(so);
                         var newPath = Path.Combine(folderPath, Path.GetFileName(assetPath));
@@ -321,7 +343,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 AssetDatabase.StopAssetEditing();
             }
         }
-        
+
         public static void UnSortScriptableObjectFolder(LCPatcherSettings settings) {
             string soPath;
             if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
@@ -329,13 +351,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 soPath = Path.Combine(settings.GetLethalCompanyGamePath(), "MonoBehaviour");
             }
-            
-            var allScriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] {soPath})
+
+            var allScriptableObjects = AssetDatabase.FindAssets("t:ScriptableObject", new[] { soPath })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<ScriptableObject>)
                 .Where(x => x)
                 .ToArray();
-            
+
             AssetDatabase.StartAssetEditing();
             try {
                 // move all back into MonoBehaviour location and remove other folders
@@ -358,7 +380,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 AssetDatabase.StopAssetEditing();
             }
         }
-        
+
         public static void SortPrefabsFolder(LCPatcherSettings settings) {
             string prefabsPath;
             if (settings.AssetRipperSettings.TryGetMapping("Prefabs", out var finalFolder)) {
@@ -366,8 +388,8 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 prefabsPath = Path.Combine(settings.GetLethalCompanyGamePath(), "Prefabs");
             }
-            
-            var allPrefabs = AssetDatabase.FindAssets("t:GameObject", new[] {prefabsPath})
+
+            var allPrefabs = AssetDatabase.FindAssets("t:GameObject", new[] { prefabsPath })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(x => x)
@@ -376,12 +398,12 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     component = getFirstComponent(x)
                 })
                 .ToArray();
-            
+
             // var prefabTypeCounts = allPrefabs
             //     .GroupBy(x => x.GetComponents<MonoBehaviour>().FirstOrDefault()?.GetType().Name)
             //     .Where(x => x.Key != null)
             //     .ToDictionary(x => x.Key, x => x.Count());
-            
+
             // sort by type
             using var _ = DictionaryPool<Type, List<GameObject>>.Get(out var mappings);
             foreach (var data in allPrefabs) {
@@ -407,7 +429,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                             type = baseType;
                         }
                     }
-                    
+
                     if (type == typeof(Component)) continue;
                     if (prefabs.Count == 0 || type == null) continue;
 
@@ -451,29 +473,29 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                     if (string.IsNullOrEmpty(@namespace)) {
                         @namespace = string.Empty;
                     }
-                    
+
                     if (@namespace.StartsWith("Unity")) {
                         if (!firstUnityComponent) {
                             firstUnityComponent = component;
                         }
                         continue;
                     }
-                    
+
                     // return component;
                     if (!firstNoneUnityComponent) {
                         firstNoneUnityComponent = component;
                         break;
                     }
                 }
-                
+
                 if (firstNoneUnityComponent) {
                     return firstNoneUnityComponent;
                 }
-                
+
                 return firstUnityComponent;
             }
         }
-        
+
         public static void UnSortPrefabsFolder(LCPatcherSettings settings) {
             string prefabsPath;
             if (settings.AssetRipperSettings.TryGetMapping("Prefabs", out var finalFolder)) {
@@ -481,13 +503,13 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 prefabsPath = Path.Combine(settings.GetLethalCompanyGamePath(), "Prefabs");
             }
-            
-            var allPrefabs = AssetDatabase.FindAssets("t:GameObject", new[] {prefabsPath})
+
+            var allPrefabs = AssetDatabase.FindAssets("t:GameObject", new[] { prefabsPath })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .Select(AssetDatabase.LoadAssetAtPath<GameObject>)
                 .Where(x => x)
                 .ToArray();
-            
+
             AssetDatabase.StartAssetEditing();
             try {
                 // move all back into Prefabs location and remove other folders
@@ -498,7 +520,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                         AssetDatabase.MoveAsset(assetPath, newPath);
                     }
                 }
-            
+
                 var folders = AssetDatabase.GetSubFolders(prefabsPath);
                 foreach (var folder in folders) {
                     AssetDatabase.DeleteAsset(folder);
@@ -517,6 +539,43 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             } else {
                 Debug.LogWarning("Could not set GameView resolution to 16:9");
             }
+        }
+
+        public static void PatchLDRTextures(LCPatcherSettings settings) {
+            string textures;
+            if (settings.AssetRipperSettings.TryGetMapping("Texture2D", out var finalFolder)) {
+                textures = Path.Combine(settings.GetLethalCompanyGamePath(), finalFolder);
+            } else {
+                textures = Path.Combine(settings.GetLethalCompanyGamePath(), "Texture2D");
+            }
+
+            var assets = AssetDatabase.FindAssets("t:Texture2D", new string[] { textures })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .Select(AssetDatabase.LoadAssetAtPath<Texture2D>)
+                .Where(x => x.name.StartsWith("LDR_RGB1_"))
+                .ToArray();
+
+            // change all to RGB24
+            for (var i = 0; i < assets.Length; i++) {
+                EditorUtility.DisplayProgressBar("Changing texture format", $"Changing {assets[i].name}", (float)i / assets.Length);
+                try {
+                    var asset = assets[i];
+                    var path = AssetDatabase.GetAssetPath(asset);
+                    var importer = AssetImporter.GetAtPath(path) as TextureImporter;
+                    if (importer) {
+                        var defaultPlatform = importer.GetDefaultPlatformTextureSettings();
+                        defaultPlatform.format = TextureImporterFormat.RGB24;
+                        importer.SetPlatformTextureSettings(defaultPlatform);
+                        importer.SaveAndReimport();
+                    } else {
+                        Debug.LogWarning($"Could not find TextureImporter for {asset.name}");
+                    }
+                } catch (Exception e) {
+                    Debug.LogError(e);
+                }
+            }
+            
+            EditorUtility.ClearProgressBar();
         }
     }
 }

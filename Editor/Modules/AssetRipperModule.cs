@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
@@ -6,37 +7,8 @@ using UnityEngine;
 
 namespace Nomnom.LCProjectPatcher.Editor.Modules {
     public static class AssetRipperModule {
-        public readonly static string[] InitialFolders = {
-            "AudioMixerController"
-        };
-        
-        public readonly static string[] FinalFolders = {
-            "AnimationClip",
-            "AnimatorController",
-            "AudioClip",
-            // "AudioMixerController",
-            "Cubemap",
-            "Font",
-            "LightingSettings",
-            "Material",
-            "Mesh",
-            "MonoBehaviour",
-            "NavMeshData",
-            "PhysicMaterial",
-            "PrefabInstance",
-            "RenderTexture",
-            "Resources",
-            "Scenes",
-            "Sprite",
-            "TerrainData",
-            "TerrainLayer",
-            "Texture2D",
-            "Texture3D",
-            "VideoClip"
-        };
-
         public static async UniTask RunAssetRipper(LCPatcherSettings settings) {
-            var assetRipperExePath = ModuleUtility.AssetRipperDirectory;
+            var assetRipperExePath = ModuleUtility.AssetRipperExecutable;
             var pathToData = ModuleUtility.LethalCompanyDataFolder;
             var outputPath = ModuleUtility.AssetRipperTempDirectory;
 
@@ -47,7 +19,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             Directory.CreateDirectory(outputPath);
             
             // make sure we have the dll in-place
-            var dllLocation = Path.Combine(Path.GetDirectoryName(assetRipperExePath), "AssetRipper.SourceGenerated.dll");
+            var dllLocation = Path.Combine(ModuleUtility.AssetRipperDirectory, "AssetRipper.SourceGenerated.dll");
             if (!File.Exists(dllLocation)) {
                 var dllUrl = ModuleUtility.AssetRipperDllUrl;
                 var zipLocation = $"{dllLocation}.zip";
@@ -177,12 +149,19 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             EditorUtility.ClearProgressBar();
         }
         
-        public static void CopyAssetRipperContents(LCPatcherSettings settings) {
+        public static void CopyAssetRipperContents(LCPatcherSettings settings)
+        {
+            var onLinux = Application.platform == RuntimePlatform.LinuxEditor;
+            // Keep track of all files in lower-case to mimic a case-insensitive file system.
+            var caseInsensitiveFiles = new Dictionary<string, int>();
+            
             var assetRipperSettings = settings.AssetRipperSettings;
             var outputRootFolder = settings.GetLethalCompanyGamePath();
             
             var assetRipperTempFolder = ModuleUtility.AssetRipperTempDirectoryExportedProject;
             var assetsFolder = Path.Combine(assetRipperTempFolder, "Assets");
+
+            var minimalCopy = EditorPrefs.GetBool("nomnom.lc_project_patcher.copy_minimal_files", false);
             
             var folders = Directory.GetDirectories(assetsFolder);
             foreach (var folder in folders) {
@@ -190,13 +169,26 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                 if (folderName == "Scripts" || folderName == "Shader") {
                     continue;
                 }
-                
+
                 // if (folder == folderName) continue;
                 if (!assetRipperSettings.TryGetMapping(folderName, out var finalFolder)) {
                     continue;
                 }
                 
+                if (minimalCopy) {
+                    if (finalFolder == "Videos" || finalFolder == Path.Combine("Audio", "AudioClips") || finalFolder == Path.Combine("Textures", "Texture2Ds") || finalFolder == Path.Combine("Textures", "Texture3Ds")) {
+                        continue;
+                    }
+                }
+                
                 var finalPath = Path.Combine(outputRootFolder, finalFolder);
+
+                if (onLinux)
+                {
+                    // Fix folder path separator.
+                    finalPath = finalPath.Replace('\\', '/');
+                }
+                
                 // Debug.Log($"{folder} maps to {finalPath}");
                 
                 foreach (var file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories)) {
@@ -206,6 +198,29 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
                         Directory.CreateDirectory(finalDirectory);
                     }
                     // Debug.Log($"Copying {file} to {finalFile}");
+                    
+                    // Mimic asset ripper behavior on case-insensitive file system.
+                    if (onLinux)
+                    {
+                        var finalFileCaseInsensitive = finalFile.ToLower();
+                        if (caseInsensitiveFiles.TryGetValue(finalFileCaseInsensitive, out var count))
+                        {
+                            var finalFileName = Path.GetFileName(finalFile);
+                            var finalFilePath = finalFile[..^finalFileName.Length];
+                            var fileNameParts = finalFile[^finalFileName.Length..].Split('.');
+                            var fileNameWithoutExt = fileNameParts[0];
+                            var fileExt = string.Join('.', fileNameParts[1..]);
+
+                            finalFile = Path.Combine(finalFilePath,
+                                $"{fileNameWithoutExt}_{count}.{fileExt}");
+
+                            caseInsensitiveFiles[finalFileCaseInsensitive] = count + 1;
+                        }
+                        else
+                        {
+                            caseInsensitiveFiles[finalFileCaseInsensitive] = 0;
+                        }
+                    }
 
                     try {
                         File.Copy(file, finalFile, overwrite: true);
@@ -235,32 +250,50 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             // }
         }
         
-        public static void DeleteScriptsFromProject(LCPatcherSettings settings) {
-            string scriptsFolder;
-            if (settings.AssetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
-                scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
-            } else {
-                scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "Scripts");
+        public static void DeleteGameFolderContents(LCPatcherSettings settings) {
+            var gameFolder = settings.GetLethalCompanyGamePath(fullPath: true);
+            if (!Directory.Exists(gameFolder)) {
+                return;
             }
             
-            if (Directory.Exists(scriptsFolder)) {
-                Debug.Log($"Deleting {scriptsFolder}");
-                Directory.Delete(scriptsFolder, recursive: true);
+            var files = Directory.GetFiles(gameFolder, "*", SearchOption.AllDirectories);
+            foreach (var file in files) {
+                if (file.EndsWith(".dll")) continue;
+                
+                try {
+                    File.Delete(file);
+                } catch (Exception e) {
+                    Debug.LogWarning($"Could not delete {file}: {e}");
+                }
             }
         }
-
-        public static void DeleteScriptableObjectsFromProject(LCPatcherSettings settings) {
-            string soPath;
-            if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
-                soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
-            } else {
-                soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "MonoBehaviour");
-            }
-
-            if (Directory.Exists(soPath)) {
-                Debug.Log($"Deleting {soPath}");
-                Directory.Delete(soPath, recursive: true);
-            }
-        }
+        
+        // public static void DeleteScriptsFromProject(LCPatcherSettings settings) {
+        //     string scriptsFolder;
+        //     if (settings.AssetRipperSettings.TryGetMapping("Scripts", out var finalFolder)) {
+        //         scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
+        //     } else {
+        //         scriptsFolder = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "Scripts");
+        //     }
+        //     
+        //     if (Directory.Exists(scriptsFolder)) {
+        //         Debug.Log($"Deleting {scriptsFolder}");
+        //         Directory.Delete(scriptsFolder, recursive: true);
+        //     }
+        // }
+        //
+        // public static void DeleteScriptableObjectsFromProject(LCPatcherSettings settings) {
+        //     string soPath;
+        //     if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
+        //         soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), finalFolder);
+        //     } else {
+        //         soPath = Path.Combine(settings.GetLethalCompanyGamePath(fullPath: true), "MonoBehaviour");
+        //     }
+        //
+        //     if (Directory.Exists(soPath)) {
+        //         Debug.Log($"Deleting {soPath}");
+        //         Directory.Delete(soPath, recursive: true);
+        //     }
+        // }
     }
 }

@@ -1,6 +1,8 @@
 ﻿# Lethal Company Project Patcher
 
 > This tool is still in development and is quite experimental, but should be usable.
+> 
+> Before patching, **back up your project first**!
 
 This tool fills in a unity project with functional assets so you can run the game in the editor to test custom plugins.
 
@@ -38,6 +40,8 @@ This tool does **not** distribute game files. It uses what is already on your co
 - [Unity 2022.3.9f1](https://unity.com/releases/editor/archive)
 - [.NET 8.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
   - For running Asset Ripper
+- [FFmpeg (Optional)](https://ffmpeg.org/)
+  - To re-encode videos for Linux support
 - If using DunGen, then at least version `2.15.1`
 
 ## Installation
@@ -71,11 +75,16 @@ This tool does **not** distribute game files. It uses what is already on your co
 
 4. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
-5. Click the `Run Patcher` button
+5. **Back up your project** if you already have a patched project at this point
+6. Click the `Run Patcher` button
     - This process *will* take a while, so be patient
     - The editor may restart a few times, this is normal
     - When it asks about the New Input System and switching backends, click `Yes`
-6. Now you should have a nice template to work from!
+    - If this is ran *after* already patching it will attempt to re-patch the project.
+      - **Back up your project before doing this** otherwise you risk corrupting your project guids.
+      - The re-patching process will take *considerably* longer than the initial patch, as it has a lot more guids to sort through.
+      - When migrating between game versions some things may not properly convert over, such as models or prefabs that were modified. So you may have to do some manual adjustments depending on severity.
+7. Now you should have a nice template to work from!
 
 ## After Usage
 
@@ -255,6 +264,7 @@ For meshes that have a material with pixel displacement, their uvs will tend to 
 - BepInEx - https://github.com/BepInEx/BepInEx
 - Newtonsoft Json.NET - https://www.newtonsoft.com/json
 - IntegrityChaos - for the posterization shader remake
+- Rune - for the Linux support
 
 <br/>
 
