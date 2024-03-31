@@ -76,7 +76,7 @@ This tool does **not** distribute game files. It uses what is already on your co
 4. Assign the Game's data directory path at the top
     - Example being `C:\Program Files (x86)\Steam\steamapps\common\Lethal Company\Lethal Company_Data`
 5. **Back up your project** if you already have a patched project at this point
-5. Click the `Run Patcher` button
+6. Click the `Run Patcher` button
     - This process *will* take a while, so be patient
     - The editor may restart a few times, this is normal
     - When it asks about the New Input System and switching backends, click `Yes`
@@ -84,7 +84,7 @@ This tool does **not** distribute game files. It uses what is already on your co
       - **Back up your project before doing this** otherwise you risk corrupting your project guids.
       - The re-patching process will take *considerably* longer than the initial patch, as it has a lot more guids to sort through.
       - When migrating between game versions some things may not properly convert over, such as models or prefabs that were modified. So you may have to do some manual adjustments depending on severity.
-6. Now you should have a nice template to work from!
+7. Now you should have a nice template to work from!
 
 ## After Usage
 
