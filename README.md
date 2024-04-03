@@ -140,15 +140,17 @@ Afterward, you should restart Unity if you already have some plugins loaded up t
 
 Yes, but you'll have to do it manually.
 
-1. Copy the code from https://github.com/nomnomab/lc-project-patcher/blob/v0.3.0/Editor/ExtractProjectInformationUtility.cs and paste it into a new script in the project with your existing assets called `ExtractProjectInformationUtility.cs`
+1. Temporarily install this tool in your original project (it won't affect it)
+   - Otherwise copy the [ExtractProjectInformationUtility.cs](https://github.com/nomnomab/lc-project-patcher/blob/master/Editor/ExtractProjectInformationUtility.cs) script into your original project in case that doesn't work
 2. Run the type extractor from `Tools > Nomnom > LC - Project Patcher > Extract Project Information`
 3. Once this is done, it will make a json file with the required information at the location you specified
 4. Go back to the new project
 5. Copy over any assets from the old project to the new project
 6. Run the asset patcher from `Tools > Nomnom > LC - Project Patcher > Patch Assets From Other Projects...`
-5. Select the json file you made from the other project
-6. Wait for the patcher to complete
-7. Now your prefabs/scenes should be migrated over properly
+7. Select the json file you made from the other project
+8. Wait for the patcher to complete
+9. Now your assets *should* be migrated over properly
+   - Some things may still require manual migration, as this process isn't perfect!
 
 If there are any "missing prefab" issues in your prefabs/scenes, then make sure you have the needed assets in the project.
 

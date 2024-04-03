@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Nomnom.LCProjectPatcher.Editor.Modules;
-using Nomnom.LCProjectPatcher.Modules;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Nomnom.LCProjectPatcher.Editor {
     public static class ExtractProjectInformationUtility {
+        private readonly static Regex GuidPattern = new(@"guid:\s(?<guid>[0-9A-Za-z]+)", RegexOptions.Compiled);
+        
         [MenuItem("Tools/Nomnom/LC - Project Patcher/Extract Project Information")]
         public static ExtractedResults ExtractProjectInformation() {
             var outputFilePath = EditorUtility.SaveFilePanel("Save Project Information", "", "ProjectInformation", "json");
@@ -64,7 +65,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
         }
 
         private static IEnumerable<AssetGuidResult> GetAssetResults(bool onlyInProjectAssets) {
-            var settings = ModuleUtility.GetPatcherSettings();
+            // var settings = ModuleUtility.GetPatcherSettings();
             // var gamePath = settings.GetLethalCompanyGamePath();
             // string sos;
             // if (settings.AssetRipperSettings.TryGetMapping("MonoBehaviour", out var finalFolder)) {
@@ -106,7 +107,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 if (!obj) continue;
 
                 var metaContent = File.ReadAllText(metaPath);
-                var match = GuidPatcherModule.GuidPattern.Match(metaContent);
+                var match = GuidPattern.Match(metaContent);
                 if (!match.Success) {
                     continue;
                 }
