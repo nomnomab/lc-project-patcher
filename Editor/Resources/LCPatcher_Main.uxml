@@ -27,6 +27,10 @@
                 <ui:Label tabindex="-1" text="com.unity.package" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; min-width: 80%;" />
                 <ui:Label tabindex="-1" text="1.0.0" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-shrink: 1;" />
             </ui:VisualElement>
+            <ui:VisualElement name="add-gitignore" style="flex-grow: 1; flex-direction: row;">
+                <ui:Label tabindex="-1" text="Add Gitignore" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
+                <ui:Button text="Add" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />
+            </ui:VisualElement>
             <ui:VisualElement name="fix-mixer" style="flex-grow: 1; flex-direction: row;">
                 <ui:Label tabindex="-1" text="Fix diagetic audio mixer" parse-escape-sequences="true" display-tooltip-when-elided="true" style="flex-grow: 1; -unity-text-align: middle-left;" />
                 <ui:Button text="Fix" parse-escape-sequences="true" display-tooltip-when-elided="true" class="utility-button" style="flex-shrink: 1;" />

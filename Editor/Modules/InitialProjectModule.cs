@@ -54,5 +54,10 @@ namespace Nomnom.LCProjectPatcher.Editor.Modules {
             //     return !path.StartsWith(unityDirectory) && !path.StartsWith(lethalCompanyDirectory);
             // }
         }
+
+        public static void AddGitIgnore(LCPatcherSettings settings) {
+            var gitignoreText = Resources.Load<TextAsset>("Unity.gitignore").text;
+            File.WriteAllText(Path.Combine(Application.dataPath, "..", ".gitignore"), gitignoreText);
+        }
     }
 }

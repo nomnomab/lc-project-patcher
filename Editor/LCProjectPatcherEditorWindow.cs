@@ -167,6 +167,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
             
             var runAssetRipperButton = parent.Q("run-asset-ripper").Q<Button>();
             var installPackagesButton = parent.Q("install-packages").Q<Button>();
+            var addGitIgnoreButton = parent.Q("add-gitignore").Q<Button>();
             var fixMixerButton = parent.Q("fix-mixer").Q<Button>();
             var fixInputActionsButton = parent.Q("fix-input-actions").Q<Button>();
             var fixHDRPVolumeButton = parent.Q("fix-hdrp-volume").Q<Button>();
@@ -186,6 +187,10 @@ namespace Nomnom.LCProjectPatcher.Editor {
             installPackagesButton.clicked += () => {
                 PackagesModule.InstallAll();
                 // PackagesModule.ManuallyCheckManifest();
+            };
+
+            addGitIgnoreButton.clicked += () => {
+                InitialProjectModule.AddGitIgnore(ModuleUtility.GetPatcherSettings());
             };
             
             fixMixerButton.clicked += () => {

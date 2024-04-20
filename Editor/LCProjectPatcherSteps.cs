@@ -110,6 +110,7 @@ namespace Nomnom.LCProjectPatcher.Editor {
                 ModuleUtility.CreateDirectory(settings.GetLethalCompanyGamePath(fullPath: true));
                 
                 InitialProjectModule.MoveNativeFiles(settings);
+                InitialProjectModule.AddGitIgnore(settings);
 
                 // asset ripper
                 await AssetRipperModule.RunAssetRipper(settings);
