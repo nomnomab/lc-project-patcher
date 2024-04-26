@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Nomnom.LCProjectPatcher.Editor;
 using Nomnom.LCProjectPatcher.Editor.Modules;
@@ -68,7 +69,7 @@ namespace Nomnom.LCProjectPatcher.Modules {
         };
         
         private readonly static Type[] AllTypes = AppDomain.CurrentDomain.GetAssemblies()
-            .SelectMany(x => x.GetTypes())
+            .SelectMany(x => x.GetValidTypes())
             .Where(x => typeof(Component).IsAssignableFrom(x) || typeof(ScriptableObject).IsAssignableFrom(x) || typeof(MonoScript).IsAssignableFrom(x))
             .ToArray();
 
