@@ -1,6 +1,6 @@
 {
   "name": "com.nomnom.lc-project-patcher",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "displayName": "Lethal Company Project Patcher",
   "description": "A tool to generate a usable Unity project for Lethal Company modding.",
   "unity": "2022.3",
