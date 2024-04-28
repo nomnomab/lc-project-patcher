@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Cysharp.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
@@ -35,6 +38,17 @@ namespace Nomnom.LCProjectPatcher.Editor {
             var assets = AssetDatabase.FindAssets("t:Object");
             var randomAsset = assets[UnityEngine.Random.Range(0, assets.Length)];
             AssetDatabase.ImportAsset(AssetDatabase.GUIDToAssetPath(randomAsset));
+        }
+
+        public static IEnumerable<Type> GetValidTypes(this Assembly assembly) {
+            Type[] types;
+            try {
+                types = assembly.GetTypes();
+            } catch (ReflectionTypeLoadException e) {
+                types = e.Types;
+            }
+
+            return types.Where(t => t != null);
         }
         
         // public static bool ValidateAssetRipperPath() {

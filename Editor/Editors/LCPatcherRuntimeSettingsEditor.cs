@@ -10,7 +10,7 @@ namespace Nomnom.LCProjectPatcher.Editor.Editors {
     public class LCPatcherRuntimeSettingsEditor : UnityEditor.Editor {
         private static Type SelectableLevelType { get; } = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(x => x.GetName().Name == "Assembly-CSharp")
-            ?.GetTypes()
+            ?.GetValidTypes()
             .FirstOrDefault(x => x.Name == "SelectableLevel");
 
         public override void OnInspectorGUI() {
