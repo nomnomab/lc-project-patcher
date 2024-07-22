@@ -1,4 +1,6 @@
-﻿# Lethal Company Project Patcher
+# USE THE REWRITTEN TOOL HERE INSTEAD: https://github.com/nomnomab/unity-lc-project-patcher
+ 
+# Lethal Company Project Patcher
 
 > This tool is still in development and is quite experimental, but should be usable.
 > 
